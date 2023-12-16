@@ -1,0 +1,81 @@
+<!-- Add account from -->
+<form id="accountForm" style="margin-bottom: 3%;">
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="exampleFormControlSelect1">Account fromat</label>
+                <select class="form-control" id="exampleFormControlSelect1">
+                    <option>login:password</option>
+                </select>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="exampleFormControlSelect1">Group</label>
+                <select class="form-control" id="groupAddModal">
+                    @for(group of fbAccGroups; track $index){
+                    <option [value]="group">
+                        {{group}}
+                    </option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col">
+            <fbacc-group></fbacc-group>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="exampleFormControlTextarea1">Account</label>
+        <textarea [(ngModel)]="fbAccData" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg" (click)="AddAccounts()">Add</button>
+</form>
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="accountTable"></table>
+
+<!-- Modal -->
+<div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Edit account</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Id</label>
+                    <input type="text" class="form-control" id="idModal" placeholder="127.0.0.1" disabled>
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Login</label>
+                    <input type="text" class="form-control" id="loginModal" placeholder="accountLogin">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Password</label>
+                    <input type="text" class="form-control" id="passwordModal" placeholder="accountPassword">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Group</label>
+                    <select class="form-control" id="groupUpdateModal">
+                        @for(group of fbAccGroups; track $index){
+                        <option [value]="group">
+                            {{group}}
+                        </option>
+                        }
+                    </select>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    (click)="UpdateAccount()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>

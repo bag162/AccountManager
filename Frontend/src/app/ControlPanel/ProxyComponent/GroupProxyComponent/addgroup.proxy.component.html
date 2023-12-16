@@ -1,0 +1,17 @@
+<form>
+    <div class="form-group">
+        <div class="row">
+            <label for="formGroupExampleInput">New Group</label>
+            <input [(ngModel)]="groupData" id="addNewGroupField" type="text" class="form-control" id="formGroupExampleInput"placeholder="ru-moscow-mob">
+        </div>
+        <div class="row mt-1 mb-1">
+            <button type="button" class="btn btn-outline-primary" (click)="AddProxyGroup()">Add</button>
+        </div>
+        <div id="succcesAddProxyGroup" class="alert alert-success" role="alert">
+            Success
+        </div>
+        <div id="errorAddProxyGroup" class="alert alert-danger" role="alert">
+            Error
+        </div>
+    </div>
+</form>
