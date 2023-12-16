@@ -363,5 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Frontend cash
-Frontend/.angular
-Frontend/node_modules
+.angular
