@@ -1,1 +1,37 @@
-Registration Account component
+<form>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="mb-3">
+                    <label for="exampleInputEmail1" class="form-label">Proxy Group</label>
+                    <select-proxy-group></select-proxy-group>
+                </div>
+            </div>
+            <div class="col">
+                <div class="mb-3">
+                    <label for="exampleInputPassword1" class="form-label">SMS Service</label>
+                    <select-sms-service></select-sms-service>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="mb-3">
+                    <label for="exampleInputPassword1" class="form-label">Number of registered accounts</label>
+                    <input [(ngModel)]="countAccount" type="number" class="form-control" id="exampleInputPassword1"
+                        placeholder="0">
+                </div>
+            </div>
+            <div class="col">
+                <div class="mb-3">
+                    <label for="exampleInputPassword1" class="form-label">New account Group</label>
+                    <select-account-group></select-account-group>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3" (click)="AddTask()">Submit</button>
+    <div id="successNot" class="alert alert-success" role="alert">Success</div>
+    <div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+</form>

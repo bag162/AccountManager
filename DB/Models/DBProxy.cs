@@ -18,6 +18,17 @@ namespace BASAccountManager.DB.Models
         public string? Login { get; set; }
         public string? Password { get; set; }
 
-        public string Group { get; set; }
+        [ForeignKey(nameof(DBProxyGroup))]
+        public int GroupId { get; set; }
+        public DBProxyGroup DBProxyGroup { get; set; }
+
+        public ProxyStatus ProxyStatus { get; set; }
+    }
+
+    public enum ProxyStatus
+    {
+        Free,
+        BookedForWork,
+        InWork
     }
 }

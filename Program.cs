@@ -4,6 +4,8 @@ using BASAccountManager.DBServices.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using BASAccountManager;
+using Hangfire;
+using BASAccountManager.BackgroundTask;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,12 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTransient<IProxyDBService, ProxyDBService>();
 builder.Services.AddTransient<IFBDBService, FBDBService>();
 builder.Services.AddTransient<ISMSServiceDB, SMSDBService>();
+builder.Services.AddTransient<ITaskDBService, TaskDBService>();
+builder.Services.AddTransient<IWorkerTaskDBService, WorkerTaskDBService>();
+builder.Services.AddTransient<HangFireTaskManager>();
+builder.Services.AddTransient<AssignmentWriter>();
 
+builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(AutoMapperConf));
-
 builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
 {
     builder
@@ -26,7 +33,7 @@ builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
     .AllowCredentials();
 }));
 // DB Services
-builder.Services.AddDbContext<AMContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AMContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
 var app = builder.Build();
 
@@ -39,7 +46,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("CorsPolicy");
 app.UseAuthorization();
-
+app.UseHangfireDashboard();
 app.MapControllers();
-
+RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), Cron.MinuteInterval(15));
 app.Run();

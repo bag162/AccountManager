@@ -1,0 +1,7 @@
+<select class="form-control" id="selectSMSService" [(ngModel)]="data" (ngModelChange)="UpdateData()">
+    @for(smsService of smsServices; track $index){
+    <option [value]="smsService">
+        {{smsService}}
+    </option>
+    }
+</select>

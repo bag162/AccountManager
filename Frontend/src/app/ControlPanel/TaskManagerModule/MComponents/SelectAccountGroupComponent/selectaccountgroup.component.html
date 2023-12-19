@@ -1,0 +1,7 @@
+<select class="form-control" id="selectAccountGroup" [(ngModel)]="data" (ngModelChange)="UpdateData()">
+    @for(group of accountGroups; track $index){
+    <option [value]="group">
+        {{group}}
+    </option>
+    }
+</select>

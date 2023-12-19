@@ -75,6 +75,11 @@ namespace BASAccountManager.DBServices
             return data;
         }
 
+        public DBSMSActivation GetSMSServiceById(int id)
+        {
+            return this.dbcontext.SMSActivation.Where(x => x.Id == id).First();
+        }
+
         public async Task RemoveSMSServiceAsync(List<DBSMSActivation> removedSMSService)
         {
             this.dbcontext.SMSActivation.RemoveRange(removedSMSService);

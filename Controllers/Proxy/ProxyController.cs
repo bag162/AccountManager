@@ -25,7 +25,7 @@ namespace BASAccountManager.Controllers.Proxy
         }
 
         [HttpGet]
-        public string Get(int start, int length, int draw)
+        public string Get(int start, int length, int draw) // TODO отображать статус прокси в Update на Fronte
         {
             StringValues searchData;
             this.Request.Query.TryGetValue("search[value]", out searchData);
@@ -44,14 +44,14 @@ namespace BASAccountManager.Controllers.Proxy
         [HttpPost]
         public async Task<string> Post([FromBody] ProxyDTO[] proxy)
         {
-            await this.proxyDBService.AddProxyAsync(mapper.Map<List<DBProxy>>(proxy.ToList()));
+            await this.proxyDBService.AddProxyAsync(mapper.Map<List<DBProxy>>(proxy.ToList()), proxy.First().Group);
             return JsonConvert.SerializeObject("true");
         }
 
         [HttpPut]
         public async Task<string> Put([FromBody] ProxyDTO[] proxy)
         {
-            await this.proxyDBService.UpdateProxyAsync(mapper.Map<List<DBProxy>>(proxy));
+            await this.proxyDBService.UpdateProxyAsync(mapper.Map<List<DBProxy>>(proxy), proxy.First().Group);
             return JsonConvert.SerializeObject("true");
         }
     }

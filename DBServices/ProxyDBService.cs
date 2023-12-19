@@ -4,6 +4,7 @@ using BASAccountManager.Controllers.Proxy.DTO;
 using BASAccountManager.DB;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BASAccountManager.DBServices
 {
@@ -20,8 +21,14 @@ namespace BASAccountManager.DBServices
             this.mapper = mapper;
         }
 
-        public async Task AddProxyAsync(List<DBProxy> newProxy)
+        public async Task AddProxyAsync(List<DBProxy> newProxy, string group)
         {
+            var groupId = this.dbcontext.ProxyGroup.Where(x => x.Name == group).Select(x => x.Id).First();
+            foreach (var proxy in newProxy)
+            {
+                proxy.ProxyStatus = ProxyStatus.Free;
+                proxy.GroupId = groupId;
+            }
             await this.dbcontext.Proxy.AddRangeAsync(newProxy.ToArray());
             await this.dbcontext.SaveChangesAsync();
             return;
@@ -29,7 +36,7 @@ namespace BASAccountManager.DBServices
 
         public List<DBProxy> GetProxy()
         {
-            return this.dbcontext.Proxy.ToList();
+            return this.dbcontext.Proxy.Include(x => x.DBProxyGroup).ToList();
         }
 
 
@@ -49,7 +56,7 @@ namespace BASAccountManager.DBServices
 
         public JqueryDataTable<ProxyDTO> GetProxy(int start, int lenght, string searchdata)
         {
-            var data = new JqueryDataTable<ProxyDTO>();
+            var data = new JqueryDataTable<ProxyDTO>(); // TODO contains by group
             data.recordsTotal = this.dbcontext.Proxy.Count();
             DBProxy[] filteredData = Array.Empty<DBProxy>();
 
@@ -57,7 +64,7 @@ namespace BASAccountManager.DBServices
             {
                 if (lenght == -1)
                 {
-                    filteredData = this.dbcontext.Proxy.AsQueryable().Where(m => m.Ip.Contains(searchdata)
+                    filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
                                                 || m.Port.Contains(searchdata)
                                                 || m.Login.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
@@ -66,7 +73,7 @@ namespace BASAccountManager.DBServices
                 else
                 {
 
-                    filteredData = this.dbcontext.Proxy.AsQueryable().Where(m => m.Ip.Contains(searchdata)
+                    filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
                                                 || m.Port.Contains(searchdata)
                                                 || m.Login.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
@@ -82,11 +89,11 @@ namespace BASAccountManager.DBServices
                 data.recordsFiltered = data.recordsTotal;
                 if (lenght == -1)
                 {
-                    data.data = mapper.Map<List<ProxyDTO>>(this.dbcontext.Proxy.AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
+                    data.data = mapper.Map<List<ProxyDTO>>(this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
                 }
                 else
                 {
-                    data.data = mapper.Map<List<ProxyDTO>>(this.dbcontext.Proxy.AsQueryable().Skip(start).Take(lenght).ToArray());
+                    data.data = mapper.Map<List<ProxyDTO>>(this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Skip(start).Take(lenght).ToArray());
                 }
             }
             return data;
@@ -100,6 +107,32 @@ namespace BASAccountManager.DBServices
         public async Task AddGroupAsync(DBProxyGroup addedGroup)
         {
             await this.dbcontext.ProxyGroup.AddAsync(addedGroup);
+            await this.dbcontext.SaveChangesAsync();
+            return;
+        }
+
+        public List<DBProxy> GetProxyByGroup(string groupName)
+        {
+            var group = this.dbcontext.ProxyGroup.FirstOrDefault(x => x.Name == groupName);
+            return this.dbcontext.Proxy.Include(x => x.DBProxyGroup).Where(x => x.GroupId == group.Id).ToList();
+        }
+
+        public async Task UpdateProxyAsync(List<DBProxy> updatedProxy, string newGroup)
+        {
+            var groupId = this.dbcontext.ProxyGroup.Where(x => x.Name == newGroup).Select(x => x.Id).First();
+            foreach (var proxy in updatedProxy)
+            {
+                proxy.ProxyStatus = ProxyStatus.Free;
+                proxy.GroupId = groupId;
+            }
+            this.dbcontext.Proxy.UpdateRange(updatedProxy);
+            await this.dbcontext.SaveChangesAsync();
+            return;
+        }
+
+        public async Task UpdateProxyAsync(DBProxy updatedProxy)
+        {
+            this.dbcontext.Proxy.Update(updatedProxy);
             await this.dbcontext.SaveChangesAsync();
             return;
         }

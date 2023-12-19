@@ -8,10 +8,9 @@ namespace BASAccountManager.DB.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public string Group { get; set; }
-        [ForeignKey(nameof(DBProxy))]
-        public int? ProxyId { get; set; }
 
-        public DBProxy? Proxy { get; set; }
+        [ForeignKey(nameof(DBFBAccountGroup))]
+        public int GroupId { get; set; }
+        public DBFBAccountGroup DBFBAccountGroup { get; set; }
     }
 }

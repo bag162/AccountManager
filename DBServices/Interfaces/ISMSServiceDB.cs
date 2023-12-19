@@ -6,6 +6,7 @@ namespace BASAccountManager.DBServices.Interfaces
 {
     public interface ISMSServiceDB
     {
+        public DBSMSActivation GetSMSServiceById(int id);
         public List<DBSMSActivation> GetSMSService();
         public JqueryDataTable<SMSServiceDTO> GetSMSService(int start, int lenght, string searchdata);
         public Task AddSMSServiceAsync(List<DBSMSActivation> newProxy);

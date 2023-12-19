@@ -44,14 +44,14 @@ namespace BASAccountManager.Controllers
         [HttpPost]
         public async Task<string> Post([FromBody] FBAccountDTO[] accounts)
         {
-            await this.FbDbService.AddFBAccountsAsync(mapper.Map<List<DBFacebookAccount>>(accounts.ToList()));
+            await this.FbDbService.AddFBAccountsAsync(mapper.Map<List<DBFacebookAccount>>(accounts.ToList()), accounts.First().Group);
             return JsonConvert.SerializeObject("true");
         }
 
         [HttpPut]
         public async Task<string> Put([FromBody] FBAccountDTO[] accounts)
         {
-            await this.FbDbService.UpdateFBAccountsAsync(mapper.Map<List<DBFacebookAccount>>(accounts));
+            await this.FbDbService.UpdateFBAccountsAsync(mapper.Map<List<DBFacebookAccount>>(accounts), accounts.First().Group);
             return JsonConvert.SerializeObject("true");
         }
     }

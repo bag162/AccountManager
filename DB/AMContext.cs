@@ -24,7 +24,8 @@ namespace BASAccountManager.DB
         public DbSet<DBSMSActivation> SMSActivation { get; set; }
 
         public DbSet<DBTask> Task { get; set; }
-
+        public DbSet<DBWorkerTask> WorkerTask { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DBProxyGroup>().HasIndex(x => x.Name).IsUnique();

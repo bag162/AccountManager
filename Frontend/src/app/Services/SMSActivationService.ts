@@ -12,6 +12,11 @@ export class SMSActivationService {
         SMSActivationService.httpClient = httpClient;
     }
 
+    public async GetSMSServices()
+    {
+        return SMSActivationService.httpClient.get(SMSActivationService.address + "GetList");
+    }
+
     public async AddSMSService(smsservice: SMSServiceDTO[]) {
         return SMSActivationService.httpClient.post(SMSActivationService.address + "post", smsservice);
     }
