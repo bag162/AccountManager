@@ -19,7 +19,6 @@ export class TaskDataComponent implements OnInit {
     }
 
     ngOnInit() {
-        $('#TaskForm').hide();
         $('#successNot').hide();
         $('#errorNot').hide();
         this.dtOptions = {
@@ -30,8 +29,11 @@ export class TaskDataComponent implements OnInit {
                 title: 'ID',
                 data: 'Id'
             }, {
+                title: 'Task Name',
+                data: 'ClientTaskName'
+            }, {
                 title: 'Status',
-                data: 'Status'
+                data: "Status"
             }, {
                 title: 'Task Type',
                 data: 'TaskType'
@@ -57,18 +59,26 @@ export class TaskDataComponent implements OnInit {
                 'print',
                 'selectAll',
                 {
+                    text: 'Stop selected',
+                    action: function (e, dt, node, config) {
+                        StopTask(dt.rows({ selected: true }).data()[0], dt);
+                    }
+                }, {
+                    text: 'Start selected',
+                    action: function (e, dt, node, config) {
+                        StartTask(dt.rows({ selected: true }).data()[0], dt);
+                    }
+                }, {
                     text: 'Delete selected',
                     action: function (e, dt, node, config) {
-                        Delete(dt.rows({ selected: true }).data(), dt);
+                        Delete(dt.rows({ selected: true }).data()[0], dt);
                     }
-                },
-                {
-                    text: 'Update selected',
+                }, {
+                    text: 'Info selected',
                     action: function (e, dt, node, config) {
-                        ShowUpdateModal(dt.rows({ selected: true }).data(), dt);
+                        RouteToWorkerData(dt.rows({ selected: true }).data()[0], dt);
                     }
-                },
-                {
+                }, {
                     text: 'Reload data',
                     action: function (e, dt, node, config) {
                         dt.ajax.reload();
@@ -76,35 +86,110 @@ export class TaskDataComponent implements OnInit {
                 }
             ]
         };
-        async function Delete(data: string[], dt: any) {
-            // TODO logic deleting
+        async function Delete(data: string, dt: any) {
+            let deletedData: TaskDTO = JSON.parse(JSON.stringify(data));
+            if (deletedData.Status == "Completed" || deletedData.Status == "Canceled") {
+                (await TaskService.DeleteTask(deletedData)).subscribe(
+                    {
+                        next: (data: boolean) => {
+                            if (data) {
+                                $("#successNot").show(200);
+                                $("#successNot").delay(400).hide(200);
+                                dt.ajax.reload();
+                            }
+                            else {
+                                $("#errorNot").show(200);
+                                $("#errorNot").delay(400).hide(200);
+                            }
+                        },
+                        error: (data: string) => {
+                            $("#errorNot").show(200);
+                            $("#errorNot").delay(400).hide(200);
+                        }
+                    }
+                )
+            }
+            else {
+                $("#errorNot").show(200);
+                $("#errorNot").delay(400).hide(200);
+            }
         }
 
-        async function ShowUpdateModal(data: string[], dt: any) {
-
-            var element = data[0];
-            $("#idModal").val(element["Id"]);
-            $("#servicenameModal").val(element["ServiceName"]);
-            $("#apiuriModal").val(element["APIURI"]);
-            $("#apikeyModal").val(element["APIKey"]);
-            new bootstrap.Modal("#TaskModal").show();
+        async function StartTask(data: string, dt: any) {
+            let startTask: TaskDTO = JSON.parse(JSON.stringify(data));
+            if (startTask.Status == "Completed" || startTask.Status == "Canceled") {
+                (await TaskService.StartTask(startTask)).subscribe(
+                    {
+                        next: (data: boolean) => {
+                            console.log(data)
+                            if (data) {
+                                $("#successNot").show(200);
+                                $("#successNot").delay(400).hide(200);
+                                dt.ajax.reload();
+                            }
+                            else {
+                                $("#errorNot").show(200);
+                                $("#errorNot").delay(400).hide(200);
+                            }
+                        },
+                        error: (data: string) => {
+                            $("#errorNot").show(200);
+                            $("#errorNot").delay(400).hide(200);
+                        }
+                    }
+                )
+            }
+            else {
+                $("#errorNot").show(200);
+                $("#errorNot").delay(400).hide(200);
+            }
         }
-    }
+        async function StopTask(data: string, dt: any) {
+            let stopTask: TaskDTO = JSON.parse(JSON.stringify(data));
+            if (stopTask.Status != "Completed" && stopTask.Status != "Canceled") {
+                (await TaskService.StopTask(stopTask)).subscribe(
+                    {
+                        next: (data: boolean) => {
+                            if (data) {
+                                $("#successNot").show(200);
+                                $("#successNot").delay(400).hide(200);
+                                dt.ajax.reload();
+                            }
+                            else {
+                                $("#errorNot").show(200);
+                                $("#errorNot").delay(400).hide(200);
+                            }
+                        },
+                        error: (data: string) => {
+                            $("#errorNot").show(200);
+                            $("#errorNot").delay(400).hide(200);
+                        }
+                    }
+                )
+            }
+            else {
+                $("#errorNot").show(200);
+                $("#errorNot").delay(400).hide(200);
+            }
+        }
 
-    async UpdateTask() {
-         // TODO logic deleting
+        async function RouteToWorkerData(data: string, dt: any) {
+            $(location).attr('href', window.location.origin.toString() + "/taskmanager/workertaskdata/" + data["Id"]);
+        }
     }
 }
 
 export class TaskDTO {
-    constructor(id: string, Status: string, UsefulData: string, AccountGroup: string, ProxyGroup: string) {
+    constructor(id: string, Status: string, UsefulData: string, AccountGroup: string, ProxyGroup: string, ClientTaskName: string) {
         this.id = id;
         this.Status = Status;
         this.UsefulData = UsefulData;
         this.AccountGroup = AccountGroup;
         this.ProxyGroup = ProxyGroup;
+        this.ClientTaskName = ClientTaskName;
     }
     id: string;
+    ClientTaskName: string;
     Status: string;
     UsefulData: string;
     AccountGroup: string;

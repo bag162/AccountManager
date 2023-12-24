@@ -56,7 +56,7 @@ namespace BASAccountManager.DBServices
 
         public JqueryDataTable<ProxyDTO> GetProxy(int start, int lenght, string searchdata)
         {
-            var data = new JqueryDataTable<ProxyDTO>(); // TODO contains by group
+            var data = new JqueryDataTable<ProxyDTO>();
             data.recordsTotal = this.dbcontext.Proxy.Count();
             DBProxy[] filteredData = Array.Empty<DBProxy>();
 
@@ -67,8 +67,9 @@ namespace BASAccountManager.DBServices
                     filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
                                                 || m.Port.Contains(searchdata)
                                                 || m.Login.Contains(searchdata)
+                                                || m.DBProxyGroup.Name.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
-                                                || m.Id.Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
                 }
                 else
                 {
@@ -76,8 +77,9 @@ namespace BASAccountManager.DBServices
                     filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
                                                 || m.Port.Contains(searchdata)
                                                 || m.Login.Contains(searchdata)
+                                                || m.DBProxyGroup.Name.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
-                                                || m.Id.Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
                 }
 
                 

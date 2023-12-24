@@ -2,21 +2,24 @@ using BASAccountManager.DB;
 using BASAccountManager.DBServices;
 using BASAccountManager.DBServices.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
 using BASAccountManager;
 using Hangfire;
 using BASAccountManager.BackgroundTask;
+using BASAccountManager.TaskManagers.InstManager;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddTransient<IProxyDBService, ProxyDBService>();
-builder.Services.AddTransient<IFBDBService, FBDBService>();
+builder.Services.AddTransient<IInstDBService, InstDBService>();
 builder.Services.AddTransient<ISMSServiceDB, SMSDBService>();
 builder.Services.AddTransient<ITaskDBService, TaskDBService>();
 builder.Services.AddTransient<IWorkerTaskDBService, WorkerTaskDBService>();
+builder.Services.AddTransient<IEmailDBService, EmailDBService>();
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
+builder.Services.AddTransient<StatusMonitor>();
+builder.Services.AddTransient<InstTaskManager>();
 
 builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddHangfireServer();
@@ -48,5 +51,6 @@ app.UseCors("CorsPolicy");
 app.UseAuthorization();
 app.UseHangfireDashboard();
 app.MapControllers();
-RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), Cron.MinuteInterval(15));
+RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), Cron.MinuteInterval(1));
+RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), Cron.MinuteInterval(1));
 app.Run();

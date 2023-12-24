@@ -1,0 +1,75 @@
+<!-- Add SMS Service from -->
+<form id="emailForm" style="margin-bottom: 3%;">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="exampleFormControlSelect1">Email Service fromat</label>
+                    <select class="form-control" id="exampleFormControlSelect1">
+                        <option>Name:APIToken:MailDomain</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label for="exampleFormControlSelect1">Email Service Type</label>
+                    <select class="form-control" id="exampleFormControlSelect1">
+                        <option>KopeechkaStore</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1">Email Service</label>
+                <textarea [(ngModel)]="emailData" class="form-control" id="exampleFormControlTextarea1"
+                    rows="3"></textarea>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg" (click)="AddEmail()">Add</button>
+</form>
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="emailTable"></table>
+
+<!-- Modal -->
+<div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Email</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Id</label>
+                    <input type="text" class="form-control" id="idModal" placeholder="id" disabled>
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="nameModal" placeholder="Kopeechka_hotmail">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">API Token</label>
+                    <input type="text" class="form-control" id="apitokenModal" placeholder="api_token">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Mail Domain</label>
+                    <input type="text" class="form-control" id="maildomainModal" placeholder="hotmail.com">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Email Type</label>
+                    <input type="text" class="form-control" id="emailtypeModal" placeholder="kopeechkaStore" disabled>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    (click)="UpdateEmail()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>

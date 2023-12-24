@@ -28,7 +28,7 @@ export class ProxyComponent implements OnInit {
     $('#successNot').hide();
     $('#errorNot').hide();
     this.dtOptions = {
-      ajax: environment.apiUrl + 'proxy/get', // TODO env
+      ajax: environment.apiUrl + 'proxy/get',
       serverSide: true,
       lengthMenu: [[10, 20, 100, 200, -1], [10, 20, 100, 200, "All"]],
       // autoFill: true,
@@ -139,6 +139,7 @@ export class ProxyComponent implements OnInit {
       $("#portModal").val(element["Port"]);
       $("#loginModal").val(element["Login"]);
       $("#passwordModal").val(element["Password"]);
+      $("#statusModal").val(element["ProxyStatus"]);
       new bootstrap.Modal("#proxyModal").show();
     }
 
@@ -184,7 +185,7 @@ export class ProxyComponent implements OnInit {
 
   async UpdateProxy() {
     var updatedArray = new Array<ProxyDTO>;
-    var updatedProxy = new ProxyDTO($("#idModal").val().toString(), $("#ipModal").val().toString(), $("#portModal").val().toString(), $("#loginModal").val().toString(), $("#passwordModal").val().toString(), $("#groupUpdateModal").val().toString(), $("#groupUpdateStatusModal").val().toString());
+    var updatedProxy = new ProxyDTO($("#idModal").val().toString(), $("#ipModal").val().toString(), $("#portModal").val().toString(), $("#loginModal").val().toString(), $("#passwordModal").val().toString(), $("#groupUpdateModal").val().toString(), $("#statusModal").val().toString());
     updatedArray.push(updatedProxy);
     await (await ProxyService.UpdateProxy(updatedArray)).subscribe({
       next: (data: boolean) => {

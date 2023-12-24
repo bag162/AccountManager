@@ -1,24 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from 'src/app/Services/DataService';
-import { FbAccountService } from 'src/app/Services/FBAccountService'
+import { InstAccountService } from 'src/app/Services/InstAccountService'
 @Component({
     selector: 'select-account-group',
     templateUrl: 'selectaccountgroup.component.html'
 })
 
 export class SelectAccountGroupComponent implements OnInit {
-    FbAccountService: FbAccountService;
+    InstAccountService: InstAccountService;
     DataService: DataService;
     accountGroups: string[];
     data;
 
-    constructor(FbAccountService: FbAccountService, DataService: DataService) {
-        this.FbAccountService = FbAccountService;
+    constructor(InstAccountService: InstAccountService, DataService: DataService) {
+        this.InstAccountService = InstAccountService;
         this.DataService = DataService;
     }
 
     ngOnInit() {
-        FbAccountService.GetFBAccGroups().subscribe((data: string[]) => {
+        InstAccountService.GetInstAccGroups().subscribe((data: string[]) => {
             this.accountGroups = data;
         })
     }

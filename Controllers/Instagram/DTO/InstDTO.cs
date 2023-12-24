@@ -1,6 +1,6 @@
-﻿namespace BASAccountManager.Controllers.Facebook.DTO
+﻿namespace BASAccountManager.Controllers.Instagram.DTO
 {
-    public class FBAccountDTO
+    public class InstAccountDTO
     {
         public string Id { get; set; }
         public string Login { get; set; }

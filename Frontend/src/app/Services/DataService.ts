@@ -7,11 +7,13 @@ export class DataService {
   accountGroup = new Subject();
   proxyGroup = new Subject();
   smsservice = new Subject();
+  email = new Subject();
 
   public subscriber$ = this.groupData.asObservable();
   public subscriberAccountGroup$ = this.accountGroup.asObservable();
   public subscriberProxyGroup$ = this.proxyGroup.asObservable();
   public subscriberSMSService$ = this.smsservice.asObservable();
+  public subscriberEmail$ = this.email.asObservable();
 
   UpdateGroupData() {
     this.groupData.next(0);
@@ -27,5 +29,9 @@ export class DataService {
 
   UpdateSMSService(data: string) {
     this.smsservice.next(data);
+  }
+
+  UpdateEmail(data: string) {
+    this.email.next(data);
   }
 }

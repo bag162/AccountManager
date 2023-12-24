@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
-using BASAccountManager.Controllers.Facebook.DTO;
+using BASAccountManager.Controllers.BASTask.DTO;
+using BASAccountManager.Controllers.Email.DTO;
+using BASAccountManager.Controllers.Instagram.DTO;
 using BASAccountManager.Controllers.Proxy.DTO;
 using BASAccountManager.Controllers.SMS_Services.DTO;
 using BASAccountManager.Controllers.Task.DTO;
@@ -13,11 +15,20 @@ namespace BASAccountManager
         {
             CreateMap<DBProxy, ProxyDTO>().ForMember(dest => dest.Group, opt => opt.MapFrom(src => src.DBProxyGroup.Name));
             CreateMap<ProxyDTO, DBProxy>();
-            CreateMap<DBFacebookAccount, FBAccountDTO>().ForMember(dest => dest.Group, opt => opt.MapFrom(src => src.DBFBAccountGroup.Name));
-            CreateMap<FBAccountDTO, DBFacebookAccount>();
 
+            CreateMap<DBInstagramAccount, InstAccountDTO>().ForMember(dest => dest.Group, opt => opt.MapFrom(src => src.DBInstAccountGroup.Name));
+            CreateMap<InstAccountDTO, DBInstagramAccount>();
+
+            CreateMap<DBWorkerTask, WorkerTaskDTO>().ForMember(dest => dest.InstAccountLogin, opt => opt.MapFrom(src => src.InstAccount.Login));
+            CreateMap<WorkerTaskDTO, DBWorkerTask>();
+
+            CreateMap<DBEmail, EmailDTO>().ReverseMap();
             CreateMap<DBSMSActivation, SMSServiceDTO>().ReverseMap();
             CreateMap<DBTask, TaskDTO>().ReverseMap();
+            CreateMap<DBInstagramAccount, EndRegistrationTaskDTO>().ReverseMap();
+
+            CreateMap<DBWorkerTask, GetRegistrationTaskEmailServiceDTO>().ForMember(dest => dest.UsefulData, opt => opt.Ignore());
+            CreateMap<DBWorkerTask, GetRegistrationTaskSMSServiceDTO>().ForMember(dest => dest.UsefulData, opt => opt.Ignore());
         }
     }
 }

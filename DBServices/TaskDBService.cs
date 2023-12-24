@@ -44,16 +44,18 @@ namespace BASAccountManager.DBServices
                 {
                     filteredData = this.dbcontext.Task.AsQueryable().Where(m => m.ProxyGroup.Contains(searchdata)
                                                 || m.UsefulData.Contains(searchdata)
+                                                || m.ClientTaskName.Contains(searchdata)
                                                 || m.AccountGroup.Contains(searchdata)
-                                                || m.Id.Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
                 }
                 else
                 {
 
                     filteredData = this.dbcontext.Task.AsQueryable().Where(m => m.ProxyGroup.Contains(searchdata)
                                                 || m.UsefulData.Contains(searchdata)
+                                                || m.ClientTaskName.Contains(searchdata)
                                                 || m.AccountGroup.Contains(searchdata)
-                                                || m.Id.Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
                 }
 
 
@@ -75,9 +77,21 @@ namespace BASAccountManager.DBServices
             return data;
         }
 
+        public DBTask GetTaskById(int id)
+        {
+            return this.dbcontext.Task.Find(id);
+        }
+
         public async Task RemoveTaskAsync(List<DBTask> removedTask)
         {
             this.dbcontext.Task.RemoveRange(removedTask);
+            await this.dbcontext.SaveChangesAsync();
+            return;
+        }
+
+        public async Task RemoveTaskAsync(DBTask removedTask)
+        {
+            this.dbcontext.Task.Remove(removedTask);
             await this.dbcontext.SaveChangesAsync();
             return;
         }

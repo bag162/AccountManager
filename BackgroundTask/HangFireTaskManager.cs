@@ -5,15 +5,22 @@ namespace BASAccountManager
     public class HangFireTaskManager
     {
         private AssignmentWriter AssignmentWriter { get; set; }
-
-        public HangFireTaskManager(AssignmentWriter AssignmentWriter)
+        private StatusMonitor StatusMonitor { get; set; }
+        public HangFireTaskManager(AssignmentWriter AssignmentWriter, StatusMonitor StatusMonitor)
         {
             this.AssignmentWriter = AssignmentWriter;
+            this.StatusMonitor = StatusMonitor;
         }
 
         public async Task TaskParser()
         {
-            await this.AssignmentWriter.TaskParser();
+            await this.AssignmentWriter.TaskParserAsync();
+        }
+
+        public async Task MonitorStatus()
+        {
+            await this.StatusMonitor.CheckProxyStatusAsync();
+            await this.StatusMonitor.CheckTaskWorkerStatusAsync();
         }
     }
 }

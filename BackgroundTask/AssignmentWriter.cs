@@ -1,4 +1,4 @@
-﻿using BASAccountManager.BackgroundTask.DTO;
+﻿using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
@@ -13,26 +13,33 @@ namespace BASAccountManager.BackgroundTask
         private IProxyDBService proxyDBService;
         private ITaskDBService taskDbService { get; set; }
         private IWorkerTaskDBService workerTaskDbService { get; set; }
+        private IEmailDBService emailDBService { get; set; }
 
-        public AssignmentWriter(ITaskDBService taskDbService, IWorkerTaskDBService workerTaskDbService, IProxyDBService proxyDBService, ISMSServiceDB SMSServiceDB, ILogger<AssignmentWriter> logger)
+        public AssignmentWriter(ITaskDBService taskDbService, 
+            IWorkerTaskDBService workerTaskDbService, 
+            IProxyDBService proxyDBService, 
+            ISMSServiceDB SMSServiceDB, 
+            ILogger<AssignmentWriter> logger,
+            IEmailDBService emailDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
             this.proxyDBService = proxyDBService;
             this.SMSServiceDB = SMSServiceDB;
             this.logger = logger;
+            this.emailDBService = emailDBService;
         }
 
-        public async Task TaskParser()
+        public async Task TaskParserAsync()
         {
             var addedTask = this.taskDbService.GetTask().Where(x => x.Status == StatusTask.Added || x.Status == StatusTask.AddingProcess);
             foreach (var newTask in addedTask)
             {
-                await this.GenWorkerTask(newTask);
+                await this.GenWorkerTaskAsync(newTask);
             }
         }
 
-        private async Task GenWorkerTask(DBTask task)
+        private async Task GenWorkerTaskAsync(DBTask task)
         {
             switch (task.TaskType)
             {
@@ -54,19 +61,34 @@ namespace BASAccountManager.BackgroundTask
                     }
                     for (int i = 0; i < countAddTask; i++)
                     {
-                        var proxy = await GetFreeProxyByGroup(task.ProxyGroup);
+                        var proxy = await GetFreeProxyByGroupAsync(task.ProxyGroup);
                         if (proxy == null)
                         {
                             break;
                         }
-                        var smsService = this.SMSServiceDB.GetSMSServiceById(usefulData.SMSServiceId);
-                        var workerTask = new DBWorkerTask() {
+
+                        var workerTask = new DBWorkerTask()
+                        {
                             Status = DB.Models.TaskStatus.NotTaken,
-                            TaskName = TaskType.RegistrationAccounts.ToString(),
+                            TaskType = TaskType.RegistrationAccounts,
                             DBTaskId = task.Id,
-                            ProxyId = proxy.Id,
-                            UsefulData = JsonConvert.SerializeObject(new RegistrationClientTaskWorkerUsefulDataDTO() { SMSServiceData = smsService })
+                            ProxyId = proxy.Id
                         };
+
+                        switch (usefulData.RegistrationVerifyResoursesType)
+                        {
+                            case RegistrationVerifyResoursesType.EmailService:
+                                var emailService = this.emailDBService.GetEmailById((int)usefulData.EmailServiceId);
+                                workerTask.UsefulData = JsonConvert.SerializeObject(new RegistrationClientTaskWorkerUsefulDataEmailServiceDTO() { EmailServiceData = emailService });
+                                workerTask.RegistrationVerifyResoursesType = RegistrationVerifyResoursesType.EmailService;
+                                break;
+                            case RegistrationVerifyResoursesType.SMSService:
+                                var smsService = this.SMSServiceDB.GetSMSServiceById((int)usefulData.SMSServiceId);
+                                workerTask.UsefulData = JsonConvert.SerializeObject(new RegistrationClientTaskWorkerUsefulDataSMSServiceDTO() { SMSServiceData = smsService });
+                                workerTask.RegistrationVerifyResoursesType = RegistrationVerifyResoursesType.SMSService;
+                                break;
+                        }
+                        
                         workerTaskList.Add(workerTask);
 
                         if (i == countAddTask-1)
@@ -83,7 +105,7 @@ namespace BASAccountManager.BackgroundTask
             }
         }
 
-        private async Task<DBProxy> GetFreeProxyByGroup(string group)
+        private async Task<DBProxy> GetFreeProxyByGroupAsync(string group)
         {
             var proxy = this.proxyDBService.GetProxyByGroup(group);
             if (proxy.Where(x => x.ProxyStatus == ProxyStatus.Free).Count() == 0)

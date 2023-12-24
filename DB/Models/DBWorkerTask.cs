@@ -11,9 +11,9 @@ namespace BASAccountManager.DB.Models
         public string? InstanceId { get; set; }
         public TaskStatus Status { get; set; }
 
-        [ForeignKey(nameof(DBFacebookAccount))]
-        public int? AccountId { get; set; }
-        public DBFacebookAccount? AccountFacebook { get; set; }
+        [ForeignKey(nameof(DBInstagramAccount))]
+        public int? InstAccountId { get; set; }
+        public DBInstagramAccount? InstAccount { get; set; }
 
         [ForeignKey(nameof(DBProxy))]
         public int ProxyId { get; set; }
@@ -25,7 +25,8 @@ namespace BASAccountManager.DB.Models
 
         public string UsefulData { get; set; }
         public string? ErrorMessage { get; set; }
-        public string TaskName { get; set; }
+        public TaskType TaskType { get; set; }
+        public RegistrationVerifyResoursesType? RegistrationVerifyResoursesType { get; set; }
     }
 
     public enum TaskStatus
@@ -34,5 +35,11 @@ namespace BASAccountManager.DB.Models
         AtWork,
         Completed,
         Error
+    }
+
+    public enum RegistrationVerifyResoursesType
+    {
+        EmailService,
+        SMSService
     }
 }

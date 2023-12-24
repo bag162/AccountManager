@@ -45,7 +45,7 @@ namespace BASAccountManager.DBServices
                     filteredData = this.dbcontext.SMSActivation.AsQueryable().Where(m => m.ServiceName.Contains(searchdata)
                                                 || m.APIURI.Contains(searchdata)
                                                 || m.APIKey.Contains(searchdata)
-                                                || m.Id.Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
                 }
                 else
                 {
@@ -53,7 +53,7 @@ namespace BASAccountManager.DBServices
                     filteredData = this.dbcontext.SMSActivation.AsQueryable().Where(m => m.ServiceName.Contains(searchdata)
                                                 || m.APIURI.Contains(searchdata)
                                                 || m.APIKey.Contains(searchdata)
-                                                || m.Id.Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
                 }
 
 

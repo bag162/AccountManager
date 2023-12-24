@@ -13,7 +13,7 @@
             <div class="form-group">
                 <label for="exampleFormControlSelect1">Group</label>
                 <select class="form-control" id="groupAddModal">
-                    @for(group of fbAccGroups; track $index){
+                    @for(group of InstAccGroups; track $index){
                     <option [value]="group">
                         {{group}}
                     </option>
@@ -22,13 +22,13 @@
             </div>
         </div>
         <div class="col">
-            <fbacc-group></fbacc-group>
+            <instacc-group></instacc-group>
         </div>
     </div>
 
     <div class="form-group">
         <label for="exampleFormControlTextarea1">Account</label>
-        <textarea [(ngModel)]="fbAccData" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+        <textarea [(ngModel)]="InstAccData" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
     </div>
     <button type="submit" class="btn btn-primary btn-lg" (click)="AddAccounts()">Add</button>
 </form>
@@ -62,7 +62,7 @@
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Group</label>
                     <select class="form-control" id="groupUpdateModal">
-                        @for(group of fbAccGroups; track $index){
+                        @for(group of InstAccGroups; track $index){
                         <option [value]="group">
                             {{group}}
                         </option>

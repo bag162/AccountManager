@@ -25,7 +25,7 @@ namespace BASAccountManager.Controllers.Proxy
         }
 
         [HttpGet]
-        public string Get(int start, int length, int draw) // TODO отображать статус прокси в Update на Fronte
+        public string Get(int start, int length, int draw)
         {
             StringValues searchData;
             this.Request.Query.TryGetValue("search[value]", out searchData);

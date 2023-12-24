@@ -13,7 +13,7 @@ namespace BASAccountManager.DB.Models
     }
 
     [Index(nameof(Name), IsUnique = true)]
-    public class DBFBAccountGroup
+    public class DBInstAccountGroup
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }

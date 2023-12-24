@@ -13,7 +13,10 @@ export class RegistrationTaskComponent implements OnInit {
     accountGroup: string;
     proxyGroup: string;
     smsService: string;
+    emailService: string;
     countAccount: number;
+    ClientTaskName: string;
+    RegResourses: string;
 
     constructor(DataService: DataService, TaskManagerService: TaskManagerService) {
         this.DataService = DataService;
@@ -30,13 +33,28 @@ export class RegistrationTaskComponent implements OnInit {
         this.DataService.subscriberSMSService$.subscribe((data: string) => {
             this.smsService = data;
         })
+        this.DataService.subscriberEmail$.subscribe((data: string) => {
+            this.emailService = data;
+        })
         $("#successNot").hide();
         $("#errorNot").hide();
     }
 
     public async AddTask() {
-        var SMSServiceId = this.smsService.split(":")[0];
-        var task = new AddRegistrationTaskDTO(this.proxyGroup, this.accountGroup, Number(SMSServiceId), this.countAccount);
+        var task = new AddRegistrationTaskDTO(this.proxyGroup, this.accountGroup, this.countAccount, this.ClientTaskName);
+        switch (this.RegResourses) {
+            case "SMS Service":
+                var SMSServiceId = this.smsService.split(":")[0];
+                task.ResoursesType = ResoursesType.SMSService;
+                task.SMSServiceId = Number(SMSServiceId);
+                break;
+
+            case "Email Service":
+                var EmailServiceId = this.emailService.split(":")[0];
+                task.ResoursesType = ResoursesType.EmailService;
+                task.EmailServiceId = Number(EmailServiceId);
+                break;
+        }
         (await this.TaskManagerService.AddRegistrationTask(task)).subscribe({
             next: (data: boolean) => {
                 if (data) {
@@ -59,15 +77,25 @@ export class RegistrationTaskComponent implements OnInit {
 }
 
 export class AddRegistrationTaskDTO {
-    constructor(ProxyGroup: string, AccountGroup: string, SMSServiceId: number, CountAccount: number) {
+    constructor(ProxyGroup: string, AccountGroup: string, CountAccount: number, ClientTaskName: string) {
         this.ProxyGroup = ProxyGroup;
         this.AccountGroup = AccountGroup;
-        this.SMSServiceId = SMSServiceId;
         this.CountAccount = CountAccount;
+        this.ClientTaskName = ClientTaskName;
     }
 
     ProxyGroup: string;
     AccountGroup: string;
-    SMSServiceId: number;
+
     CountAccount: number;
+    ClientTaskName: string;
+
+    ResoursesType: ResoursesType;
+    SMSServiceId: number;
+    EmailServiceId: number;
+}
+
+export enum ResoursesType {
+    EmailService,
+    SMSService
 }

@@ -1,32 +1,31 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import * as bootstrap from "bootstrap";
 import * as $ from 'jquery';
-import { FbAccountService } from '../../Services/FBAccountService';
+import { SMSActivationService } from '../../Services/SMSActivationService';
 import { environment } from 'src/environments/environment';
-import { DataService } from 'src/app/Services/DataService'
+import { EmailService } from '../../Services/EmailService';
+
 @Component({
-    selector: 'fbaccounts',
-    templateUrl: 'fbaccounts.component.html'
+    selector: 'email',
+    templateUrl: 'email.component.html'
 })
 
-export class FbAccountComponent implements OnInit {
-    fbAccGroups: string[];
+export class EmailComponent implements OnInit {
     dtOptions: any;
-    fbAccData: string;
-    fbAccountService: FbAccountService;
-    DataService: DataService
+    emailData: string;
+    EmailService: EmailService;
 
-    constructor(fbAccountService: FbAccountService, DataService: DataService) {
-        this.fbAccountService = fbAccountService;
-        this.DataService = DataService;
+    constructor(EmailService: EmailService) {
+        this.EmailService = EmailService;
     }
 
-    async ngOnInit() {
-        $('#accountForm').hide();
+    ngOnInit() {
+        $('#emailForm').hide();
         $('#successNot').hide();
         $('#errorNot').hide();
         this.dtOptions = {
-            ajax: environment.apiUrl + 'fbaccount/get',
+            ajax: environment.apiUrl + 'email/get',
             lengthMenu: [[10, 20, 100, 200, -1], [10, 20, 100, 200, "All"]],
             serverSide: true,
             // autoFill: true,
@@ -34,14 +33,17 @@ export class FbAccountComponent implements OnInit {
                 title: 'ID',
                 data: 'Id'
             }, {
-                title: 'Login',
-                data: 'Login'
+                title: 'Name',
+                data: 'Name'
             }, {
-                title: 'Password',
-                data: 'Password'
+                title: 'Email Type',
+                data: 'EmailType'
             }, {
-                title: 'Group',
-                data: 'Group'
+                title: 'API Token',
+                data: 'APIToken'
+            }, {
+                title: 'Mail Domain',
+                data: 'MailDomain'
             }
             ],
             select: true,
@@ -55,14 +57,14 @@ export class FbAccountComponent implements OnInit {
                 'print',
                 'selectAll',
                 {
-                    text: 'Add accounts',
+                    text: 'Add Email Service',
                     key: '1',
                     action: function (e, dt, node, config) {
-                        if ($('#accountForm').is(':visible')) {
-                            $('#accountForm').hide(500);
+                        if ($('#emailForm').is(':visible')) {
+                            $('#emailForm').hide(500);
                         }
                         else {
-                            $('#accountForm').show(500);
+                            $('#emailForm').show(500);
                         }
                     }
                 },
@@ -86,19 +88,14 @@ export class FbAccountComponent implements OnInit {
                 }
             ]
         };
-        this.DataService.subscriber$.subscribe(data => {
-            this.LoadGroupData();
-          });
-        await this.LoadGroupData();
-
         async function Delete(data: string[], dt: any) {
-            var deletedAccounts = new Array<FBAccountDTO>;
+            var deletedemail = new Array<EmailDTO>;
             for (let index = 0; index < data.length; index++) {
                 const element = data[index];
-                var newItem = new FBAccountDTO(element["Id"], element["Login"], element["Password"], element["Group"]);
-                deletedAccounts.push(newItem);
+                var newItem = new EmailDTO(element["Id"], element["Name"], element["EmailType"], element["APIToken"], element["MailDomain"]);
+                deletedemail.push(newItem);
             }
-            await FbAccountService.DeleteAccounts(deletedAccounts).subscribe({
+            await EmailService.DeleteEmail(deletedemail).subscribe({
                 next: (data: boolean) => {
                     if (data) {
                         $("#successNot").show(200);
@@ -123,52 +120,53 @@ export class FbAccountComponent implements OnInit {
 
             var element = data[0];
             $("#idModal").val(element["Id"]);
-            $("#loginModal").val(element["Login"]);
-            $("#passwordModal").val(element["Password"]);
-            new bootstrap.Modal("#accountModal").show();
+            $("#nameModal").val(element["Name"]);
+            $("#apitokenModal").val(element["APIToken"]);
+            $("#maildomainModal").val(element["MailDomain"]);
+            $("#emailtypeModal").val("kopeechkaStore");
+            
+            new bootstrap.Modal("#emailModal").show();
         }
     }
-    async LoadGroupData() {
-        FbAccountService.GetFBAccGroups().subscribe((data: any) => {
-            this.fbAccGroups = data;
-        })
-    }
-    async AddAccounts() {
-        var accountArray = this.fbAccData.split('\n');
-        var addedAccount = new Array<FBAccountDTO>();
-        accountArray.forEach(element => {
+
+    async AddEmail() {
+        var emailArray = this.emailData.split('\n');
+        var addedemail = new Array<EmailDTO>();
+        emailArray.forEach(element => {
             var elements = element.split(":");
-            var newItem = new FBAccountDTO('0', elements[0], elements[1], $("#groupAddModal").val().toString());
-            addedAccount.push(newItem);
+            var newItem = new EmailDTO('0', elements[0], "kopeechkaStore", elements[1], elements[2]);
+            console.log(newItem)
+            addedemail.push(newItem);
         });
 
-        (await this.fbAccountService.AddAccounts(addedAccount)).subscribe({
+        (await this.EmailService.AddEmail(addedemail)).subscribe({
             next: (data: boolean) => {
                 if (data) {
                     $("#successNot").show(500);
-                    $("#accountForm").hide(500);
+                    $("#emailForm").hide(500);
                     $("#successNot").delay(1500).hide(500);
                 }
                 else {
                     $("#errorNot").show(500);
-                    $("#accountForm").hide(500);
+                    $("#emailForm").hide(500);
                     $("#errorNot").delay(1500).hide(500);
                 }
             },
             error: error => {
-                $("#errorNot").show(500);
-                $("#accountForm").hide(500);
-                $("#errorNot").delay(1500).hide(500);
+                $("#errorNot").val(error);
+                $("#errorNot").show(200);
+                $("#errorNot").delay(2000).hide(200);
+                $("#errorNot").val("Error");
             }
         });
 
     }
 
-    async UpdateAccount() {
-        var updatedArray = new Array<FBAccountDTO>;
-        var updatedAccount = new FBAccountDTO($("#idModal").val().toString(), $("#loginModal").val().toString(), $("#passwordModal").val().toString(), $("#groupUpdateModal").val().toString());
-        updatedArray.push(updatedAccount);
-        await (await FbAccountService.UpdateAccounts(updatedArray)).subscribe({
+    async UpdateEmail() {
+        var updatedArray = new Array<EmailDTO>;
+        var updatedemail = new EmailDTO($("#idModal").val().toString(), $("#nameModal").val().toString(), "kopeechkaStore", $("#apitokenModal").val().toString(), $("#maildomainModal").val().toString());
+        updatedArray.push(updatedemail);
+        await (await EmailService.UpdateEmail(updatedArray)).subscribe({
             next: (data: boolean) => {
                 if (data) {
                     $("#successNot").show(200);
@@ -190,15 +188,17 @@ export class FbAccountComponent implements OnInit {
 }
 
 
-export class FBAccountDTO {
-    constructor(id: string, login: string, password: string, group: string) {
+export class EmailDTO {
+    constructor(id: string, Name: string, EmailType: string, APIToken: string, MailDomain: string) {
         this.id = id;
-        this.Login = login;
-        this.Password = password;
-        this.Group = group;
+        this.Name = Name;
+        this.EmailType = EmailType;
+        this.APIToken = APIToken;
+        this.MailDomain = MailDomain;
     }
     public id: string;
-    public Login: string;
-    public Password: string;
-    public Group: string;
+    public Name: string;
+    public EmailType: string;
+    public APIToken: string;
+    public MailDomain: string;
 }

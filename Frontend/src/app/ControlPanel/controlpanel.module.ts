@@ -6,18 +6,21 @@ import { SMSServiceComponent } from './SMSServiceComponent/smsservice.component'
 import { DataTablesModule } from 'angular-datatables';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { FbAccountComponent } from './FBAccpuntsComponent/fbaccounts.component'
+import { InstAccountComponent } from './InstAccountComponent/Instaccounts.component'
 import { TaskManagerModule } from './TaskManagerModule/taskmanager.module'
 import { AddGroupProxyComponent } from './ProxyComponent/GroupProxyComponent/addgroupproxy.component'
-import { AddGroupFBACCComponent } from './FBAccpuntsComponent/GroupFbAccComponent/groupfbaccount.component'
+import { EmailComponent } from './EmailComponent/email.component'
+import { AddGroupInstComponent } from './InstAccountComponent/GroupInstAccComponent/groupInstaccount.component';
 @NgModule({
     imports: [
         RouterModule.forChild([
             { path: '', component: ControlPanelComponent },
             { path: 'proxy', component: ProxyComponent },
             { path: 'smsservice', component: SMSServiceComponent },
-            { path: 'fbaccount', component: FbAccountComponent },
-            { path: 'taskmanager', component: TaskManagerModule }
+            { path: 'Instaccount', component: InstAccountComponent },
+            { path: 'taskmanager', component: TaskManagerModule },
+            { path: 'email', component: EmailComponent }
+
         ]),
         DataTablesModule,
         BrowserModule,
@@ -28,10 +31,11 @@ import { AddGroupFBACCComponent } from './FBAccpuntsComponent/GroupFbAccComponen
     declarations: [
         ControlPanelComponent,
         ProxyComponent,
+        EmailComponent,
         SMSServiceComponent,
-        FbAccountComponent,
+        InstAccountComponent,
         AddGroupProxyComponent,
-        AddGroupFBACCComponent
+        AddGroupInstComponent
     ],
     providers: [],
     bootstrap: [ControlPanelComponent]

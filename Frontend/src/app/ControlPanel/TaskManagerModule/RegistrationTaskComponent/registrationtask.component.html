@@ -2,32 +2,56 @@
     <div class="container">
         <div class="row">
             <div class="col">
-                <div class="mb-3">
+                <div class="from-control mb-3">
                     <label for="exampleInputEmail1" class="form-label">Proxy Group</label>
                     <select-proxy-group></select-proxy-group>
                 </div>
             </div>
             <div class="col">
-                <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label">SMS Service</label>
-                    <select-sms-service></select-sms-service>
+                <div class="from-control mb-3">
+                    <label for="inputAccGroup" class="form-label">New account Group</label>
+                    <select-account-group></select-account-group>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col">
+                <div class="from-control mb-3">
+                    <label for="inputAccGroup" class="form-label">Registration Resources</label>
+                    <select class="form-control" [(ngModel)]="RegResourses">
+                        <option>SMS Service</option>
+                        <option>Email Service</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col mb-3">
+
+                    <div *ngIf="RegResourses == 'SMS Service'">
+                        <label for="inputAccGroup" class="form-label">SMS Service</label>
+                        <select-sms-service></select-sms-service>
+                    </div>
+
+                    <div *ngIf="RegResourses == 'Email Service'">
+                        <label for="inputAccGroup" class="form-label">Email Service</label>
+                        <select-email></select-email>
+                    </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
                 <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label">Number of registered accounts</label>
-                    <input [(ngModel)]="countAccount" type="number" class="form-control" id="exampleInputPassword1"
-                        placeholder="0">
+                    <label for="inputTaskName" class="form-label">Task name</label>
+                    <input [(ngModel)]="ClientTaskName" type="text" class="form-control" id="ClientTaskName"
+                        placeholder="Registration Acccount. EMPL: Lesha. CRT 15:50">
                 </div>
             </div>
             <div class="col">
                 <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label">New account Group</label>
-                    <select-account-group></select-account-group>
+                    <label for="unputCountRegisterAccount" class="form-label">Number of registered accounts</label>
+                    <input [(ngModel)]="countAccount" type="number" class="form-control" id="accGroup" placeholder="0">
                 </div>
             </div>
+
         </div>
     </div>
 

@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using BASAccountManager.Controllers.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 
 namespace BASAccountManager.Controllers.Task
@@ -14,12 +16,25 @@ namespace BASAccountManager.Controllers.Task
         private IMapper mapper;
         private readonly ILogger<TaskManagerController> logger;
         private ITaskDBService TaskDBService { get; set; }
+        private IWorkerTaskDBService WorkerTaskDBService { get; set; }
 
-        public TaskManagerController(ILogger<TaskManagerController> logger, IMapper mapper, ITaskDBService TaskDBService)
+        public TaskManagerController(ILogger<TaskManagerController> logger, IMapper mapper, ITaskDBService TaskDBService, IWorkerTaskDBService WorkerTaskDBService)
         {
             this.logger = logger;
             this.mapper = mapper;
             this.TaskDBService = TaskDBService;
+            this.WorkerTaskDBService = WorkerTaskDBService;
+        }
+
+        [Route("{id:int}")]
+        [HttpGet]
+        public string Get(int start, int length, int draw, int id)
+        {
+            StringValues searchData;
+            this.Request.Query.TryGetValue("search[value]", out searchData);
+            JqueryDataTable<WorkerTaskDTO> returnedData = this.WorkerTaskDBService.GetWorkerTasks(start, length, searchData.First(), id);
+            returnedData.draw = draw;
+            return JsonConvert.SerializeObject(returnedData);
         }
 
         [HttpPost]
@@ -30,7 +45,8 @@ namespace BASAccountManager.Controllers.Task
             task.ProxyGroup = newTask.ProxyGroup;
             task.AccountGroup = newTask.AccountGroup;
             task.TaskType = TaskType.RegistrationAccounts;
-            var usefulData = new RegistrationTaskWorkerUsefulDataDTO() { CountAccount = newTask.CountAccount, SMSServiceId = newTask.SMSServiceId };
+            task.ClientTaskName = newTask.ClientTaskName;
+            var usefulData = new RegistrationTaskWorkerUsefulDataDTO() { CountAccount = newTask.CountAccount, SMSServiceId = newTask.SMSServiceId, EmailServiceId = newTask.EmailServiceId, RegistrationVerifyResoursesType = newTask.ResoursesType };
             task.UsefulData = JsonConvert.SerializeObject(usefulData);
             var taskList = new List<DBTask>();
             taskList.Add(task);
