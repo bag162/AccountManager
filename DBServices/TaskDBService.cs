@@ -27,6 +27,13 @@ namespace BASAccountManager.DBServices
             return;
         }
 
+        public async Task AddTaskAsync(DBTask newTask)
+        {
+            await this.dbcontext.Task.AddAsync(newTask);
+            await this.dbcontext.SaveChangesAsync();
+            return;
+        }
+
         public List<DBTask> GetTask()
         {
             return this.dbcontext.Task.ToList();

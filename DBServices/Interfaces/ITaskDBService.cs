@@ -10,6 +10,7 @@ namespace BASAccountManager.DBServices.Interfaces
         public List<DBTask> GetTask();
         public JqueryDataTable<TaskDTO> GetTask(int start, int lenght, string searchdata);
         public Task AddTaskAsync(List<DBTask> newTask);
+        public Task AddTaskAsync(DBTask newTask);
         public Task RemoveTaskAsync(List<DBTask> removedTask);
         public Task RemoveTaskAsync(DBTask removedTask);
         public Task UpdateTaskAsync(List<DBTask> updatedTask);

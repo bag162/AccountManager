@@ -10,7 +10,7 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string Status { get; set; }
         public string InstAccountLogin { get; set; }
         public string ProxyId { get; set; }
-        public string UsefulData { get; set; }
+        public string? UsefulData { get; set; }
         public string? ErrorMessage { get; set; }
     }
 }

@@ -13,4 +13,11 @@ namespace BASAccountManager.Controllers.Task.DTO
         public int? SMSServiceId { get; set; }
         public int? EmailServiceId { get; set; }
     }
+
+    public class AuthorizationTaskDTO
+    {
+        public string? ClientTaskName { get; set; }
+        public string ProxyGroup { get; set; }
+        public string AccountGroup { get; set; }
+    }
 }

@@ -52,9 +52,6 @@ namespace BASAccountManager.Controllers.InstTask
                 await this.TaskDBService.UpdateTaskAsync(this.mapper.Map<DBTask>(stoppedTask));
                 // Получаем лист дочерних воркеров. 
                 var taskWorkers = await this.WorkerTaskDBService.GetWorkerTaskByDBTaskIdAsync(stoppedTask.Id);
-                // Удаляем воркеры которые не выполннялись. Позже их добавит обработчик при запуске задачи.
-                var deletedWorkers = taskWorkers.Where(x => x.Status == DB.Models.TaskStatus.NotTaken).ToList();
-                await this.WorkerTaskDBService.RemoveWorkerTaskAsync(deletedWorkers);
                 // Вытягиваем прокси которые забронированы для работы. Прокси в работе по завершению сами установят себе свободный статус. Устанавилваем прокси свободный статус
                 var updatedProxy = taskWorkers.Where(x => x.Proxy.ProxyStatus == ProxyStatus.BookedForWork).Select(x => x.Proxy).ToList();
                 foreach (var proxy in updatedProxy)

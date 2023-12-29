@@ -42,6 +42,9 @@ export class InstAccountComponent implements OnInit {
             }, {
                 title: 'Group',
                 data: 'Group'
+            }, {
+                title: 'Account status',
+                data: 'AccountStatus'
             }
             ],
             select: true,
@@ -95,7 +98,7 @@ export class InstAccountComponent implements OnInit {
             var deletedAccounts = new Array<InstAccountDTO>;
             for (let index = 0; index < data.length; index++) {
                 const element = data[index];
-                var newItem = new InstAccountDTO(element["Id"], element["Login"], element["Password"], element["Group"]);
+                var newItem = new InstAccountDTO(element["Id"], element["Login"], element["Password"], element["Group"], element["AccountStatus"]);
                 deletedAccounts.push(newItem);
             }
             await InstAccountService.DeleteAccounts(deletedAccounts).subscribe({
@@ -138,9 +141,10 @@ export class InstAccountComponent implements OnInit {
         var addedAccount = new Array<InstAccountDTO>();
         accountArray.forEach(element => {
             var elements = element.split(":");
-            var newItem = new InstAccountDTO('0', elements[0], elements[1], $("#groupAddModal").val().toString());
+            var newItem = new InstAccountDTO('0', elements[0], elements[1], $("#groupAddModal").val().toString(), "NotAuthorized");
             addedAccount.push(newItem);
         });
+        console.log(addedAccount);
 
         (await this.InstAccountService.AddAccounts(addedAccount)).subscribe({
             next: (data: boolean) => {
@@ -166,7 +170,7 @@ export class InstAccountComponent implements OnInit {
 
     async UpdateAccount() {
         var updatedArray = new Array<InstAccountDTO>;
-        var updatedAccount = new InstAccountDTO($("#idModal").val().toString(), $("#loginModal").val().toString(), $("#passwordModal").val().toString(), $("#groupUpdateModal").val().toString());
+        var updatedAccount = new InstAccountDTO($("#idModal").val().toString(), $("#loginModal").val().toString(), $("#passwordModal").val().toString(), $("#groupUpdateModal").val().toString(), "0");
         updatedArray.push(updatedAccount);
         await (await InstAccountService.UpdateAccounts(updatedArray)).subscribe({
             next: (data: boolean) => {
@@ -191,14 +195,16 @@ export class InstAccountComponent implements OnInit {
 
 
 export class InstAccountDTO {
-    constructor(id: string, login: string, password: string, group: string) {
+    constructor(id: string, login: string, password: string, group: string, AccountStatus: string) {
         this.id = id;
         this.Login = login;
         this.Password = password;
         this.Group = group;
+        this.AccountStatus = AccountStatus;
     }
     public id: string;
     public Login: string;
     public Password: string;
     public Group: string;
+    public AccountStatus: string;
 }

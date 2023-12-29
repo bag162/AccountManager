@@ -1,10 +1,13 @@
-﻿namespace BASAccountManager.Controllers.SMS_Services.DTO
+﻿using BASAccountManager.DB.Models;
+
+namespace BASAccountManager.Controllers.SMS_Services.DTO
 {
     public class SMSServiceDTO
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string ServiceName { get; set; }
-        public string APIURI { get; set; }
+        public string ServiceType { get; set; }
+        public string Country { get; set; }
         public string APIKey { get; set; }
     }
 }

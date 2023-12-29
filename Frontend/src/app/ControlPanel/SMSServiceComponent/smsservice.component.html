@@ -1,14 +1,41 @@
 <!-- Add SMS Service from -->
 <form id="smsserviceForm" style="margin-bottom: 3%;">
     <div class="form-group">
-        <label for="exampleFormControlSelect1">SMS Service fromat</label>
-        <select class="form-control" id="exampleFormControlSelect1">
-            <option>ServiceName:APIURI:APIKEY</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="exampleFormControlTextarea1">SMS Service</label>
-        <textarea [(ngModel)]="smsserviceData" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <label for="serviceName" class="form-label">Service Name</label>
+                    <input [(ngModel)]="smsServiceName" type="text" class="form-control" id="serviceName"
+                        placeholder="smsactivate-ru-for-test">
+                </div>
+                <div class="col">
+                    <label for="serviceName" class="form-label">SMS Service</label>
+                    <select [(ngModel)]="smsServiceType" name="smsservice" id="smsservice" class="form-control">
+                        <option>SMSActivate</option>
+                        <option>FiveSIM</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <div *ngIf="smsServiceType == 'SMSActivate'">
+                        <label for="country" class="form-label">Country</label>
+                        <input [(ngModel)]="smsServiceCountry" type="number" class="form-control" id="serviceName"
+                            placeholder="1">
+                    </div>
+                    <div *ngIf="smsServiceType == 'FiveSIM'">
+                        <label for="country" class="form-label">Country</label>
+                        <input [(ngModel)]="smsServiceCountry" type="text" class="form-control" id="serviceName"
+                            placeholder="russia">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="apiKey" class="form-label">API Key</label>
+                    <input [(ngModel)]="smsServiceApiKey" type="text" class="form-control" id="serviceName"
+                        placeholder="service-api_key">
+                </div>
+            </div>
+        </div>
     </div>
     <button type="submit" class="btn btn-primary btn-lg" (click)="AddSMSService()">Add</button>
 </form>
@@ -36,8 +63,15 @@
                     <input type="text" class="form-control" id="servicenameModal" placeholder="SMS Activate">
                 </div>
                 <div class="mb-3">
-                    <label for="exampleFormControlInput1" class="form-label">API URI</label>
-                    <input type="text" class="form-control" id="apiuriModal" placeholder="127.0.0.1">
+                    <label for="exampleFormControlInput1" class="form-label">Service Type</label>
+                    <select id="servicetypeModal" class="form-control">
+                        <option>SMSActivate</option>
+                        <option>FiveSIM</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">Country</label>
+                        <input type="text" class="form-control" id="servicecountryModal" placeholder="">
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">API Key</label>
@@ -46,7 +80,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="UpdateSMSService()">Update</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    (click)="UpdateSMSService()">Update</button>
             </div>
         </div>
     </div>

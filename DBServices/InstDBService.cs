@@ -62,17 +62,39 @@ namespace BASAccountManager.DBServices
                 DBInstagramAccount[] filteredData = Array.Empty<DBInstagramAccount>();
                 if (lenght == -1)
                 {
-                    filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                    if (Enum.TryParse(searchdata, out AccountStatus result))
+                    {
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                                                || m.Password.Contains(searchdata)
+                                                || m.DBInstAccountGroup.Name.Contains(searchdata)
+                                                || m.AccountStatus.Equals(result)
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                    }
+                    else
+                    {
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
                                                 || m.DBInstAccountGroup.Name.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                    }
                 }
                 else
                 {
-                    filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
-                                                || m.Password.Contains(searchdata)
-                                                || m.DBInstAccountGroup.Name.Contains(searchdata)
-                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    if (Enum.TryParse(searchdata, out AccountStatus result))
+                    {
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                                            || m.Password.Contains(searchdata)
+                                            || m.DBInstAccountGroup.Name.Contains(searchdata)
+                                            || m.AccountStatus.Equals(result)
+                                            || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    }
+                    else
+                    {
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                                            || m.Password.Contains(searchdata)
+                                            || m.DBInstAccountGroup.Name.Contains(searchdata)
+                                            || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    }
                 }
 
                 data.recordsFiltered = filteredData.Count();
@@ -80,7 +102,7 @@ namespace BASAccountManager.DBServices
             }
             else
             {
-                if(lenght == -1)
+                if (lenght == -1)
                 {
                     data.data = mapper.Map<List<InstAccountDTO>>(this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
                 }
@@ -128,6 +150,12 @@ namespace BASAccountManager.DBServices
             await this.dbcontext.InstAccount.AddAsync(newAccount);
             await this.dbcontext.SaveChangesAsync();
             return this.dbcontext.InstAccount.AsQueryable().Where(x => x.Login == newAccount.Login).Select(x => x.Id).First();
+        }
+
+        public async Task<List<DBInstagramAccount>> GetInstAccountsByGroupAsync(string group)
+        {
+            var groupId = this.dbcontext.InstAccountGroup.Where(x => x.Name == group).First().Id;
+            return await this.dbcontext.InstAccount.AsQueryable().Where(x => x.GroupId == groupId).ToListAsync();
         }
     }
 }

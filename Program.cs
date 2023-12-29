@@ -16,6 +16,8 @@ builder.Services.AddTransient<ISMSServiceDB, SMSDBService>();
 builder.Services.AddTransient<ITaskDBService, TaskDBService>();
 builder.Services.AddTransient<IWorkerTaskDBService, WorkerTaskDBService>();
 builder.Services.AddTransient<IEmailDBService, EmailDBService>();
+builder.Services.AddTransient<IBASExeptionDBService, BASExeptionDBService>();
+
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
 builder.Services.AddTransient<StatusMonitor>();
@@ -35,8 +37,10 @@ builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
     .AllowAnyMethod()
     .AllowCredentials();
 }));
+
 // DB Services
-builder.Services.AddDbContext<AMContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AMContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
 var app = builder.Build();
 

@@ -4,6 +4,7 @@ import * as bootstrap from "bootstrap";
 import * as $ from 'jquery';
 import { SMSActivationService } from '../../Services/SMSActivationService';
 import { environment } from 'src/environments/environment';
+import { StringLiteral } from 'typescript';
 
 @Component({
     selector: 'smsservice',
@@ -12,8 +13,12 @@ import { environment } from 'src/environments/environment';
 
 export class SMSServiceComponent implements OnInit {
     dtOptions: any;
-    smsserviceData: string;
     SMSActivationService: SMSActivationService;
+    // Add SMS Service Input Data
+    smsServiceName: string;
+    smsServiceApiKey: string;
+    smsServiceType: string;
+    smsServiceCountry: string;
 
     constructor(SMSActivationService: SMSActivationService) {
         this.SMSActivationService = SMSActivationService;
@@ -35,8 +40,11 @@ export class SMSServiceComponent implements OnInit {
                 title: 'Service Name',
                 data: 'ServiceName'
             }, {
-                title: 'API URI',
-                data: 'APIURI'
+                title: 'Service Type',
+                data: 'ServiceType'
+            }, {
+                title: 'Country',
+                data: 'Country'
             }, {
                 title: 'API Key',
                 data: 'APIKey'
@@ -88,7 +96,7 @@ export class SMSServiceComponent implements OnInit {
             var deletedsmsservice = new Array<SMSServiceDTO>;
             for (let index = 0; index < data.length; index++) {
                 const element = data[index];
-                var newItem = new SMSServiceDTO(element["Id"], element["ServiceName"], element["APIURI"], element["APIKey"]);
+                var newItem = new SMSServiceDTO(element["Id"], element["ServiceName"], element["ServiceType"], element["APIKey"], element["Country"]);
                 deletedsmsservice.push(newItem);
             }
             await SMSActivationService.DeleteSMSService(deletedsmsservice).subscribe({
@@ -117,21 +125,17 @@ export class SMSServiceComponent implements OnInit {
             var element = data[0];
             $("#idModal").val(element["Id"]);
             $("#servicenameModal").val(element["ServiceName"]);
-            $("#apiuriModal").val(element["APIURI"]);
             $("#apikeyModal").val(element["APIKey"]);
+            $("#servicetypeModal").val(element["ServiceType"]);
+            $("#servicecountryModal").val(element["Country"]);
             new bootstrap.Modal("#smsserviceModal").show();
         }
     }
 
     async AddSMSService() {
-        var smsserviceArray = this.smsserviceData.split('\n');
         var addedsmsservice = new Array<SMSServiceDTO>();
-        smsserviceArray.forEach(element => {
-            var elements = element.split(":");
-            var newItem = new SMSServiceDTO('0', elements[0], elements[1], elements[2]);
-            addedsmsservice.push(newItem);
-        });
-
+        var newSMSService = new SMSServiceDTO(0, this.smsServiceName, this.smsServiceType, this.smsServiceApiKey, this.smsServiceCountry);
+        addedsmsservice.push(newSMSService);
         (await this.SMSActivationService.AddSMSService(addedsmsservice)).subscribe({
             next: (data: boolean) => {
                 if (data) {
@@ -157,7 +161,7 @@ export class SMSServiceComponent implements OnInit {
 
     async UpdateSMSService() {
         var updatedArray = new Array<SMSServiceDTO>;
-        var updatedsmsservice = new SMSServiceDTO($("#idModal").val().toString(), $("#servicenameModal").val().toString(), $("#apiuriModal").val().toString(), $("#apikeyModal").val().toString());
+        var updatedsmsservice = new SMSServiceDTO(Number($("#idModal").val().toString()), $("#servicenameModal").val().toString(), $("#servicetypeModal").val().toString(), $("#apikeyModal").val().toString(), $("#servicecountryModal").val().toString());
         updatedArray.push(updatedsmsservice);
         await (await SMSActivationService.UpdateSMSService(updatedArray)).subscribe({
             next: (data: boolean) => {
@@ -182,14 +186,16 @@ export class SMSServiceComponent implements OnInit {
 
 
 export class SMSServiceDTO {
-    constructor(id: string, ServiceName: string, APIURI: string, APIKey: string) {
+    constructor(id: number, ServiceName: string, ServiceType: string, APIKey: string, Country: string) {
         this.id = id;
         this.ServiceName = ServiceName;
-        this.APIURI = APIURI;
+        this.ServiceType = ServiceType;
         this.APIKey = APIKey;
+        this.Country = Country;
     }
-    public id: string;
+    public id: number;
     public ServiceName: string;
-    public APIURI: string;
+    public ServiceType: String;
     public APIKey: string;
+    public Country: string;
 }

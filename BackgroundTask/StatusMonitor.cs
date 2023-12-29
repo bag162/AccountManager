@@ -56,15 +56,31 @@ namespace BASAccountManager.BackgroundTask
                     continue;
                 }
 
-                if(allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.Completed).Count() != 0)
+                if(allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.AtWork).Count() != 0)
+                    continue;
+                
+                if (allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.NotTaken).Count() != 0)
+                    continue;
+                
+
+                proxy.ProxyStatus = DB.Models.ProxyStatus.Free;
+                await this.proxyDBService.UpdateProxyAsync(proxy);
+            }
+        }
+
+        public async Task CheckInactiveTask()
+        {
+            var tasks = this.taskDbService.GetTask().Where(x => x.Status == DB.Models.StatusTask.Canceled).ToList();
+            var completedTasks = this.taskDbService.GetTask().Where(x => x.Status == DB.Models.StatusTask.Completed).ToList();
+            tasks.AddRange(completedTasks);
+
+            foreach (var task in tasks)
+            {
+                var workerTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+                var noTakenTask = workerTasks.Where(x => x.Status == DB.Models.TaskStatus.NotTaken).ToList();
+                if (noTakenTask.Count() != 0)
                 {
-                    proxy.ProxyStatus = DB.Models.ProxyStatus.Free;
-                    await this.proxyDBService.UpdateProxyAsync(proxy);
-                }
-                if (allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.Error).Count() != 0)
-                {
-                    proxy.ProxyStatus = DB.Models.ProxyStatus.Free;
-                    await this.proxyDBService.UpdateProxyAsync(proxy);
+                    await this.workerTaskDbService.RemoveWorkerTaskAsync(noTakenTask);
                 }
             }
         }

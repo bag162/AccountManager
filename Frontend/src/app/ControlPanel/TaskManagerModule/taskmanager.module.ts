@@ -11,6 +11,7 @@ import { SelectProxyGroupComponent } from './MComponents/SelectProxyGroupCompone
 import { SelectSMSServiceComponent } from './MComponents/SelectSMSServiceGroupComponent/selectsmsservice.component'
 import { SelectAccountGroupComponent } from './MComponents/SelectAccountGroupComponent/selectaccountgroup.component'
 import { SelectEmailComponent } from './MComponents/SelectEmailGroupComponent/selectemail.component'
+import { AuthorizatioonTaskComponent } from './AuthorizationTaskComponent/authorizationtask.component'
 @NgModule({
     imports: [
         RouterModule.forChild([
@@ -18,6 +19,7 @@ import { SelectEmailComponent } from './MComponents/SelectEmailGroupComponent/se
                 path: 'taskmanager', component: TaskManagerComponent, children: [
                     { path: "taskdata", component: TaskDataComponent },
                     { path: "registration", component: RegistrationTaskComponent },
+                    { path: "authorization", component: AuthorizatioonTaskComponent },
                     { path: "workertaskdata/:id", component: WorkerTaskDataComponent }
                 ]
             }
@@ -30,6 +32,7 @@ import { SelectEmailComponent } from './MComponents/SelectEmailGroupComponent/se
     declarations: [
         TaskManagerComponent,
         RegistrationTaskComponent,
+        AuthorizatioonTaskComponent,
         TaskDataComponent,
         SelectProxyGroupComponent,
         SelectSMSServiceComponent,

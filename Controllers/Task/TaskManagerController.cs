@@ -48,9 +48,21 @@ namespace BASAccountManager.Controllers.Task
             task.ClientTaskName = newTask.ClientTaskName;
             var usefulData = new RegistrationTaskWorkerUsefulDataDTO() { CountAccount = newTask.CountAccount, SMSServiceId = newTask.SMSServiceId, EmailServiceId = newTask.EmailServiceId, RegistrationVerifyResoursesType = newTask.ResoursesType };
             task.UsefulData = JsonConvert.SerializeObject(usefulData);
-            var taskList = new List<DBTask>();
-            taskList.Add(task);
-            await this.TaskDBService.AddTaskAsync(taskList);
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject("true");
+        }
+
+        [HttpPost]
+        public async Task<string> AuthorizationTask([FromBody] AuthorizationTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.ClientTaskName;
+            task.TaskType = TaskType.AuthorizationAccounts;
+
+            await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject("true");
         }
     }

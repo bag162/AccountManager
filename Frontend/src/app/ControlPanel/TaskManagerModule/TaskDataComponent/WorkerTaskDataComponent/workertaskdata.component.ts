@@ -45,7 +45,8 @@ export class WorkerTaskDataComponent implements OnInit {
                 data: 'ProxyId'
             }, {
                 title: 'UsefulData',
-                data: 'UsefulData'
+                data: 'UsefulData',
+                "width": "20%"
             }, {
                 title: 'ErrorMessage',
                 data: 'ErrorMessage'

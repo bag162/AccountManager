@@ -27,7 +27,7 @@ namespace BASAccountManager.Controllers
         [HttpGet]
         public string GetList()
         {
-            var smsServices = this.smsServiceDB.GetSMSService().Select(x => x.Id + ":" + x.ServiceName + ":" + x.APIURI).ToList();
+            var smsServices = this.smsServiceDB.GetSMSService().Select(x => x.Id + ":" + x.ServiceName + ":" + x.ServiceType.ToString()).ToList();
             return JsonConvert.SerializeObject(smsServices);
         }
 

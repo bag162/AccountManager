@@ -10,7 +10,7 @@ namespace BASAccountManager.DB.Models
         public string ClientTaskName { get; set; }
         public StatusTask Status { get; set; }
         public TaskType TaskType { get; set; }
-        public string UsefulData { get; set; }
+        public string? UsefulData { get; set; }
         public string AccountGroup { get; set; }
         public string ProxyGroup { get; set; }
     }
@@ -26,6 +26,7 @@ namespace BASAccountManager.DB.Models
 
     public enum TaskType
     { 
-        RegistrationAccounts
+        RegistrationAccounts,
+        AuthorizationAccounts
     }
 }

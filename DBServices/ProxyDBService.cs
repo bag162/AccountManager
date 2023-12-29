@@ -64,25 +64,51 @@ namespace BASAccountManager.DBServices
             {
                 if (lenght == -1)
                 {
-                    filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
+                    if (Enum.TryParse(searchdata, out ProxyStatus result))
+                    {
+                        filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
+                                                || m.Port.Contains(searchdata)
+                                                || m.Login.Contains(searchdata)
+                                                || m.DBProxyGroup.Name.Contains(searchdata)
+                                                || m.Password.Contains(searchdata)
+                                                || m.ProxyStatus.Equals(result)
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                    }
+                    else
+                    {
+                        filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
                                                 || m.Port.Contains(searchdata)
                                                 || m.Login.Contains(searchdata)
                                                 || m.DBProxyGroup.Name.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                    }
+
                 }
                 else
                 {
-
-                    filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
-                                                || m.Port.Contains(searchdata)
-                                                || m.Login.Contains(searchdata)
-                                                || m.DBProxyGroup.Name.Contains(searchdata)
-                                                || m.Password.Contains(searchdata)
-                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    if (Enum.TryParse(searchdata, out ProxyStatus result))
+                    {
+                        filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
+                                            || m.Port.Contains(searchdata)
+                                            || m.Login.Contains(searchdata)
+                                            || m.DBProxyGroup.Name.Contains(searchdata)
+                                            || m.Password.Contains(searchdata)
+                                            || m.ProxyStatus.Equals(result)
+                                            || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    }
+                    else
+                    {
+                        filteredData = this.dbcontext.Proxy.Include(x => x.DBProxyGroup).AsQueryable().Where(m => m.Ip.Contains(searchdata)
+                                            || m.Port.Contains(searchdata)
+                                            || m.Login.Contains(searchdata)
+                                            || m.DBProxyGroup.Name.Contains(searchdata)
+                                            || m.Password.Contains(searchdata)
+                                            || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    }
                 }
 
-                
+
                 data.recordsFiltered = filteredData.Count();
                 data.data = mapper.Map<List<ProxyDTO>>(filteredData);
             }

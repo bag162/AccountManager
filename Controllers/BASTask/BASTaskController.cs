@@ -30,7 +30,13 @@ namespace BASAccountManager.Controllers
         [HttpPost]
         public async Task<string> EndRegistrationTask([FromBody] EndRegistrationTaskDTO newAccount)
         {
-            return await this.InstTaskManager.EndRegistrationTask(newAccount);
+            return await this.InstTaskManager.EndRegistrationTaskAsync(newAccount);
+        }
+
+        [HttpPost]
+        public async Task<string> EndAuthorizationTask(EndAuthorizationTaskDTO data)
+        {
+            return await this.InstTaskManager.EndAuthorizationTaskAsync(data);
         }
     }
 }

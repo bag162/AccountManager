@@ -44,7 +44,12 @@ namespace BASAccountManager.Controllers
         [HttpPost]
         public async Task<string> Post([FromBody] InstAccountDTO[] accounts)
         {
-            await this.InstDbService.AddInstAccountsAsync(mapper.Map<List<DBInstagramAccount>>(accounts.ToList()), accounts.First().Group);
+            var newAccounts = mapper.Map<List<DBInstagramAccount>>(accounts.ToList());
+            foreach (var acc in newAccounts)
+            {
+                acc.AccountStatus = AccountStatus.NotAuthorized;
+            }
+            await this.InstDbService.AddInstAccountsAsync(newAccounts, accounts.First().Group);
             return JsonConvert.SerializeObject("true");
         }
 

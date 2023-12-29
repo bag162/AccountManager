@@ -6,6 +6,7 @@ namespace BASAccountManager.DBServices.Interfaces
 {
     public interface IInstDBService
     {
+        public Task<List<DBInstagramAccount>> GetInstAccountsByGroupAsync(string group);
         public List<DBInstagramAccount> GetInstAccounts();
         public JqueryDataTable<InstAccountDTO> GetInstAccounts(int start, int lenght, string searchdata);
         public Task AddInstAccountsAsync(List<DBInstagramAccount> newAccount, string accGroup);

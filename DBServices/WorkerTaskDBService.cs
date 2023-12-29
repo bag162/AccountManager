@@ -35,7 +35,7 @@ namespace BASAccountManager.DBServices
 
         public async Task<List<DBWorkerTask>> GetWorkerTaskByDBTaskIdAsync(int dbTaskId)
         {
-            return await this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.InstAccount).Include(x => x.Proxy).AsQueryable().Where( x => x.DBTaskId == dbTaskId).ToListAsync();
+            return await this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.InstAccount).Include(x => x.Proxy).AsQueryable().Where(x => x.DBTaskId == dbTaskId).ToListAsync();
         }
 
         public JqueryDataTable<WorkerTaskDTO> GetWorkerTasks(int start, int lenght, string searchdata, int taskId)
@@ -48,19 +48,47 @@ namespace BASAccountManager.DBServices
             {
                 if (lenght == -1)
                 {
-                    filteredData = this.dbcontext.WorkerTask.Include(x => x.InstAccount).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.DBTaskId == taskId).Where(m => 
+                    if (Enum.TryParse(searchdata, out DB.Models.TaskStatus result))
+                    {
+                        filteredData = this.dbcontext.WorkerTask.Include(x => x.InstAccount).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.DBTaskId == taskId).Where(m =>
+                                                                        m.WorkerId.Equals(searchdata)
+                                                                        || m.InstanceId.Contains(searchdata)
+                                                                        || m.InstAccount.Login.Contains(searchdata)
+                                                                        || m.ProxyId.Equals(searchdata)
+                                                                        || m.UsefulData.Contains(searchdata)
+                                                                        || m.Status.Equals(result)
+                                                                        || m.ErrorMessage.Contains(searchdata)
+                                                                        || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                    }
+                    else
+                    {
+                        filteredData = this.dbcontext.WorkerTask.Include(x => x.InstAccount).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.DBTaskId == taskId).Where(m =>
+                                                                        m.WorkerId.Equals(searchdata)
+                                                                        || m.InstanceId.Contains(searchdata)
+                                                                        || m.InstAccount.Login.Contains(searchdata)
+                                                                        || m.ProxyId.Equals(searchdata)
+                                                                        || m.UsefulData.Contains(searchdata)
+                                                                        || m.ErrorMessage.Contains(searchdata)
+                                                                        || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                    }
+                }
+                else
+                {
+                    if (Enum.TryParse(searchdata, out DB.Models.TaskStatus result))
+                    {
+                        filteredData = this.dbcontext.WorkerTask.Include(x => x.InstAccount).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.DBTaskId == taskId).Where(m =>
                                                 m.WorkerId.Equals(searchdata)
                                                 || m.InstanceId.Contains(searchdata)
                                                 || m.InstAccount.Login.Contains(searchdata)
                                                 || m.ProxyId.Equals(searchdata)
+                                                || m.Status.Equals(result)
                                                 || m.UsefulData.Contains(searchdata)
                                                 || m.ErrorMessage.Contains(searchdata)
-                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
-                }
-                else
-                {
-
-                    filteredData = this.dbcontext.WorkerTask.Include(x => x.InstAccount).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.DBTaskId == taskId).Where(m =>
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    }
+                    else
+                    {
+                        filteredData = this.dbcontext.WorkerTask.Include(x => x.InstAccount).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.DBTaskId == taskId).Where(m =>
                                                 m.WorkerId.Equals(searchdata)
                                                 || m.InstanceId.Contains(searchdata)
                                                 || m.InstAccount.Login.Contains(searchdata)
@@ -68,6 +96,7 @@ namespace BASAccountManager.DBServices
                                                 || m.UsefulData.Contains(searchdata)
                                                 || m.ErrorMessage.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                    }
                 }
 
 
