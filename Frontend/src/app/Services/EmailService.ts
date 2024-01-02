@@ -5,7 +5,7 @@ import { EmailDTO } from '../ControlPanel/EmailComponent/email.component';
 
 @Injectable({ providedIn: 'root' })
 export class EmailService {
-    static address: string = environment.apiUrl + "email/";
+    static address: string = environment.apiUrl + "/api/email/";
     static httpClient: HttpClient;
 
     constructor(httpClient: HttpClient) {

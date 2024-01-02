@@ -20,7 +20,7 @@ namespace BASAccountManager.DB.Models
         public DBProxy? Proxy { get; set; }
 
         [ForeignKey(nameof(DBTask))]
-        public int? DBTaskId { get; set; }
+        public int? TaskId { get; set; }
         public DBTask? Task { get; set; }
     }
 }

@@ -6,7 +6,7 @@ import { AuthorizationTaskDTO } from '../ControlPanel/TaskManagerModule/Authoriz
 
 @Injectable({ providedIn: 'root' })
 export class TaskManagerService {
-    address: string = environment.apiUrl + "taskmanager/";
+    address: string = environment.apiUrl + "/api/taskmanager/";
     httpClient: HttpClient;
 
     constructor(httpClient: HttpClient) {

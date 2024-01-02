@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # Frontend cash
 .angular
+/wwwroot

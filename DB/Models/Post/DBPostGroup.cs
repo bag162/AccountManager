@@ -10,8 +10,10 @@ namespace BASAccountManager.DB.Models.Post
         public int Id { get; set; }
         public string Name { get; set; }
 
-        [ForeignKey(nameof(DBInstagramAccount))]
-        public int InstAccountId { get; set; }
-        public DBInstagramAccount InstAccount { get; set; }
+        [ForeignKey(nameof(DBInstAccountGroup))]
+        public int AccountGroupId { get; set; }
+        public DBInstAccountGroup AccountGroup { get; set; }
+
+        public List<DBPost> Posts { get; set; } = new List<DBPost>();
     }
 }

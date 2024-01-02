@@ -1,4 +1,5 @@
 ﻿using BASAccountManager.Abstraction;
+using BASAccountManager.DB.Models.Post;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,8 +21,10 @@ namespace BASAccountManager.DB.Models
         public string? PhoneNumber { get; set; }
 
         [ForeignKey(nameof(DBInstAccountGroup))]
-        public int GroupId { get; set; }
-        public DBInstAccountGroup DBInstAccountGroup { get; set; }
+        public int InstGroupId { get; set; }
+        public DBInstAccountGroup InstGroup { get; set; }
+
+        public List<DBInstPost> PostList { get; set; } = new List<DBInstPost>();
     }
 
     public enum AccountStatus

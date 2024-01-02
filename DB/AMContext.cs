@@ -30,8 +30,6 @@ namespace BASAccountManager.DB
             modelBuilder.Entity<DBProxyGroup>().HasIndex(x => x.Name).IsUnique();
             modelBuilder.Entity<DBInstAccountGroup>().HasIndex(x => x.Name).IsUnique();
             modelBuilder.Entity<DBPostGroup>().HasIndex(x => x.Name).IsUnique();
-
-            modelBuilder.Entity<DBPost>().HasIndex(x => x.PostURI).IsUnique();
         }
     }
 }

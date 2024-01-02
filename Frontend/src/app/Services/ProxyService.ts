@@ -6,8 +6,8 @@ import { ProxyGroupDTO } from '../ControlPanel/ProxyComponent/GroupProxyComponen
 
 @Injectable({ providedIn: 'root' })
 export class ProxyService {
-    static address: string = environment.apiUrl + "proxy/";
-    static proxyGroupAddress: string = environment.apiUrl + "proxygroup/";
+    static address: string = environment.apiUrl + "/api/proxy/";
+    static proxyGroupAddress: string = environment.apiUrl + "/api/proxygroup/";
     static httpClient: HttpClient;
 
     constructor(httpClient: HttpClient) {

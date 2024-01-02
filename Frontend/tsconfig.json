@@ -1,6 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "allowJs": true,
     "baseUrl": "./",
     "sourceMap": true,
     "declaration": false,
@@ -20,6 +21,10 @@
       "@angular/localize"
     ]
   },
-    "files": [ "src/main.ts" ],
-    "include": [ "src/**/*.d.ts"]
+  "files": [
+    "src/main.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts"
+  ]
 }

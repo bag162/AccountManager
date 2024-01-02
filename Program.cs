@@ -6,6 +6,8 @@ using BASAccountManager;
 using Hangfire;
 using BASAccountManager.BackgroundTask;
 using BASAccountManager.TaskManagers.InstManager;
+using BASAccountManager.DBServices.PostDBServices;
+using BASAccountManager.DBServices.PostDBServices.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,11 @@ builder.Services.AddTransient<ITaskDBService, TaskDBService>();
 builder.Services.AddTransient<IWorkerTaskDBService, WorkerTaskDBService>();
 builder.Services.AddTransient<IEmailDBService, EmailDBService>();
 builder.Services.AddTransient<IBASExeptionDBService, BASExeptionDBService>();
+
+builder.Services.AddTransient<IPostDBService, PostDBService>();
+builder.Services.AddTransient<IPostCommentDBService, PostCommentDBService>();
+builder.Services.AddTransient<IPostLikeDBService, PostLikeDBService>();
+builder.Services.AddTransient<IPostGroupDBService, PostGroupDBService>();
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
@@ -52,6 +59,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors("CorsPolicy");
+app.UseStaticFiles(); // TODO после добавления авторизации, сделать закрытым
 app.UseAuthorization();
 app.UseHangfireDashboard();
 app.MapControllers();

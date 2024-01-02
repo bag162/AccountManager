@@ -5,7 +5,7 @@ import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SMSActivationService {
-    static address: string = environment.apiUrl + "smsservice/";
+    static address: string = environment.apiUrl + "/api/smsservice/";
     static httpClient: HttpClient;
 
     constructor(httpClient: HttpClient) {

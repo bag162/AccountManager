@@ -7,8 +7,8 @@ import { InstAccGroupDTO } from '../ControlPanel/InstAccountComponent/GroupInstA
 @Injectable({
      providedIn: 'root' })
 export class InstAccountService {
-    static address: string = environment.apiUrl + "Instaccount/";
-    static accountGroupAdress: string = environment.apiUrl + "Instgroup/";
+    static address: string = environment.apiUrl + "/api/Instaccount/";
+    static accountGroupAdress: string = environment.apiUrl + "/api/Instgroup/";
     static httpClient: HttpClient;
 
     constructor(httpClient: HttpClient) {

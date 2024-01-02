@@ -22,7 +22,7 @@ export class TaskDataComponent implements OnInit {
         $('#successNot').hide();
         $('#errorNot').hide();
         this.dtOptions = {
-            ajax: environment.apiUrl + 'task/get',
+            ajax: environment.apiUrl + '/api/task/get',
             lengthMenu: [[10, 20, 100, 200, -1], [10, 20, 100, 200, "All"]],
             serverSide: true,
             columns: [{
@@ -74,7 +74,7 @@ export class TaskDataComponent implements OnInit {
                         Delete(dt.rows({ selected: true }).data()[0], dt);
                     }
                 }, {
-                    text: 'Info selected',
+                    text: 'View WorkerTasks selected Task',
                     action: function (e, dt, node, config) {
                         RouteToWorkerData(dt.rows({ selected: true }).data()[0], dt);
                     }

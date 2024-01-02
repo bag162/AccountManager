@@ -59,7 +59,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             newAccount.AccountStatus = AccountStatus.Authorized;
             var accountId = await this.instDBService.AddInstAccountsAsync(newAccount, taskWorker.Task.AccountGroup);
 
-            taskWorker.InstAccountId = accountId;
+            taskWorker.AccountId = accountId;
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             taskWorker.Proxy.ProxyStatus = ProxyStatus.Free;
 
@@ -75,13 +75,13 @@ namespace BASAccountManager.TaskManagers.InstManager
                 endData.Email = null;
 
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.TaskWorkerId);
-            taskWorker.InstAccount.ProfileLink = endData.ProfileLink;
-            taskWorker.InstAccount.Name = endData.Name;
-            taskWorker.InstAccount.Surname = endData.Surname;
-            taskWorker.InstAccount.Email = endData.Email;
-            taskWorker.InstAccount.PhoneNumber = endData.PhoneNumber;
-            taskWorker.InstAccount.AccountStatus = AccountStatus.Authorized;
-            taskWorker.InstAccount.InstanceId = taskWorker.InstanceId;
+            taskWorker.Account.ProfileLink = endData.ProfileLink;
+            taskWorker.Account.Name = endData.Name;
+            taskWorker.Account.Surname = endData.Surname;
+            taskWorker.Account.Email = endData.Email;
+            taskWorker.Account.PhoneNumber = endData.PhoneNumber;
+            taskWorker.Account.AccountStatus = AccountStatus.Authorized;
+            taskWorker.Account.InstanceId = taskWorker.InstanceId;
             taskWorker.Proxy.ProxyStatus = ProxyStatus.Free;
             taskWorker.Status = DB.Models.TaskStatus.Completed;
 
@@ -111,10 +111,10 @@ namespace BASAccountManager.TaskManagers.InstManager
             switch (error)
             {
                 case AuthorizationTaskErrorType.FullBan:
-                    workerTask.InstAccount.AccountStatus = AccountStatus.Banned;
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
                     break;
                 case AuthorizationTaskErrorType.IncorrectAuthData:
-                    workerTask.InstAccount.AccountStatus = AccountStatus.IncorrectCredentionalData;
+                    workerTask.Account.AccountStatus = AccountStatus.IncorrectCredentionalData;
                     break;
             }
 
@@ -144,12 +144,13 @@ namespace BASAccountManager.TaskManagers.InstManager
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(error.workerId);
             DBBASExeption exeption = new DBBASExeption
             {
-                AccountId = workerTask.InstAccountId,
-                DBTaskId = workerTask.DBTaskId,
+                AccountId = workerTask.AccountId,
+                TaskId = workerTask.TaskId,
                 ProxyId = workerTask.ProxyId,
                 ExeptionMessage = error.ExeptionMessage,
                 ExeptionTime = DateTime.Now
             };
+
             await this.BASExeption.AddAsync(exeption);
             workerTask.Proxy.ProxyStatus = ProxyStatus.Free;
             workerTask.Status = DB.Models.TaskStatus.Error;

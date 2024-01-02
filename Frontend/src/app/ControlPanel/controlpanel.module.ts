@@ -11,6 +11,7 @@ import { TaskManagerModule } from './TaskManagerModule/taskmanager.module'
 import { AddGroupProxyComponent } from './ProxyComponent/GroupProxyComponent/addgroupproxy.component'
 import { EmailComponent } from './EmailComponent/email.component'
 import { AddGroupInstComponent } from './InstAccountComponent/GroupInstAccComponent/groupInstaccount.component';
+import { PostModule } from './PostModule/post.module'
 @NgModule({
     imports: [
         RouterModule.forChild([
@@ -19,13 +20,15 @@ import { AddGroupInstComponent } from './InstAccountComponent/GroupInstAccCompon
             { path: 'smsservice', component: SMSServiceComponent },
             { path: 'Instaccount', component: InstAccountComponent },
             { path: 'taskmanager', component: TaskManagerModule },
+            { path: 'postgroup', component: PostModule },
             { path: 'email', component: EmailComponent }
 
         ]),
         DataTablesModule,
         BrowserModule,
         FormsModule,
-        TaskManagerModule
+        TaskManagerModule,
+        PostModule
     ],
     exports: [RouterModule],
     declarations: [

@@ -5,7 +5,7 @@ import { TaskDTO } from '../ControlPanel/TaskManagerModule/TaskDataComponent/Tas
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-    private static address: string = environment.apiUrl + "task/";
+    private static address: string = environment.apiUrl + "/api/task/";
     private static httpClient: HttpClient;
 
     constructor(httpClient: HttpClient) {

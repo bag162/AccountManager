@@ -28,7 +28,7 @@ export class ProxyComponent implements OnInit {
     $('#successNot').hide();
     $('#errorNot').hide();
     this.dtOptions = {
-      ajax: environment.apiUrl + 'proxy/get',
+      ajax: environment.apiUrl + '/api/proxy/get',
       serverSide: true,
       lengthMenu: [[10, 20, 100, 200, -1], [10, 20, 100, 200, "All"]],
       // autoFill: true,

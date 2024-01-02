@@ -18,7 +18,7 @@ namespace BASAccountManager.DB.Models.Post
         public int AccountId { get; set; }
         public DBInstagramAccount Account { get; set; }
 
-        public DateTime? PostTime { get; set; }
+        public DateTime? CommentTime { get; set; }
         public CommentStatus CommentStatus { get; set; }
     }
 

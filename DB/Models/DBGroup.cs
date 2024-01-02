@@ -9,6 +9,8 @@ namespace BASAccountManager.DB.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
+
+        public List<DBProxy> Proxies { get; set; } = new List<DBProxy>();
     }
 
     public class DBInstAccountGroup
@@ -16,5 +18,7 @@ namespace BASAccountManager.DB.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
+
+        public List<DBInstagramAccount> InstAccounts { get; set; } = new List<DBInstagramAccount>();
     }
 }

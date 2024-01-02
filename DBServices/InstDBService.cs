@@ -27,7 +27,7 @@ namespace BASAccountManager.DBServices
             foreach (var item in newAccs)
             {
                 item.ReceiptDate = DateTime.Now;
-                item.GroupId = Instaccgroup;
+                item.InstGroupId = Instaccgroup;
             }
 
             await this.dbcontext.InstAccount.AddRangeAsync(newAccs.ToArray());
@@ -49,7 +49,7 @@ namespace BASAccountManager.DBServices
 
         public List<DBInstagramAccount> GetInstAccounts()
         {
-            return this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).ToList();
+            return this.dbcontext.InstAccount.Include(x => x.InstGroup).ToList();
         }
 
         public JqueryDataTable<InstAccountDTO> GetInstAccounts(int start, int lenght, string searchdata)
@@ -64,17 +64,17 @@ namespace BASAccountManager.DBServices
                 {
                     if (Enum.TryParse(searchdata, out AccountStatus result))
                     {
-                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.InstGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
-                                                || m.DBInstAccountGroup.Name.Contains(searchdata)
+                                                || m.InstGroup.Name.Contains(searchdata)
                                                 || m.AccountStatus.Equals(result)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
                     }
                     else
                     {
-                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.InstGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
                                                 || m.Password.Contains(searchdata)
-                                                || m.DBInstAccountGroup.Name.Contains(searchdata)
+                                                || m.InstGroup.Name.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
                     }
                 }
@@ -82,17 +82,17 @@ namespace BASAccountManager.DBServices
                 {
                     if (Enum.TryParse(searchdata, out AccountStatus result))
                     {
-                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.InstGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
                                             || m.Password.Contains(searchdata)
-                                            || m.DBInstAccountGroup.Name.Contains(searchdata)
+                                            || m.InstGroup.Name.Contains(searchdata)
                                             || m.AccountStatus.Equals(result)
                                             || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
                     }
                     else
                     {
-                        filteredData = this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
+                        filteredData = this.dbcontext.InstAccount.Include(x => x.InstGroup).AsQueryable().Where(m => m.Login.Contains(searchdata)
                                             || m.Password.Contains(searchdata)
-                                            || m.DBInstAccountGroup.Name.Contains(searchdata)
+                                            || m.InstGroup.Name.Contains(searchdata)
                                             || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
                     }
                 }
@@ -104,11 +104,11 @@ namespace BASAccountManager.DBServices
             {
                 if (lenght == -1)
                 {
-                    data.data = mapper.Map<List<InstAccountDTO>>(this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
+                    data.data = mapper.Map<List<InstAccountDTO>>(this.dbcontext.InstAccount.Include(x => x.InstGroup).AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
                 }
                 else
                 {
-                    data.data = mapper.Map<List<InstAccountDTO>>(this.dbcontext.InstAccount.Include(x => x.DBInstAccountGroup).AsQueryable().Skip(start).Take(lenght).ToArray());
+                    data.data = mapper.Map<List<InstAccountDTO>>(this.dbcontext.InstAccount.Include(x => x.InstGroup).AsQueryable().Skip(start).Take(lenght).ToArray());
                 }
                 data.recordsFiltered = data.recordsTotal;
             }
@@ -134,7 +134,7 @@ namespace BASAccountManager.DBServices
             var Instaccgroup = this.dbcontext.InstAccountGroup.Where(x => x.Name == newGroup).Select(x => x.Id).First();
             foreach (var item in updatedProxy)
             {
-                item.GroupId = Instaccgroup;
+                item.InstGroupId = Instaccgroup;
             }
             this.dbcontext.InstAccount.UpdateRange(updatedProxy);
             await this.dbcontext.SaveChangesAsync();
@@ -145,7 +145,7 @@ namespace BASAccountManager.DBServices
         {
             var Instaccgroup = this.dbcontext.InstAccountGroup.Where(x => x.Name == accGroup).Select(x => x.Id).First();
             newAccount.ReceiptDate = DateTime.Now;
-            newAccount.GroupId = Instaccgroup;
+            newAccount.InstGroupId = Instaccgroup;
 
             await this.dbcontext.InstAccount.AddAsync(newAccount);
             await this.dbcontext.SaveChangesAsync();
@@ -155,7 +155,7 @@ namespace BASAccountManager.DBServices
         public async Task<List<DBInstagramAccount>> GetInstAccountsByGroupAsync(string group)
         {
             var groupId = this.dbcontext.InstAccountGroup.Where(x => x.Name == group).First().Id;
-            return await this.dbcontext.InstAccount.AsQueryable().Where(x => x.GroupId == groupId).ToListAsync();
+            return await this.dbcontext.InstAccount.AsQueryable().Where(x => x.InstGroupId == groupId).ToListAsync();
         }
     }
 }

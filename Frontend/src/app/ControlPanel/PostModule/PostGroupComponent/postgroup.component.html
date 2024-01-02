@@ -1,0 +1,25 @@
+<!-- Add Post Group from -->
+<form id="postgroupForm" style="margin-bottom: 3%;">
+    <div class="form-group">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <label for="serviceName" class="form-label">Group Name</label>
+                    <input [(ngModel)]="PostGroupName" type="text" class="form-control" id="serviceName"
+                        placeholder="adult-ru-3">
+                </div>
+                <div class="col">
+                    <label>Account Group</label>
+                    <select id="accountGroupName" class="form-control">
+                        <option *ngFor="let group of accountGroupNames"> {{group}}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg" (click)="AddPostGroup()">Add</button>
+</form>
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="postgroupTable"></table>

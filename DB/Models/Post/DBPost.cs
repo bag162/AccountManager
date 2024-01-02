@@ -9,24 +9,24 @@ namespace BASAccountManager.DB.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public string ImageBase64 { get; set; }
+        public string Name { get; set; }
+        public string ImagePath { get; set; }
+        public string? Description { get; set; }
         public string? PostURI { get; set; }
 
+        [ForeignKey(nameof(DBPostGroup))]
         public int GroupId { get; set; }
         public DBPostGroup Group { get; set; }
 
         public int? RequiredCountLikes { get; set; }
         public int? RequiredCountComments { get; set; }
 
-        public int LikesCount { get; set; }
-        public int CommentsCount { get; set; }
-
         public PostStatus PostStatus { get; set; }
     }
 
     public enum PostStatus
     {
-        Published,
-        NotPublished
+        Active,
+        Inactive
     }
 }

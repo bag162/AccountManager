@@ -12,15 +12,15 @@ namespace BASAccountManager.DB.Models
         public TaskStatus Status { get; set; }
 
         [ForeignKey(nameof(DBInstagramAccount))]
-        public int InstAccountId { get; set; }
-        public DBInstagramAccount InstAccount { get; set; }
+        public int AccountId { get; set; }
+        public DBInstagramAccount Account { get; set; }
 
         [ForeignKey(nameof(DBProxy))]
         public int ProxyId { get; set; }
         public DBProxy Proxy { get; set; }
 
         [ForeignKey(nameof(DBTask))]
-        public int DBTaskId { get; set; }
+        public int TaskId { get; set; }
         public DBTask Task { get; set; }
 
         public string? UsefulData { get; set; }

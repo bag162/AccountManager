@@ -26,7 +26,7 @@ export class InstAccountComponent implements OnInit {
         $('#successNot').hide();
         $('#errorNot').hide();
         this.dtOptions = {
-            ajax: environment.apiUrl + 'Instaccount/get',
+            ajax: environment.apiUrl + '/api/Instaccount/get',
             lengthMenu: [[10, 20, 100, 200, -1], [10, 20, 100, 200, "All"]],
             serverSide: true,
             // autoFill: true,

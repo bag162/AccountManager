@@ -19,8 +19,8 @@ namespace BASAccountManager.DB.Models
         public string? Password { get; set; }
 
         [ForeignKey(nameof(DBProxyGroup))]
-        public int GroupId { get; set; }
-        public DBProxyGroup DBProxyGroup { get; set; }
+        public int ProxyGroupId { get; set; }
+        public DBProxyGroup ProxyGroup { get; set; }
 
         public ProxyStatus ProxyStatus { get; set; }
     }

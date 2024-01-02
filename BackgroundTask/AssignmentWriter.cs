@@ -33,6 +33,13 @@ namespace BASAccountManager.BackgroundTask
             this.instDBService = instDBService;
         }
 
+        // Парсит Post и добавляет InstPost
+        public async Task PostParser()
+        {
+
+        }
+
+        // Парсит Task и добавляет WorkerTask
         public async Task TaskParserAsync()
         {
             var addedTask = this.taskDbService.GetTask().Where(x => x.Status == StatusTask.Added || x.Status == StatusTask.AddingProcess);
@@ -103,7 +110,7 @@ namespace BASAccountManager.BackgroundTask
                 {
                     Status = DB.Models.TaskStatus.NotTaken,
                     TaskType = TaskType.RegistrationAccounts,
-                    DBTaskId = task.Id,
+                    TaskId = task.Id,
                     ProxyId = proxy.Id
                 };
 
@@ -146,7 +153,7 @@ namespace BASAccountManager.BackgroundTask
             var addedList = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
 
             // Создаем список на удаление задач из списка на добавление. Если у задачи Status != Error, то удаляем эти аккаунты
-            var deleteOutAddedList = addedTask.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.InstAccount).ToList();
+            var deleteOutAddedList = addedTask.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList();
             // Удаляем из списка на добавление аккаунтов все аккаунты, у задач которых статус != Error
             var listToAdd = new List<DBInstagramAccount>(); listToAdd.AddRange(addedList);
             if (deleteOutAddedList != null && deleteOutAddedList.Count != 0 && addedList != null && addedList.Count != 0)
@@ -181,10 +188,10 @@ namespace BASAccountManager.BackgroundTask
                 }
                 var newTask = new DBWorkerTask()
                 {
-                    DBTaskId = task.Id,
+                    TaskId = task.Id,
                     Status = DB.Models.TaskStatus.NotTaken,
                     TaskType = TaskType.AuthorizationAccounts,
-                    InstAccountId = newAccount.Id,
+                    AccountId = newAccount.Id,
                     ProxyId = proxy.Id
                 };
                 checkFullAddList.Remove(newAccount);

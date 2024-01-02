@@ -25,7 +25,7 @@ export class EmailComponent implements OnInit {
         $('#successNot').hide();
         $('#errorNot').hide();
         this.dtOptions = {
-            ajax: environment.apiUrl + 'email/get',
+            ajax: environment.apiUrl + '/api/email/get',
             lengthMenu: [[10, 20, 100, 200, -1], [10, 20, 100, 200, "All"]],
             serverSide: true,
             // autoFill: true,
