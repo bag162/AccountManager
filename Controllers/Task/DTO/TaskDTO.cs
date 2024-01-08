@@ -22,4 +22,9 @@ namespace BASAccountManager.Controllers.Task.DTO
         public int? SMSServiceId { get; set; }
         public int? EmailServiceId { get; set; }
     }
+
+    public class PostingTaskWorkerUsefilDataDTO
+    {
+        public int PostPerAccount { get; set; }
+    }
 }

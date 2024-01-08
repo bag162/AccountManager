@@ -49,7 +49,7 @@ namespace BASAccountManager.Controllers.Task
             var usefulData = new RegistrationTaskWorkerUsefulDataDTO() { CountAccount = newTask.CountAccount, SMSServiceId = newTask.SMSServiceId, EmailServiceId = newTask.EmailServiceId, RegistrationVerifyResoursesType = newTask.ResoursesType };
             task.UsefulData = JsonConvert.SerializeObject(usefulData);
             await this.TaskDBService.AddTaskAsync(task);
-            return JsonConvert.SerializeObject("true");
+            return JsonConvert.SerializeObject(true);
         }
 
         [HttpPost]
@@ -63,7 +63,22 @@ namespace BASAccountManager.Controllers.Task
             task.TaskType = TaskType.AuthorizationAccounts;
 
             await this.TaskDBService.AddTaskAsync(task);
-            return JsonConvert.SerializeObject("true");
+            return JsonConvert.SerializeObject(true);
+        }
+
+        [HttpPost]
+        public async Task<string> PostingTask([FromBody] PostingTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.ClientTaskName;
+            task.TaskType = TaskType.Posting;
+            task.UsefulData = JsonConvert.SerializeObject(new PostingTaskWorkerUsefilDataDTO() { PostPerAccount = newTask.PostPerAccount });
+
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
         }
     }
 }

@@ -16,8 +16,11 @@ namespace BASAccountManager.DB.Models.Post
         public int AccountId { get; set; }
         public DBInstagramAccount Account { get; set; }
 
+        public string? PostURI { get; set; }
         public int LikesCount { get; set; }
         public int CommentsCount { get; set; }
+
+        public InstPostStatus InstPostStatus { get; set; }
     }
 
     public enum InstPostStatus

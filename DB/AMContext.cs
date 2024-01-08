@@ -12,6 +12,8 @@ namespace BASAccountManager.DB
 
         public DbSet<DBInstAccountGroup> InstAccountGroup { get; set; }
         public DbSet<DBInstagramAccount> InstAccount { get; set; }
+        public DbSet<DBInstPost> InstPost { get; set; }
+
         public DbSet<DBTask> Task { get; set; }
         public DbSet<DBWorkerTask> WorkerTask { get; set; }
 

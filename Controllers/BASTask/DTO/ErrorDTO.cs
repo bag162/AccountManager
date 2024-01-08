@@ -41,6 +41,21 @@
         UnrecognizedError
     }
 
+    public class PostingErrorDTO
+    {
+        public PostingTaskErrorType PostingTaskErrorType { get; set; }
+        public int workerId { get; set; }
+    }
+
+    public enum PostingTaskErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError // TODO impl it in insttaskparser
+    }
+
+
+    // Global Error
     public class GlobalErrorDTO
     {
         public string ExeptionMessage { get; set; }

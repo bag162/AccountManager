@@ -55,7 +55,9 @@ namespace BASAccountManager
             // Get task Mapping
             CreateMap<DBWorkerTask, GetRegistrationTaskEmailServiceDTO>().ForMember(dest => dest.UsefulData, opt => opt.Ignore());
             CreateMap<DBWorkerTask, GetRegistrationTaskSMSServiceDTO>().ForMember(dest => dest.UsefulData, opt => opt.Ignore());
-            CreateMap<DBWorkerTask, GetAuthorizationTaskDTO>().ReverseMap();
+            CreateMap<DBWorkerTask, GetAuthorizationTaskDTO>().ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account)).ReverseMap();
+            CreateMap<DBWorkerTask, GetPostingTaskDTO>().ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account)).ReverseMap();
+            
 
             // End task Mapping
             CreateMap<DBInstagramAccount, EndRegistrationTaskDTO>().ReverseMap();

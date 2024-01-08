@@ -30,7 +30,7 @@ namespace BASAccountManager.DBServices.PostDBServices
             var path = "wwwroot/images/posts/" + post.GroupName;
 
             string filePath = await ImageService.AddBase64ImageAsync(post.ImageFormat, post.ImageBase64, path, post.Name);
-            addedPost.ImagePath = filePath;
+            addedPost.ImagePath = filePath.Remove(0, 8);
 
             await this.dbcontext.Post.AddAsync(addedPost);
             await this.dbcontext.SaveChangesAsync();

@@ -80,6 +80,11 @@ namespace BASAccountManager.DBServices.PostDBServices
             return data;
         }
 
+        public List<DBPostGroup> GetGroups()
+        {
+            return this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.Posts).ToList();
+        }
+
         public List<string> GetListGroupNames()
         {
             return this.dbcontext.PostGroup.AsQueryable().Select(x => x.Name).ToList();

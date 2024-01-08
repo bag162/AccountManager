@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { AddRegistrationTaskDTO } from '../ControlPanel/TaskManagerModule/RegistrationTaskComponent/registrationtask.component'
 import { environment } from 'src/environments/environment';
 import { AuthorizationTaskDTO } from '../ControlPanel/TaskManagerModule/AuthorizationTaskComponent/authorizationtask.component';
+import { AddPostingTaskDTO } from '../ControlPanel/TaskManagerModule/PostingTaskComponent/postingtask.component';
 
 @Injectable({ providedIn: 'root' })
 export class TaskManagerService {
@@ -20,5 +21,10 @@ export class TaskManagerService {
     public async AddAuthorizationTask(data: AuthorizationTaskDTO)
     {
         return this.httpClient.post(this.address + "AuthorizationTask", data);
+    }
+
+    public async AddPostingTask(data: AddPostingTaskDTO)
+    {
+        return this.httpClient.post(this.address + "PostingTask", data);
     }
 }

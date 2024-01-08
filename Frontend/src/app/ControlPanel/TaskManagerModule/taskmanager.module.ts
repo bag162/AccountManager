@@ -12,6 +12,8 @@ import { SelectSMSServiceComponent } from './MComponents/SelectSMSServiceGroupCo
 import { SelectAccountGroupComponent } from './MComponents/SelectAccountGroupComponent/selectaccountgroup.component'
 import { SelectEmailComponent } from './MComponents/SelectEmailGroupComponent/selectemail.component'
 import { AuthorizatioonTaskComponent } from './AuthorizationTaskComponent/authorizationtask.component'
+import { PostingTaskComponent } from './PostingTaskComponent/postingtask.component'
+
 @NgModule({
     imports: [
         RouterModule.forChild([
@@ -20,6 +22,7 @@ import { AuthorizatioonTaskComponent } from './AuthorizationTaskComponent/author
                     { path: "taskdata", component: TaskDataComponent },
                     { path: "registration", component: RegistrationTaskComponent },
                     { path: "authorization", component: AuthorizatioonTaskComponent },
+                    { path: "posting", component: PostingTaskComponent },
                     { path: "workertaskdata/:id", component: WorkerTaskDataComponent }
                 ]
             }
@@ -38,7 +41,8 @@ import { AuthorizatioonTaskComponent } from './AuthorizationTaskComponent/author
         SelectSMSServiceComponent,
         SelectAccountGroupComponent,
         SelectEmailComponent,
-        WorkerTaskDataComponent
+        WorkerTaskDataComponent,
+        PostingTaskComponent
     ],
     providers: [],
     bootstrap: [TaskManagerComponent]

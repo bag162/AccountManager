@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BASAccountManager.Controllers.BASTask.DTO;
+using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.TaskManagers.InstManager.DTO;
@@ -15,13 +16,15 @@ namespace BASAccountManager.TaskManagers.InstManager
         private ITaskDBService taskDBService { get; set; }
         private IInstDBService instDBService { get; set; }
         private IBASExeptionDBService BASExeption { get; set; }
+        private IInstPostDBService instPostDBService { get; set; }
 
         public InstTaskManager(ILogger<InstTaskManager> logger,
             IMapper mapper,
             IWorkerTaskDBService workerTaskDBService,
             IInstDBService instDBService,
             ITaskDBService taskDBService,
-            IBASExeptionDBService BASExeption)
+            IBASExeptionDBService BASExeption,
+            IInstPostDBService instPostDBService)
         {
             this.Logger = logger;
             this.mapper = mapper;
@@ -29,6 +32,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             this.instDBService = instDBService;
             this.taskDBService = taskDBService;
             this.BASExeption = BASExeption;
+            this.instPostDBService = instPostDBService;
         }
 
         public async Task<string> GetTaskAsync(GetTaskDTO getTaskData)
@@ -46,6 +50,8 @@ namespace BASAccountManager.TaskManagers.InstManager
                     return await RegistrationTaskImplAsync(returnedTask, getTaskData);
                 case TaskType.AuthorizationAccounts:
                     return await AuthorizationTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.Posting:
+                    return await PostingTaskImplAsync(returnedTask, getTaskData);
             }
             this.Logger.LogWarning("Skip switch on InstTaskManager");
             return "No tasks";
@@ -88,6 +94,25 @@ namespace BASAccountManager.TaskManagers.InstManager
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             return JsonConvert.SerializeObject(true);
 
+        }
+
+        public async Task<string> EndPostingTaskAsync(EndPostingTaskDTO endData)
+        {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.workerId);
+            taskWorker.Proxy.ProxyStatus = ProxyStatus.Free;
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> IntermediateEndPostingTaskAsync(IntermediateEndPostingTaskDTO endData)
+        {
+            var worker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.workerId);
+            var instpost = this.instPostDBService.GetInstPospsByAccount(worker.AccountId).Where(x => x.PostId == endData.postId).First();
+            instpost.PostURI = endData.postURI;
+            instpost.InstPostStatus = DB.Models.Post.InstPostStatus.Published;
+            await this.instPostDBService.UpdateInstPostAsync(instpost);
+            return JsonConvert.SerializeObject(true);
         }
 
         public async Task<string> ErrorRegistrationTaskAsync(RegistrationTaskErrorType error, int workerId)
@@ -136,6 +161,24 @@ namespace BASAccountManager.TaskManagers.InstManager
                     break;
             }
 
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorPostingTaskAsync(PostingTaskErrorType error, int workerId)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+            workerTask.Proxy.ProxyStatus = ProxyStatus.Free;
+
+            switch (error)
+            {
+                case PostingTaskErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+            }
+
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
 
@@ -193,6 +236,27 @@ namespace BASAccountManager.TaskManagers.InstManager
             await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
 
             var task = this.mapper.Map<GetAuthorizationTaskDTO>(returnedTask);
+
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> PostingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+
+            var countPost = JsonConvert.DeserializeObject<PostingTaskWorkerUsefilDataDTO>(returnedTask.UsefulData).PostPerAccount;
+            var task = this.mapper.Map<GetPostingTaskDTO>(returnedTask);
+            var postList = this.instPostDBService.GetInstPospsByAccount(returnedTask.AccountId);
+
+            task.Posts = postList
+                .Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished)
+                .Take(countPost)
+                .Select(x => x.Post)
+                .ToList();
 
             return JsonConvert.SerializeObject(task);
         }

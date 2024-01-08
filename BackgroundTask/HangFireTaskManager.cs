@@ -12,9 +12,15 @@ namespace BASAccountManager
             this.StatusMonitor = StatusMonitor;
         }
 
+        public async Task PostParser()
+        {
+            await this.AssignmentWriter.PostParserAsync();
+        }
+
         public async Task TaskParser()
         {
             await this.AssignmentWriter.TaskParserAsync();
+            
         }
 
         public async Task MonitorStatus()

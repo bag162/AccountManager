@@ -1,0 +1,25 @@
+<div class="container">
+    <div class="row mb-2">
+        <div class="col">
+            <label class="form-label">Account Group</label>
+            <select-account-group></select-account-group>
+        </div>
+        <div class="col">
+            <label class="form-label">Proxy Group</label>
+            <select-proxy-group></select-proxy-group>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col">
+            <label class="form-label">Number of published posts per 1 account</label>
+            <input type="number" class="form-control" [(ngModel)]="postPerAccount">
+        </div>
+        <div class="col">
+            <label class="form-label">Task name</label>
+            <input type="text" class="form-control" [(ngModel)]="taskName">
+        </div>
+    </div>
+</div>
+<button type="submit" class="btn btn-primary mb-3" (click)="AddTask()">Submit</button>
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>

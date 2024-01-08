@@ -24,6 +24,7 @@ builder.Services.AddTransient<IPostDBService, PostDBService>();
 builder.Services.AddTransient<IPostCommentDBService, PostCommentDBService>();
 builder.Services.AddTransient<IPostLikeDBService, PostLikeDBService>();
 builder.Services.AddTransient<IPostGroupDBService, PostGroupDBService>();
+builder.Services.AddTransient<IInstPostDBService, InstPostDBService>();
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
@@ -64,5 +65,7 @@ app.UseAuthorization();
 app.UseHangfireDashboard();
 app.MapControllers();
 RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), Cron.MinuteInterval(1));
+RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), Cron.MinuteInterval(1));
 RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), Cron.MinuteInterval(1));
+
 app.Run();

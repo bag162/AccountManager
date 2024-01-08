@@ -1,7 +1,9 @@
 ﻿using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
+using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.Interfaces;
+using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Newtonsoft.Json;
 
 namespace BASAccountManager.BackgroundTask
@@ -15,14 +17,20 @@ namespace BASAccountManager.BackgroundTask
         private IWorkerTaskDBService workerTaskDbService { get; set; }
         private IEmailDBService emailDBService { get; set; }
         private IInstDBService instDBService { get; set; }
+        private IPostDBService postDBService { get; set; }
+        private IPostGroupDBService postGroupDBService { get; set; }
+        private IInstPostDBService instPostDBService { get; set; }
 
-        public AssignmentWriter(ITaskDBService taskDbService, 
-            IWorkerTaskDBService workerTaskDbService, 
-            IProxyDBService proxyDBService, 
-            ISMSServiceDB SMSServiceDB, 
+        public AssignmentWriter(ITaskDBService taskDbService,
+            IWorkerTaskDBService workerTaskDbService,
+            IProxyDBService proxyDBService,
+            ISMSServiceDB SMSServiceDB,
             ILogger<AssignmentWriter> logger,
             IEmailDBService emailDBService,
-            IInstDBService instDBService)
+            IInstDBService instDBService,
+            IPostDBService postDBService,
+            IPostGroupDBService postGroupDBService,
+            IInstPostDBService instPostDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -31,12 +39,31 @@ namespace BASAccountManager.BackgroundTask
             this.logger = logger;
             this.emailDBService = emailDBService;
             this.instDBService = instDBService;
+            this.postDBService = postDBService;
+            this.postGroupDBService = postGroupDBService;
+            this.instPostDBService = instPostDBService;
         }
 
         // Парсит Post и добавляет InstPost
-        public async Task PostParser()
+        public async Task PostParserAsync()
         {
-
+            var allPostGroups = this.postGroupDBService.GetGroups();
+            foreach (var postGroup in allPostGroups)
+            {
+                var parsedPosts = postGroup.Posts.Where(x => x.PostStatus == PostStatus.Active).ToList();
+                var accounts = await this.instDBService.GetInstAccountsByGroupAsync(postGroup.AccountGroup.Name);
+                foreach (var account in accounts)
+                {
+                    foreach (var checkedPost in parsedPosts)
+                    {
+                        if (account.PostList.Where(x => x.PostId == checkedPost.Id).Count() == 0)
+                        {
+                            var newInstPost = new DBInstPost() { AccountId = account.Id, PostId = checkedPost.Id, InstPostStatus = InstPostStatus.NotPublished };
+                            await this.instPostDBService.AddInstPostAsync(newInstPost);
+                        }
+                    }
+                }
+            }
         }
 
         // Парсит Task и добавляет WorkerTask
@@ -58,6 +85,9 @@ namespace BASAccountManager.BackgroundTask
                     break;
                 case TaskType.AuthorizationAccounts:
                     await ParseAuthorizationTask(task);
+                    break;
+                case TaskType.Posting:
+                    await ParsePostingTask(task);
                     break;
                 default:
                     break;
@@ -148,7 +178,7 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем список всех добавленных задач на авторизацию
             var addedTask = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
-            
+
             // Получае список всех аккаунтов в группе на авторизацию
             var addedList = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
 
@@ -166,21 +196,15 @@ namespace BASAccountManager.BackgroundTask
                     }
                 }
             }
+            // Оставляем только неавторизованные аккаунты
+            listToAdd = listToAdd.Where(x => x.AccountStatus == AccountStatus.NotAuthorized).ToList();
 
-            
             // Создаем список, который будет сигнализивать что мы обратали все аккаунты, что бы установить статус Performed
             var checkFullAddList = new List<DBInstagramAccount>();
-            checkFullAddList.AddRange(listToAdd);
+            checkFullAddList.AddRange(listToAdd); // TODO Сделать как в PostingParser, убрать лишний код
 
             foreach (var newAccount in listToAdd)
             {
-                // Если статус у аккаунте не равен "NotAuthorized", то удаяем его из сигнального списка и пропусаем итерацию
-                if (newAccount.AccountStatus != AccountStatus.NotAuthorized)
-                {
-                    checkFullAddList.Remove(newAccount);
-                    continue;
-                }
-                    
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
                 if (proxy == null)
                 {
@@ -200,6 +224,57 @@ namespace BASAccountManager.BackgroundTask
 
             // Если все аккаунты добавлены, то обновляем статус головной задачи
             if (checkFullAddList.Count == 0)
+            {
+                task.Status = StatusTask.Performed;
+                await this.taskDbService.UpdateTaskAsync(task);
+            }
+            await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+            return;
+        }
+
+        private async Task ParsePostingTask(DBTask task)
+        {
+            task.Status = StatusTask.AddingProcess;
+            await this.taskDbService.UpdateTaskAsync(task);
+            List<DBWorkerTask> workerTaskList = new();
+            // Получаем список активных воркеров
+            var addedWorkers = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+            // Получаем список аккаунтов, для которых будем осуществлять постинг
+            var accountList = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            // Используем только авторизованные аккаунты
+            accountList = accountList.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            // Используем аккаунты, у которых есть посты для публикации
+            accountList = accountList.Where(x => x.PostList.Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0).ToList();
+            // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
+            foreach (var account in addedWorkers.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
+            {
+                if (accountList.Contains(account))
+                    accountList.Remove(account);
+            }
+            // Проходимся по списку аккаунтов и добавляем посты
+            foreach (var account in accountList)
+            {
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
+
+                var newTask = new DBWorkerTask()
+                {
+                    TaskId = task.Id,
+                    Status = DB.Models.TaskStatus.NotTaken,
+                    TaskType = TaskType.Posting,
+                    AccountId = account.Id,
+                    ProxyId = proxy.Id,
+                    UsefulData = task.UsefulData
+                };
+
+                workerTaskList.Add(newTask);
+            }
+
+            // Если все аккаунты были добавлены в workerList, то устанавливаем статус Performed
+            if (workerTaskList.Count() == accountList.Count())
             {
                 task.Status = StatusTask.Performed;
                 await this.taskDbService.UpdateTaskAsync(task);

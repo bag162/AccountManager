@@ -27,6 +27,7 @@ namespace BASAccountManager.DB.Models
     public enum TaskType
     { 
         RegistrationAccounts,
-        AuthorizationAccounts
+        AuthorizationAccounts,
+        Posting
     }
 }

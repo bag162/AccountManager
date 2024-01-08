@@ -28,7 +28,6 @@ namespace BASAccountManager.Controllers.Post.Post
         public string Get(int postId)
         {
             var post = this.postDBService.GetPostById(postId);
-            post.ImagePath = post.ImagePath.Remove(0, 8);
             return JsonConvert.SerializeObject(post);
         }
 
