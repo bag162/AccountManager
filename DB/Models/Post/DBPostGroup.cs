@@ -14,6 +14,6 @@ namespace BASAccountManager.DB.Models.Post
         public int AccountGroupId { get; set; }
         public DBInstAccountGroup AccountGroup { get; set; }
 
-        public List<DBPost> Posts { get; set; } = new List<DBPost>();
+        public List<DBPost> ListPost { get; set; } = new List<DBPost>();
     }
 }

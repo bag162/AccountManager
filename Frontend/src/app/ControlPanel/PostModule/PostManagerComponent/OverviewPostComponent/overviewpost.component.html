@@ -7,7 +7,7 @@
                 <input class="form-control" type="file" [(ngModel)]="data" (ngModelChange)="UpdateImage()">
             </div>
             <label class="mt-2">Description</label>
-            <textarea class="form-control" [(ngModel)]="postData.Description"></textarea>
+            <textarea class="form-control" id="inputDescription" [(ngModel)]="postData.Description"></textarea>
         </div>
         <div class="col-8">
             <div class="container">
@@ -32,9 +32,12 @@
                             </select>
                         </div>
                         <div class="col">
-                            <label>Group</label>
-                            <select class="form-control" [(ngModel)]="postData.GroupName" id="selectGroup">
-                                <option *ngFor="let group of groupList">{{group}}</option>
+                            <label>Post Group</label>
+                            <select *ngIf="this.postId == undefined" class="form-control" id="selectPostGroup">
+                                <option *ngFor="let group of postGroupList">{{group}}</option>
+                            </select>
+                            <select *ngIf="this.postId != undefined" class="form-control" id="selectPostGroup">
+                                <option>{{postData.PostGroupName}}</option>
                             </select>
                         </div>
                     </div>
@@ -42,7 +45,16 @@
                         <div class="col">
                             <label>Post name</label>
                             <input type="text" class="form-control" [(ngModel)]="postData.Name"
-                                placeholder="customer-melina_case-12">
+                                placeholder="customer-melina_case-12" id="inputPostName">
+                        </div>
+                        <div class="col">
+                            <label>Comment Group</label>
+                            <select *ngIf="this.postId == undefined" class="form-control" id="selectCommentGroup">
+                                <option *ngFor="let group of commentGroupList">{{group}}</option>
+                            </select>
+                            <select *ngIf="this.postId != undefined" class="form-control" id="selectCommentGroup">
+                                <option>{{postData.CommentGroupName}}</option>
+                            </select>
                         </div>
                     </div>
                 </div>

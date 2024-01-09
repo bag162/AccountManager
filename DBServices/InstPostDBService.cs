@@ -27,6 +27,11 @@ namespace BASAccountManager.DBServices
             return;
         }
 
+        public async Task<List<DBInstPost>> GetAllInstPostAsync()
+        {
+            return await this.dbcontext.InstPost.Include(x => x.Post).Include(x => x.ListComment).ToListAsync();
+        }
+
         public List<DBInstPost> GetInstPospsByAccount(int accountId)
         {
             return this.dbcontext.InstPost.Where(x => x.AccountId == accountId).Include(x => x.Post).ToList();

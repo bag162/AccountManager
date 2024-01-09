@@ -4,6 +4,7 @@ using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.TaskManagers.InstManager.DTO;
+using Hangfire.Server;
 using Newtonsoft.Json;
 
 namespace BASAccountManager.TaskManagers.InstManager
@@ -179,6 +180,16 @@ namespace BASAccountManager.TaskManagers.InstManager
             }
 
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorIntermediatePostingAsync(int workerId, int postID, string errorMessage)
+        {
+            var worker = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            var instpost = this.instPostDBService.GetInstPospsByAccount(worker.AccountId).Where(x => x.PostId == postID).First();
+            instpost.InstPostStatus = DB.Models.Post.InstPostStatus.PostingError;
+            instpost.PostingErrorMessage = errorMessage;
+            await this.instPostDBService.UpdateInstPostAsync(instpost);
             return JsonConvert.SerializeObject(true);
         }
 

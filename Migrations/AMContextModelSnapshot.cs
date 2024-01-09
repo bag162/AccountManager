@@ -178,21 +178,26 @@ namespace BASAccountManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PostCommentGroupId")
+                        .HasColumnType("int");
+
                     b.Property<int>("PostStatus")
                         .HasColumnType("int");
 
                     b.Property<string>("PostURI")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RequiredCountComments")
+                    b.Property<int>("RequiredCountComments")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RequiredCountLikes")
+                    b.Property<int>("RequiredCountLikes")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("PostCommentGroupId");
 
                     b.ToTable("Post");
                 });
@@ -369,6 +374,28 @@ namespace BASAccountManager.Migrations
                     b.ToTable("WorkerTask");
                 });
 
+            modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("CommentGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommentGroupId");
+
+                    b.ToTable("Comment");
+                });
+
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBInstPost", b =>
                 {
                     b.Property<int>("Id")
@@ -378,9 +405,6 @@ namespace BASAccountManager.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CommentsCount")
                         .HasColumnType("int");
 
                     b.Property<int>("InstPostStatus")
@@ -393,6 +417,9 @@ namespace BASAccountManager.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("PostURI")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PostingErrorMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -400,6 +427,10 @@ namespace BASAccountManager.Migrations
                     b.HasIndex("AccountId");
 
                     b.HasIndex("PostId");
+
+                    b.HasIndex("PostURI")
+                        .IsUnique()
+                        .HasFilter("[PostURI] IS NOT NULL");
 
                     b.ToTable("InstPost");
                 });
@@ -412,7 +443,10 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AccountId")
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CommentId")
                         .HasColumnType("int");
 
                     b.Property<int>("CommentStatus")
@@ -421,20 +455,41 @@ namespace BASAccountManager.Migrations
                     b.Property<DateTime?>("CommentTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SenderAccountId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("CommentId");
 
                     b.HasIndex("PostId");
 
+                    b.HasIndex("SenderAccountId");
+
                     b.ToTable("PostComment");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostCommentGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("CommentGroup");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostGroup", b =>
@@ -460,35 +515,6 @@ namespace BASAccountManager.Migrations
                         .IsUnique();
 
                     b.ToTable("PostGroup");
-                });
-
-            modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostLike", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LikeStatus")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("LikeTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("PostId");
-
-                    b.ToTable("PostLike");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBBASExeption", b =>
@@ -526,12 +552,20 @@ namespace BASAccountManager.Migrations
             modelBuilder.Entity("BASAccountManager.DB.Models.DBPost", b =>
                 {
                     b.HasOne("BASAccountManager.DB.Models.Post.DBPostGroup", "Group")
-                        .WithMany("Posts")
+                        .WithMany("ListPost")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BASAccountManager.DB.Models.Post.DBPostCommentGroup", "PostCommentGroup")
+                        .WithMany("ListPost")
+                        .HasForeignKey("PostCommentGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Group");
+
+                    b.Navigation("PostCommentGroup");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBProxy", b =>
@@ -572,16 +606,27 @@ namespace BASAccountManager.Migrations
                     b.Navigation("Task");
                 });
 
+            modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBComment", b =>
+                {
+                    b.HasOne("BASAccountManager.DB.Models.Post.DBPostCommentGroup", "CommentGroup")
+                        .WithMany("ListComment")
+                        .HasForeignKey("CommentGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CommentGroup");
+                });
+
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBInstPost", b =>
                 {
                     b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "Account")
-                        .WithMany("PostList")
+                        .WithMany("ListPost")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BASAccountManager.DB.Models.DBPost", "Post")
-                        .WithMany()
+                        .WithMany("ListPost")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -593,21 +638,27 @@ namespace BASAccountManager.Migrations
 
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostComment", b =>
                 {
-                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "Account")
+                    b.HasOne("BASAccountManager.DB.Models.Post.DBComment", "Comment")
                         .WithMany()
-                        .HasForeignKey("AccountId")
+                        .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BASAccountManager.DB.Models.DBPost", "Post")
-                        .WithMany()
+                    b.HasOne("BASAccountManager.DB.Models.Post.DBInstPost", "Post")
+                        .WithMany("ListComment")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Account");
+                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "SenderAccount")
+                        .WithMany()
+                        .HasForeignKey("SenderAccountId");
+
+                    b.Navigation("Comment");
 
                     b.Navigation("Post");
+
+                    b.Navigation("SenderAccount");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostGroup", b =>
@@ -621,25 +672,6 @@ namespace BASAccountManager.Migrations
                     b.Navigation("AccountGroup");
                 });
 
-            modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostLike", b =>
-                {
-                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BASAccountManager.DB.Models.DBPost", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-
-                    b.Navigation("Post");
-                });
-
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstAccountGroup", b =>
                 {
                     b.Navigation("InstAccounts");
@@ -647,7 +679,12 @@ namespace BASAccountManager.Migrations
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstagramAccount", b =>
                 {
-                    b.Navigation("PostList");
+                    b.Navigation("ListPost");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBPost", b =>
+                {
+                    b.Navigation("ListPost");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBProxyGroup", b =>
@@ -655,9 +692,21 @@ namespace BASAccountManager.Migrations
                     b.Navigation("Proxies");
                 });
 
+            modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBInstPost", b =>
+                {
+                    b.Navigation("ListComment");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostCommentGroup", b =>
+                {
+                    b.Navigation("ListComment");
+
+                    b.Navigation("ListPost");
+                });
+
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostGroup", b =>
                 {
-                    b.Navigation("Posts");
+                    b.Navigation("ListPost");
                 });
 #pragma warning restore 612, 618
         }

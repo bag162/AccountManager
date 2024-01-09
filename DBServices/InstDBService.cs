@@ -155,7 +155,7 @@ namespace BASAccountManager.DBServices
         public async Task<List<DBInstagramAccount>> GetInstAccountsByGroupAsync(string group)
         {
             var groupId = this.dbcontext.InstAccountGroup.Where(x => x.Name == group).First().Id;
-            return await this.dbcontext.InstAccount.Include(x => x.PostList).AsQueryable().Where(x => x.InstGroupId == groupId).ToListAsync();
+            return await this.dbcontext.InstAccount.Include(x => x.ListPost).AsQueryable().Where(x => x.InstGroupId == groupId).ToListAsync();
         }
     }
 }

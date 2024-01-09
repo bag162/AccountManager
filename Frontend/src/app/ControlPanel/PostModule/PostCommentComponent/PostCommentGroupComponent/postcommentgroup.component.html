@@ -1,0 +1,25 @@
+<div id="addGroupForm" style="margin-bottom: 3%;">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+                <div class="form-group">
+                    <label>Gorup Name</label>
+                    <input class="form-control" [(ngModel)]="newGroup">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-lg" (click)="AddGroup()">Add</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="accountTable"></table>

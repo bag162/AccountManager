@@ -30,24 +30,30 @@ namespace BASAccountManager
             CreateMap<DBSMSActivation, SMSServiceDTO>().ReverseMap();
             CreateMap<DBTask, TaskDTO>().ReverseMap();
 
+            CreateMap<DBPostCommentGroup, CommentGroupDTO>()
+                .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.ListPost.Count()))
+                .ForMember(dest => dest.CountComments, opt => opt.MapFrom(src => src.ListComment.Count()));
+
             CreateMap<DBPost, PostListDTO>()
                 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
             CreateMap<PostListDTO, DBPost>();
 
-            CreateMap<DBPost, CRUDPostDTO>().ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name));
+            CreateMap<DBPost, CRUDPostDTO>()
+                .ForMember(dest => dest.PostGroupName, opt => opt.MapFrom(src => src.Group.Name))
+                .ForMember(dest => dest.CommentGroupName, opt => opt.MapFrom(src => src.PostCommentGroup.Name));
+
             CreateMap<CRUDPostDTO, DBPost>();
 
-            CreateMap<DBPostLike, LikeDTO>()
-                .ForMember(dest => dest.AccountLogin, opt => opt.MapFrom(src => src.Account.Login));
-            CreateMap<LikeDTO, DBPostLike>();
-
-            CreateMap<DBPostComment, CommentDTO>()
-                .ForMember(dest => dest.AccountLogin, opt => opt.MapFrom(src => src.Account.Login));
-            CreateMap<CommentDTO, DBPostComment>();
-
+            CreateMap<DBComment, CommentDTO>()
+                .ForMember(dest => dest.CommentGroupName, opt => opt.MapFrom(src => src.CommentGroup.Name));
+            CreateMap<CommentDTO, DBComment>();
+            CreateMap<CRUDCommentDTO, DBComment>();
+            
+            CreateMap<CRUDCommentGroupDTO, DBPostCommentGroup>();
+            
             CreateMap<DBPostGroup, PostGroupDTO>()
                 .ForMember(dest => dest.AccountGroupName, opt => opt.MapFrom(src => src.AccountGroup.Name))
-                .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.Posts.Count()));
+                .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.ListPost.Count()));
             CreateMap<PostGroupDTO, DBPostGroup>();
 
             /*** BAS task Mapping ***/

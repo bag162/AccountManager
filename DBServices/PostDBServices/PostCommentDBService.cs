@@ -5,6 +5,7 @@ using BASAccountManager.DB;
 using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace BASAccountManager.DBServices.PostDBServices
 {
@@ -21,6 +22,21 @@ namespace BASAccountManager.DBServices.PostDBServices
             this.mapper = mapper;
         }
 
+        public async Task AddCommentAsync(List<CRUDCommentDTO> comments)
+        {
+            var group = this.dbcontext.CommentGroup.Where(x => x.Name == comments.First().CommentGroupName).First().Id;
+            var newComments = mapper.Map<List<DBComment>>(comments);
+
+            foreach (var comment in newComments)
+            {
+                comment.CommentGroupId = group;
+            }
+
+            await this.dbcontext.Comment.AddRangeAsync(newComments);
+            await this.dbcontext.SaveChangesAsync();
+            return;
+        }
+
         public async Task AddCommentAsync(List<DBPostComment> comments)
         {
             await this.dbcontext.PostComment.AddRangeAsync(comments);
@@ -28,34 +44,34 @@ namespace BASAccountManager.DBServices.PostDBServices
             return;
         }
 
-        public async Task DeleteCommentAsync(List<DBPostComment> comments)
+        public async Task DeleteCommentAsync(List<CRUDCommentDTO> comments)
         {
-            this.dbcontext.PostComment.RemoveRange(comments);
+            var deletedComments = mapper.Map<List<DBComment>>(comments);
+            this.dbcontext.Comment.RemoveRange(deletedComments);
             await this.dbcontext.SaveChangesAsync();
             return;
         }
 
-        public JqueryDataTable<CommentDTO> GetCommentsByPost(int start, int lenght, string searchdata, int postId)
+        public JqueryDataTable<CommentDTO> GetComments(int start, int lenght, string searchdata)
         {
             var data = new JqueryDataTable<CommentDTO>();
-            data.recordsTotal = this.dbcontext.PostComment.Count();
-            DBPostComment[] filteredData = Array.Empty<DBPostComment>();
+            data.recordsTotal = this.dbcontext.Comment.Count();
+            DBComment[] filteredData = Array.Empty<DBComment>();
 
             if (!string.IsNullOrEmpty(searchdata))
             {
                 if (lenght == -1)
                 {
-                    filteredData = this.dbcontext.PostComment.Include(x => x.Account).AsQueryable().Where(m => m.Message.Contains(searchdata)
-                                                || m.PostId == postId
-                                                || m.Account.Login.Contains(searchdata)
+                    filteredData = this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable()
+                                                .Where(m => m.Message.Contains(searchdata)
+                                                || m.CommentGroup.Name.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
                 }
                 else
                 {
 
-                    filteredData = this.dbcontext.PostComment.Include(x => x.Account).AsQueryable().Where(m => m.Message.Contains(searchdata)
-                                                || m.PostId == postId
-                                                || m.Account.Login.Contains(searchdata)
+                    filteredData = this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable().Where(m => m.Message.Contains(searchdata)
+                                                || m.CommentGroup.Name.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
                 }
 
@@ -68,11 +84,55 @@ namespace BASAccountManager.DBServices.PostDBServices
                 data.recordsFiltered = data.recordsTotal;
                 if (lenght == -1)
                 {
-                    data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.PostComment.Include(x => x.Account).AsQueryable().Where(x => x.PostId == postId).Skip(start).Take(data.recordsTotal).ToArray());
+                    data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
                 }
                 else
                 {
-                    data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.PostComment.Include(x => x.Account).AsQueryable().Where(x => x.PostId == postId).Skip(start).Take(lenght).ToArray());
+                    data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable().Skip(start).Take(lenght).ToArray());
+                }
+            }
+            return data;
+        }
+
+        public JqueryDataTable<CommentDTO> GetCommentsByGroup(int start, int lenght, string searchdata, int groupId)
+        {
+            var data = new JqueryDataTable<CommentDTO>();
+            data.recordsTotal = this.dbcontext.Comment.Count();
+            DBComment[] filteredData = Array.Empty<DBComment>();
+
+            if (!string.IsNullOrEmpty(searchdata))
+            {
+                if (lenght == -1)
+                {
+                    filteredData = this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable()
+                                                .Where(m => m.Message.Contains(searchdata)
+                                                || m.CommentGroup.Name.Contains(searchdata)
+                                                || m.CommentGroup.Id.Equals(groupId)
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                }
+                else
+                {
+
+                    filteredData = this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable().Where(m => m.Message.Contains(searchdata)
+                                                || m.CommentGroup.Name.Contains(searchdata)
+                                                || m.CommentGroup.Id.Equals(groupId)
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                }
+
+
+                data.recordsFiltered = filteredData.Count();
+                data.data = mapper.Map<List<CommentDTO>>(filteredData);
+            }
+            else
+            {
+                data.recordsFiltered = data.recordsTotal;
+                if (lenght == -1)
+                {
+                    data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable().Where(x => x.CommentGroup.Id.Equals(groupId)).Skip(start).Take(data.recordsTotal).ToArray());
+                }
+                else
+                {
+                    data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.Comment.Include(x => x.CommentGroup).AsQueryable().Where(x => x.CommentGroup.Id.Equals(groupId)).Skip(start).Take(lenght).ToArray());
                 }
             }
             return data;

@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { PostGroupService } from 'src/app/Services/PostGroupService';
 import { PostService } from 'src/app/Services/PostService';
 import { environment } from '../../../../../environments/environment';
+import { PostCommentGroupService } from 'src/app/Services/PostCommentGroupService';
 
 @Component({
     selector: 'overview-post',
@@ -14,27 +15,27 @@ export class OverviewPostComponent implements OnInit {
     data: any;
     postData: CRUDPostDTO = new CRUDPostDTO();
     static imageBase64Data: string;
-    groupList: string[];
+
+    postGroupList: string[] = Array<string>();
+    commentGroupList: string[];
+
     postGroupService: PostGroupService;
     postService: PostService;
+    postCommentGroupService: PostCommentGroupService;
 
     constructor(activateRoute: ActivatedRoute,
         postGroupService: PostGroupService,
-        postService: PostService) {
+        postService: PostService,
+        postCommentGroupService: PostCommentGroupService) {
         this.postId = activateRoute.snapshot.params["postId"];
         this.postGroupService = postGroupService;
         this.postService = postService;
+        this.postCommentGroupService = postCommentGroupService;
     }
 
     async ngOnInit() {
         $('#successNot').hide();
         $('#errorNot').hide();
-
-        (await this.postGroupService.GetList()).subscribe({
-            next: (data: string[]) => {
-                this.groupList = data;
-            }
-        })
 
         if (this.postId != undefined) {
             (await this.postService.GetPostById(this.postId)).subscribe(
@@ -45,12 +46,28 @@ export class OverviewPostComponent implements OnInit {
                     }
                 }
             )
+            $("#inputDescription").prop("disabled", true);
+            $("#selectPostGroup").prop("disabled", true);
+            $("#selectCommentGroup").prop("disabled", true);
+            $("#inputPostName").prop("disabled", true);
+
             $("#addPostBtn").hide();
             $("#loadImageEl").hide();
+            
         }
         else {
             $("#updatePostBtn").hide();
             $("#uploadedImage").hide();
+            (await this.postGroupService.GetList()).subscribe({
+                next: (data: string[]) => {
+                    this.postGroupList = data;
+                }
+            })
+            await (await this.postCommentGroupService.GetGroupNames()).subscribe({
+                next: (data: string[]) => {
+                    this.commentGroupList = data;
+                }
+            })
         }
     }
 
@@ -76,7 +93,8 @@ export class OverviewPostComponent implements OnInit {
         var imageFormat = imageFormatBase64.split(";")[0];
         this.postData.ImageBase64 = base64Data[1];
         this.postData.ImageFormat = imageFormat;
-        this.postData.GroupName = $('#selectGroup').val().toString();
+        this.postData.PostGroupName = $('#selectPostGroup').val().toString();
+        this.postData.CommentGroupName = $("#selectCommentGroup").val().toString();
         (await this.postService.AddPost(this.postData)).subscribe({
             next: (data: boolean) => {
                 if (data) {
@@ -128,7 +146,7 @@ export class OverviewPostComponent implements OnInit {
 export class CRUDPostDTO {
     Id: number;
     Name: string;
-    GroupName: string;
+    PostGroupName: string;
     PostStatus: string;
     RequiredCountLikes: number;
     RequiredCountComments: number;
@@ -137,10 +155,10 @@ export class CRUDPostDTO {
     Description?: string;
     PostURI: string = "Added by user";
     ImagePath?: string;
+    CommentGroupName: string;
 }
 
-export class UpdatePostDTO
-{
+export class UpdatePostDTO {
     Id: number;
     PostStatus: string;
     RequiredCountLikes: number;

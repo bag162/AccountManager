@@ -25,9 +25,11 @@ namespace BASAccountManager.DBServices.PostDBServices
         public async Task AddPostAsync(CRUDPostDTO post)
         {
             var addedPost = this.mapper.Map<DBPost>(post);
-            var groupId = this.dbcontext.PostGroup.Where(x => x.Name == post.GroupName).Select(x => x.Id).First();
-            addedPost.GroupId = groupId;
-            var path = "wwwroot/images/posts/" + post.GroupName;
+            var postGroupId = this.dbcontext.PostGroup.Where(x => x.Name == post.PostGroupName).Select(x => x.Id).First();
+            var commentGroupId = this.dbcontext.CommentGroup.Where(x => x.Name == post.CommentGroupName).Select(x => x.Id).First();
+            addedPost.PostCommentGroupId = commentGroupId;
+            addedPost.GroupId = postGroupId;
+            var path = "wwwroot/images/posts/" + post.PostGroupName;
 
             string filePath = await ImageService.AddBase64ImageAsync(post.ImageFormat, post.ImageBase64, path, post.Name);
             addedPost.ImagePath = filePath.Remove(0, 8);
@@ -85,7 +87,7 @@ namespace BASAccountManager.DBServices.PostDBServices
 
         public CRUDPostDTO GetPostById(int postId)
         {
-            var post = this.dbcontext.Post.Include(x => x.Group).Where(x => x.Id == postId).First();
+            var post = this.dbcontext.Post.Include(x => x.Group).Include(x => x.PostCommentGroup).Where(x => x.Id == postId).First();
             return mapper.Map<CRUDPostDTO>(post);
         }
 

@@ -149,20 +149,20 @@ export class InstAccountComponent implements OnInit {
         (await this.InstAccountService.AddAccounts(addedAccount)).subscribe({
             next: (data: boolean) => {
                 if (data) {
-                    $("#successNot").show(500);
-                    $("#accountForm").hide(500);
-                    $("#successNot").delay(1500).hide(500);
+                    $("#successNot").show(200);
+                    $("#accountForm").hide(200);
+                    $("#successNot").delay(400).hide(200);
                 }
                 else {
-                    $("#errorNot").show(500);
-                    $("#accountForm").hide(500);
-                    $("#errorNot").delay(1500).hide(500);
+                    $("#errorNot").show(200);
+                    $("#accountForm").hide(200);
+                    $("#errorNot").delay(400).hide(200);
                 }
             },
             error: error => {
-                $("#errorNot").show(500);
-                $("#accountForm").hide(500);
-                $("#errorNot").delay(1500).hide(500);
+                $("#errorNot").show(200);
+                $("#accountForm").hide(200);
+                $("#errorNot").delay(400).hide(200);
             }
         });
 

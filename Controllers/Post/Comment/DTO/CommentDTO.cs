@@ -6,8 +6,13 @@ namespace BASAccountManager.Controllers.Post.Comment.DTO
     {
         public int Id { get; set; }
         public string Message { get; set; }
-        public string AccountLogin { get; set; }
-        public DateTime? CommentTime { get; set; }
-        public string CommentStatus { get; set; }
+        public string CommentGroupName{ get; set; }
+    }
+
+    public class CRUDCommentDTO
+    {
+        public int? Id { get; set; }
+        public string? Message { get; set; }
+        public string? CommentGroupName { get; set; }
     }
 }

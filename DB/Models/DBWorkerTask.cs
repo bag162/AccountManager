@@ -9,7 +9,8 @@ namespace BASAccountManager.DB.Models
         public int Id { get; set; }
         public int? WorkerId { get; set; }
         public string? InstanceId { get; set; }
-        public TaskStatus Status { get; set; }
+        public string? UsefulData { get; set; }
+        public string? ErrorMessage { get; set; }
 
         [ForeignKey(nameof(DBInstagramAccount))]
         public int AccountId { get; set; }
@@ -23,8 +24,7 @@ namespace BASAccountManager.DB.Models
         public int TaskId { get; set; }
         public DBTask Task { get; set; }
 
-        public string? UsefulData { get; set; }
-        public string? ErrorMessage { get; set; }
+        public TaskStatus Status { get; set; }
         public TaskType TaskType { get; set; }
         public RegistrationVerifyResoursesType? RegistrationVerifyResoursesType { get; set; }
     }

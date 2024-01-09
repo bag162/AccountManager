@@ -1,8 +1,8 @@
 {
-  "name": "helloapp",
+  "name": "accountmanager",
   "version": "1.0.0",
-  "description": "First Angular 17 Project",
-  "author": "Eugene Popov metanit.com",
+  "description": "no",
+  "author": "AofA Group",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

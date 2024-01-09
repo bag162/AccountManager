@@ -5,6 +5,7 @@ namespace BASAccountManager.DBServices.Interfaces
     public interface IInstPostDBService
     {
         public Task AddInstPostAsync(DBInstPost post);
+        public Task<List<DBInstPost>> GetAllInstPostAsync();
         public List<DBInstPost> GetInstPospsByAccount(int accountId);
         public Task UpdateInstPostAsync(DBInstPost post);
     }

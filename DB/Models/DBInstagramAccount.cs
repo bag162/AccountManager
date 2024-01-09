@@ -11,8 +11,7 @@ namespace BASAccountManager.DB.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public AccountStatus AccountStatus { get; set; }
-
+        
         public string? InstanceId { get; set; }
         public string? ProfileLink { get; set; }
         public string? Name { get; set; }
@@ -24,7 +23,9 @@ namespace BASAccountManager.DB.Models
         public int InstGroupId { get; set; }
         public DBInstAccountGroup InstGroup { get; set; }
 
-        public List<DBInstPost> PostList { get; set; } = new List<DBInstPost>();
+        public AccountStatus AccountStatus { get; set; }
+
+        public List<DBInstPost> ListPost { get; set; } = new List<DBInstPost>();
     }
 
     public enum AccountStatus

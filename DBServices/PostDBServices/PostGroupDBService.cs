@@ -51,13 +51,13 @@ namespace BASAccountManager.DBServices.PostDBServices
             {
                 if (lenght == -1)
                 {
-                    filteredData = this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.Posts).AsQueryable().Where(m => m.Name.Contains(searchdata)
+                    filteredData = this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.ListPost).AsQueryable().Where(m => m.Name.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
                 }
                 else
                 {
 
-                    filteredData = this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.Posts).AsQueryable().Where(m => m.Name.Contains(searchdata)
+                    filteredData = this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.ListPost).AsQueryable().Where(m => m.Name.Contains(searchdata)
                                                 || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
                 }
 
@@ -70,11 +70,11 @@ namespace BASAccountManager.DBServices.PostDBServices
                 data.recordsFiltered = data.recordsTotal;
                 if (lenght == -1)
                 {
-                    data.data = mapper.Map<List<PostGroupDTO>>(this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.Posts).AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
+                    data.data = mapper.Map<List<PostGroupDTO>>(this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.ListPost).AsQueryable().Skip(start).Take(data.recordsTotal).ToArray());
                 }
                 else
                 {
-                    data.data = mapper.Map<List<PostGroupDTO>>(this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.Posts).AsQueryable().Skip(start).Take(lenght).ToArray());
+                    data.data = mapper.Map<List<PostGroupDTO>>(this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.ListPost).AsQueryable().Skip(start).Take(lenght).ToArray());
                 }
             }
             return data;
@@ -82,7 +82,7 @@ namespace BASAccountManager.DBServices.PostDBServices
 
         public List<DBPostGroup> GetGroups()
         {
-            return this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.Posts).ToList();
+            return this.dbcontext.PostGroup.Include(x => x.AccountGroup).Include(x => x.ListPost).ToList();
         }
 
         public List<string> GetListGroupNames()

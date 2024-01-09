@@ -7,7 +7,6 @@ namespace BASAccountManager.DB.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
         public DateTime ExeptionTime { get; set; }
         public string ExeptionMessage { get; set; }
 

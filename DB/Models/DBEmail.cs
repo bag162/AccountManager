@@ -8,11 +8,10 @@ namespace BASAccountManager.DB.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
-
-        public EmailType EmailType { get; set; }
-
         public string? APIToken { get; set; }
         public string? MailDomain { get; set; }
+
+        public EmailType EmailType { get; set; }
     }
 
     public enum EmailType

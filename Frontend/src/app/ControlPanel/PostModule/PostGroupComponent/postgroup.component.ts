@@ -4,7 +4,7 @@ import { environment } from '../../../../environments/environment';
 import { InstAccountService } from 'src/app/Services/InstAccountService';
 
 @Component({
-    selector: 'postgroup',
+    selector: 'post-group',
     templateUrl: 'postgroup.component.html'
 })
 
@@ -77,7 +77,7 @@ export class PostGroupComponent implements OnInit {
                     }
                 },
                 {
-                    text: 'View posts selected Group',
+                    text: 'View posts by selected Group',
                     action: function (e, dt, node, config) {
                         RedirectToPostManager(dt.rows({ selected: true }).data()[0]);
                     }
@@ -92,7 +92,7 @@ export class PostGroupComponent implements OnInit {
         })
         async function RedirectToPostManager(data: string)
         {
-            $(location).attr('href', window.location.origin.toString() + "/post/postmanager/" + data["Id"]);
+            $(location).attr('href', window.location.origin.toString() + "/post/manager/" + data["Id"]);
         }
 
         async function Delete(data: string[], dt: any) {

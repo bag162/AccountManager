@@ -39,6 +39,12 @@ namespace BASAccountManager.Controllers.BASTask
         }
 
         [HttpPost]
+        public async Task<string> PostingIntermediateError([FromBody] PostingIntermediateErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorIntermediatePostingAsync(error.WorkerId, error.PostId, error.ErrorMessage);
+        }
+
+        [HttpPost]
         public async Task<string> VerifyServiceError([FromBody] VerifyServiceErrorDTO error)
         {
             return await this.InstTaskManager.ErrorVerifyServiceAsync(error);

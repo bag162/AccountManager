@@ -47,6 +47,13 @@
         public int workerId { get; set; }
     }
 
+    public class PostingIntermediateErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int PostId { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
     public enum PostingTaskErrorType
     {
         FullBan,

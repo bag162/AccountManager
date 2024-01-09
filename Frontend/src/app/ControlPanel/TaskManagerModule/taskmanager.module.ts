@@ -13,6 +13,8 @@ import { SelectAccountGroupComponent } from './MComponents/SelectAccountGroupCom
 import { SelectEmailComponent } from './MComponents/SelectEmailGroupComponent/selectemail.component'
 import { AuthorizatioonTaskComponent } from './AuthorizationTaskComponent/authorizationtask.component'
 import { PostingTaskComponent } from './PostingTaskComponent/postingtask.component'
+import { CommentingTaskComponent } from './CommentingTaskComponent/commentingtask.component'
+
 
 @NgModule({
     imports: [
@@ -23,6 +25,7 @@ import { PostingTaskComponent } from './PostingTaskComponent/postingtask.compone
                     { path: "registration", component: RegistrationTaskComponent },
                     { path: "authorization", component: AuthorizatioonTaskComponent },
                     { path: "posting", component: PostingTaskComponent },
+                    { path: "commenting", component: CommentingTaskComponent },
                     { path: "workertaskdata/:id", component: WorkerTaskDataComponent }
                 ]
             }
@@ -42,7 +45,8 @@ import { PostingTaskComponent } from './PostingTaskComponent/postingtask.compone
         SelectAccountGroupComponent,
         SelectEmailComponent,
         WorkerTaskDataComponent,
-        PostingTaskComponent
+        PostingTaskComponent,
+        CommentingTaskComponent
     ],
     providers: [],
     bootstrap: [TaskManagerComponent]

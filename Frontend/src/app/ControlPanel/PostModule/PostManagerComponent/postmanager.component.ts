@@ -4,7 +4,7 @@ import { environment } from '../../../../environments/environment';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-    selector: 'postmanager',
+    selector: 'post-manager',
     templateUrl: 'postmanager.component.html'
 })
 
@@ -35,6 +35,9 @@ export class PostManagerComponent implements OnInit {
             columns: [{
                 title: 'ID',
                 data: 'Id'
+            }, {
+                title: 'Post name',
+                data: 'Name'
             }, {
                 title: 'Post URI',
                 data: 'PostURI'
@@ -93,6 +96,7 @@ export class PostManagerComponent implements OnInit {
                 newItem.GroupName = element["GroupName"]
                 newItem.PostStatus = element["PostStatus"]
                 newItem.PostURI = element["PostURI"]
+                newItem.Name = element["Name"]
 
 
                 deletedpost.push(newItem);
@@ -120,18 +124,20 @@ export class PostManagerComponent implements OnInit {
 
         function Add()
         {
-            $(location).attr('href', window.location.origin.toString() + "/post/postmanager/add");
+            $(location).attr('href', window.location.origin.toString() + "/post/manager/add");
         }
 
         function ViewOrUpdate(postId: number)
         {
-            $(location).attr('href', window.location.origin.toString() + "/post/postmanager/update/" + postId);
+            $(location).attr('href', window.location.origin.toString() + "/post/manager/update/" + postId);
         }
     }
 }
 
 export class PostDTO {
     Id: number;
+    Name: string;
+    Post: string;
     PostURI: string;
     GroupName: string;
     PostStatus: string;

@@ -20,6 +20,8 @@ namespace BASAccountManager.BackgroundTask
         private IPostDBService postDBService { get; set; }
         private IPostGroupDBService postGroupDBService { get; set; }
         private IInstPostDBService instPostDBService { get; set; }
+        private IPostCommentGroupDBService postCommentGroupDBService { get; set; }
+        private IPostCommentDBService postCommentDBService { get; set; }
 
         public AssignmentWriter(ITaskDBService taskDbService,
             IWorkerTaskDBService workerTaskDbService,
@@ -30,7 +32,9 @@ namespace BASAccountManager.BackgroundTask
             IInstDBService instDBService,
             IPostDBService postDBService,
             IPostGroupDBService postGroupDBService,
-            IInstPostDBService instPostDBService)
+            IInstPostDBService instPostDBService,
+            IPostCommentGroupDBService postCommentGroupDBService,
+            IPostCommentDBService postCommentDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -42,6 +46,52 @@ namespace BASAccountManager.BackgroundTask
             this.postDBService = postDBService;
             this.postGroupDBService = postGroupDBService;
             this.instPostDBService = instPostDBService;
+            this.postCommentGroupDBService = postCommentGroupDBService;
+            this.postCommentDBService = postCommentDBService;
+        }
+
+        // Парсит посты на наличие новых комментариев и добаляет их в базу задач
+        public async Task CommentParserAsync()
+        {
+            // Получаем все активные посты
+            var instPosts = await this.instPostDBService.GetAllInstPostAsync();
+            // Оставляем только выложенные посты
+            instPosts = instPosts.Where(x => x.InstPostStatus == InstPostStatus.Published).Where(x => x.Post.PostStatus == PostStatus.Active).ToList();
+            
+            foreach (var instPost in instPosts)
+            {
+                // Пропускаем пост если все необходимые комментарии уже есть в базе
+                if (instPost.ListComment.Count() >= instPost.Post.RequiredCountComments)
+                    continue;
+                // Узнаем сколько комментариев нам нужно добавить
+                var requiredComments = instPost.Post.RequiredCountComments - instPost.ListComment.Count();
+                // Получаем образцы комментариев которые мы будем добавлять для поста
+                var sampleComments = this.postCommentGroupDBService.GetCommentGroupById(instPost.Post.PostCommentGroupId).ListComment;
+
+                foreach (var currentComment in instPost.ListComment)
+                {
+                    if (sampleComments.Where(x => x.Id == currentComment.CommentId).Count() != 0)
+                    {
+                        // Удаляем из листа комментариев, комментарии по образцам которых уже был добавлен комментарий
+                        sampleComments.Remove(sampleComments.Where(x => x.Id == currentComment.CommentId).First());
+                    }
+                }
+                // Создаем список комментариев, по образцам которых будем создавать комменты
+                var sampleCommentsToAdd = sampleComments.Take(requiredComments).ToList();
+                var commentsToAdd = new List<DBPostComment>();
+
+                // Создаем комментарии на добавление
+                foreach (var sampleComment in sampleCommentsToAdd)
+                {
+                    var newComment = new DBPostComment();
+                    newComment.PostId = instPost.Id;
+                    newComment.CommentId = sampleComment.Id;
+                    newComment.CommentStatus = CommentStatus.NotPublished;
+                    commentsToAdd.Add(newComment);
+                }
+                if (commentsToAdd.Count() != 0)
+                await this.postCommentDBService.AddCommentAsync(commentsToAdd);
+            }
         }
 
         // Парсит Post и добавляет InstPost
@@ -50,13 +100,13 @@ namespace BASAccountManager.BackgroundTask
             var allPostGroups = this.postGroupDBService.GetGroups();
             foreach (var postGroup in allPostGroups)
             {
-                var parsedPosts = postGroup.Posts.Where(x => x.PostStatus == PostStatus.Active).ToList();
+                var parsedPosts = postGroup.ListPost.Where(x => x.PostStatus == PostStatus.Active).ToList();
                 var accounts = await this.instDBService.GetInstAccountsByGroupAsync(postGroup.AccountGroup.Name);
                 foreach (var account in accounts)
                 {
                     foreach (var checkedPost in parsedPosts)
                     {
-                        if (account.PostList.Where(x => x.PostId == checkedPost.Id).Count() == 0)
+                        if (account.ListPost.Where(x => x.PostId == checkedPost.Id).Count() == 0)
                         {
                             var newInstPost = new DBInstPost() { AccountId = account.Id, PostId = checkedPost.Id, InstPostStatus = InstPostStatus.NotPublished };
                             await this.instPostDBService.AddInstPostAsync(newInstPost);
@@ -244,7 +294,7 @@ namespace BASAccountManager.BackgroundTask
             // Используем только авторизованные аккаунты
             accountList = accountList.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
             // Используем аккаунты, у которых есть посты для публикации
-            accountList = accountList.Where(x => x.PostList.Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0).ToList();
+            accountList = accountList.Where(x => x.ListPost.Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0).ToList();
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
             foreach (var account in addedWorkers.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
             {

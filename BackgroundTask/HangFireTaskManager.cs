@@ -23,6 +23,11 @@ namespace BASAccountManager
             
         }
 
+        public async Task CommentParser()
+        {
+            await this.AssignmentWriter.CommentParserAsync();
+        }
+
         public async Task MonitorStatus()
         {
             await this.StatusMonitor.CheckProxyStatusAsync();

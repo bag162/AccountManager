@@ -7,18 +7,20 @@ namespace BASAccountManager.DB.Models.Post
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public DateTime? CommentTime { get; set; }
 
-        public string Message { get; set; }
-
-        [ForeignKey(nameof(DBPost))]
+        [ForeignKey(nameof(DBInstPost))]
         public int PostId { get; set; }
-        public DBPost Post { get; set; }
+        public DBInstPost Post { get; set; }
+
+        [ForeignKey(nameof(DBComment))]
+        public int CommentId { get; set; }
+        public DBComment Comment { get; set; }
 
         [ForeignKey(nameof(DBInstagramAccount))]
-        public int AccountId { get; set; }
-        public DBInstagramAccount Account { get; set; }
+        public int? AccountId { get; set; }
+        public DBInstagramAccount? SenderAccount { get; set; }
 
-        public DateTime? CommentTime { get; set; }
         public CommentStatus CommentStatus { get; set; }
     }
 
