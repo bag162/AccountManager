@@ -29,6 +29,7 @@ namespace BASAccountManager.DB.Models.Post
     {
         Published,
         NotPublished,
-        PostingError
+        PostingError,
+        InProcessPublication
     }
 }

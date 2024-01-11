@@ -117,7 +117,12 @@ namespace BASAccountManager.DBServices
 
         public async Task RemoveInstAccountsAsync(List<DBInstagramAccount> removedAccs)
         {
-            this.dbcontext.InstAccount.RemoveRange(removedAccs);
+            var deleteAccounts = new List<DBInstagramAccount>();
+            foreach (var removedAccount in removedAccs)
+            {
+                deleteAccounts.Add(this.dbcontext.InstAccount.Include(x => x.ListComments).Include(x => x.ListPost).Where(x => x.Id == removedAccount.Id).First());
+            }
+            this.dbcontext.InstAccount.RemoveRange(deleteAccounts);
             await this.dbcontext.SaveChangesAsync();
             return;
         }

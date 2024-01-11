@@ -50,5 +50,17 @@ namespace BASAccountManager.Controllers
         {
             return await this.InstTaskManager.EndPostingTaskAsync(data);
         }
+
+        [HttpPost]
+        public async Task<string> IntermediateEndCommentingTask(IntermediateEndCommentingTaskDTO data)
+        {
+            return await this.InstTaskManager.IntermediateEndCommentingTask(data);
+        }
+
+        [HttpPost]
+        public async Task<string> EndCommentingTask(EndCommentingTaskDTO data)
+        {
+            return await this.InstTaskManager.EndCommentingTaskAsync(data);
+        }
     }
 }

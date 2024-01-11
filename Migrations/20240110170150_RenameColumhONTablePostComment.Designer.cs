@@ -4,6 +4,7 @@ using BASAccountManager.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BASAccountManager.Migrations
 {
     [DbContext(typeof(AMContext))]
-    partial class AMContextModelSnapshot : ModelSnapshot
+    [Migration("20240110170150_RenameColumhONTablePostComment")]
+    partial class RenameColumhONTablePostComment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -382,16 +384,16 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<int>("CommentGroupId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PostCommentGroupId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("PostCommentGroupId");
+                    b.HasIndex("CommentGroupId");
 
                     b.ToTable("Comment");
                 });
@@ -451,9 +453,6 @@ namespace BASAccountManager.Migrations
 
                     b.Property<DateTime?>("CommentTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PostId")
                         .HasColumnType("int");
@@ -608,13 +607,13 @@ namespace BASAccountManager.Migrations
 
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBComment", b =>
                 {
-                    b.HasOne("BASAccountManager.DB.Models.Post.DBPostCommentGroup", "PostCommentGroup")
+                    b.HasOne("BASAccountManager.DB.Models.Post.DBPostCommentGroup", "CommentGroup")
                         .WithMany("ListComment")
-                        .HasForeignKey("PostCommentGroupId")
+                        .HasForeignKey("CommentGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PostCommentGroup");
+                    b.Navigation("CommentGroup");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBInstPost", b =>
@@ -651,7 +650,7 @@ namespace BASAccountManager.Migrations
                         .IsRequired();
 
                     b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "SenderAccount")
-                        .WithMany("ListComments")
+                        .WithMany()
                         .HasForeignKey("SenderAccountId");
 
                     b.Navigation("Comment");
@@ -679,8 +678,6 @@ namespace BASAccountManager.Migrations
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstagramAccount", b =>
                 {
-                    b.Navigation("ListComments");
-
                     b.Navigation("ListPost");
                 });
 

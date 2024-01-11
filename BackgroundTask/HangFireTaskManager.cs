@@ -33,6 +33,7 @@ namespace BASAccountManager
             await this.StatusMonitor.CheckProxyStatusAsync();
             await this.StatusMonitor.CheckTaskWorkerStatusAsync();
             await this.StatusMonitor.CheckInactiveTask();
+            await this.StatusMonitor.CheckUntakenComments();
         }
     }
 }

@@ -61,6 +61,25 @@
         DeauthorizedError // TODO impl it in insttaskparser
     }
 
+    public class CommentingErrorDTO
+    {
+        public CommentingTaskErrorType CommentingTaskErrorType { get; set; }
+        public int workerId { get; set; }
+    }
+
+    public class CommentingIntermediateErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int PostCommentId { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public enum CommentingTaskErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError // TODO impl it in insttaskparser
+    }
 
     // Global Error
     public class GlobalErrorDTO

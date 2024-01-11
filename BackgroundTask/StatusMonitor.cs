@@ -1,4 +1,10 @@
-﻿using BASAccountManager.DBServices.Interfaces;
+﻿using BASAccountManager.BackgroundTask.DTO;
+using BASAccountManager.Controllers.Task.DTO;
+using BASAccountManager.DB.Models.Post;
+using BASAccountManager.DBServices.Interfaces;
+using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Microsoft.AspNetCore.Server.IIS.Core;
+using Newtonsoft.Json;
 
 namespace BASAccountManager.BackgroundTask
 {
@@ -9,18 +15,21 @@ namespace BASAccountManager.BackgroundTask
         private IProxyDBService proxyDBService { get; set; }
         private ITaskDBService taskDbService { get; set; }
         private IWorkerTaskDBService workerTaskDbService { get; set; }
+        private IPostCommentDBService postCommentDBService { get; set; }
 
         public StatusMonitor(ITaskDBService taskDbService, 
             IWorkerTaskDBService workerTaskDbService, 
             IProxyDBService proxyDBService, 
             ISMSServiceDB SMSServiceDB, 
-            ILogger<StatusMonitor> logger)
+            ILogger<StatusMonitor> logger,
+            IPostCommentDBService postCommentDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
             this.proxyDBService = proxyDBService;
             this.SMSServiceDB = SMSServiceDB;
             this.logger = logger;
+            this.postCommentDBService = postCommentDBService;
         }
 
         public async Task CheckTaskWorkerStatusAsync()
@@ -83,6 +92,41 @@ namespace BASAccountManager.BackgroundTask
                     await this.workerTaskDbService.RemoveWorkerTaskAsync(noTakenTask);
                 }
             }
+        }
+
+        public async Task CheckUntakenComments()
+        {
+            var allPostComments = this.postCommentDBService.GetAllPostComments()
+                .Where(x => x.CommentStatus == DB.Models.Post.CommentStatus.NotPublished)
+                .Where(x => x.SenderAccountId != null).ToList();
+
+            var allWorkerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
+            allWorkerTasks = allWorkerTasks
+                .Where(x => x.TaskType == DB.Models.TaskType.Commenting)
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken)
+                .ToList();
+
+            var activeCommentsId = new List<int>();
+
+            foreach (var worker in allWorkerTasks)
+            {
+                var commentDTO = JsonConvert.DeserializeObject<List<CommentUsefulDataDTO>>(worker.UsefulData);
+                activeCommentsId.AddRange(commentDTO.Select(x => x.PostCommentId).ToList());
+            }
+
+            var listToUpdate = new List<DBPostComment>();
+
+            foreach (var postComment in allPostComments)
+            {
+                if (!activeCommentsId.Contains(postComment.Id))
+                {
+                    postComment.SenderAccountId = null;
+                    listToUpdate.Add(postComment);
+                }
+            }
+
+            await this.postCommentDBService.UpdatePostCommentAsync(listToUpdate);
+            return;
         }
     }
 }

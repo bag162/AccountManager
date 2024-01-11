@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.Controllers.Email.DTO;
 using BASAccountManager.Controllers.Instagram.DTO;
@@ -45,7 +46,7 @@ namespace BASAccountManager
             CreateMap<CRUDPostDTO, DBPost>();
 
             CreateMap<DBComment, CommentDTO>()
-                .ForMember(dest => dest.CommentGroupName, opt => opt.MapFrom(src => src.CommentGroup.Name));
+                .ForMember(dest => dest.CommentGroupName, opt => opt.MapFrom(src => src.PostCommentGroup.Name));
             CreateMap<CommentDTO, DBComment>();
             CreateMap<CRUDCommentDTO, DBComment>();
             
@@ -56,6 +57,13 @@ namespace BASAccountManager
                 .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.ListPost.Count()));
             CreateMap<PostGroupDTO, DBPostGroup>();
 
+
+            CreateMap<DBPostComment, CommentUsefulDataDTO>()
+                .ForMember(dest => dest.PostCommentMessage, opt => opt.MapFrom(src => src.Comment.Message))
+                .ForMember(dest => dest.PostCommentURI, opt => opt.MapFrom(src => src.Post.PostURI))
+                .ForMember(dest => dest.PostCommentId, opt => opt.MapFrom(src => src.Id))
+                .ReverseMap();
+
             /*** BAS task Mapping ***/
 
             // Get task Mapping
@@ -63,7 +71,10 @@ namespace BASAccountManager
             CreateMap<DBWorkerTask, GetRegistrationTaskSMSServiceDTO>().ForMember(dest => dest.UsefulData, opt => opt.Ignore());
             CreateMap<DBWorkerTask, GetAuthorizationTaskDTO>().ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account)).ReverseMap();
             CreateMap<DBWorkerTask, GetPostingTaskDTO>().ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account)).ReverseMap();
-            
+            CreateMap<DBWorkerTask, GetCommentingTaskDTO>()
+                .ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account))
+                .ForMember(dest => dest.Comments, opt => opt.Ignore())
+                .ReverseMap();
 
             // End task Mapping
             CreateMap<DBInstagramAccount, EndRegistrationTaskDTO>().ReverseMap();

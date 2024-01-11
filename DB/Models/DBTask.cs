@@ -29,6 +29,7 @@ namespace BASAccountManager.DB.Models
     { 
         RegistrationAccounts,
         AuthorizationAccounts,
-        Posting
+        Posting,
+        Commenting
     }
 }

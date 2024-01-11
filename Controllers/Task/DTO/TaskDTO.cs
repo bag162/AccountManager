@@ -27,4 +27,10 @@ namespace BASAccountManager.Controllers.Task.DTO
     {
         public int PostPerAccount { get; set; }
     }
+
+    public class CommentingTaskWorkerUsefulDataDTO
+    {
+        public string PostGroup { get; set; }
+        public int CommentsPerAccount { get; set; }
+    }
 }

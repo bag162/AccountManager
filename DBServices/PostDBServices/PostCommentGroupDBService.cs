@@ -38,7 +38,8 @@ namespace BASAccountManager.DBServices.PostDBServices
 
         public DBPostCommentGroup GetCommentGroupById(int id)
         {
-            return this.dbcontext.CommentGroup.Include(x => x.ListComment).Where(x => x.Id == id).First();
+            var comments = this.dbcontext.CommentGroup.Include(x => x.ListComment).Where(x => x.Id == id).First();
+            return comments;
         }
 
         public async Task<string[]> GetGroupNamesAsync()

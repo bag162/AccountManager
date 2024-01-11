@@ -1,1 +1,43 @@
-commentingTaskcom
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label>Account Group</label>
+                <select-account-group></select-account-group>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label>Proxy Group</label>
+                <select-proxy-group></select-proxy-group>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label>Number of commenting posts per 1 account</label>
+                <input class="form-control" type="number" [(ngModel)]="commentsPerAccount">
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label>Group of posts for commenting</label>
+                <select class="form-control" id="selectGroupPost">
+                    <option *ngFor="let Group of postGroups">{{Group}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <div class="form-group">
+                <label>Task name</label>
+                <input type="text" class="form-control" [(ngModel)]="taskName">
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mb-3" (click)="AddTask()">Submit</button>
+    <div id="successNot" class="alert alert-success" role="alert">Success</div>
+    <div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+</div>

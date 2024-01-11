@@ -26,6 +26,7 @@ namespace BASAccountManager.DB.Models
         public AccountStatus AccountStatus { get; set; }
 
         public List<DBInstPost> ListPost { get; set; } = new List<DBInstPost>();
+        public List<DBPostComment> ListComments { get; set; } = new List<DBPostComment>();
     }
 
     public enum AccountStatus

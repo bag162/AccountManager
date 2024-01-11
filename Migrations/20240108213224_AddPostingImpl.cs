@@ -130,7 +130,8 @@ namespace BASAccountManager.Migrations
                 table: "PostComment",
                 column: "SenderAccountId",
                 principalTable: "InstAccount",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_PostComment_InstPost_PostId",

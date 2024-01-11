@@ -45,6 +45,18 @@ namespace BASAccountManager.Controllers.BASTask
         }
 
         [HttpPost]
+        public async Task<string> CommentingTaskError([FromBody] CommentingErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorCommentingTaskAsync(error.CommentingTaskErrorType, error.workerId);
+        }
+
+        [HttpPost]
+        public async Task<string> CommentingIntermediateError([FromBody] CommentingIntermediateErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorIntermediateCommentingAsync(error.WorkerId, error.PostCommentId, error.ErrorMessage);
+        }
+
+        [HttpPost]
         public async Task<string> VerifyServiceError([FromBody] VerifyServiceErrorDTO error)
         {
             return await this.InstTaskManager.ErrorVerifyServiceAsync(error);

@@ -10,7 +10,7 @@ namespace BASAccountManager.DB.Models.Post
         public string Message { get; set; }
 
         [ForeignKey(nameof(DBPostCommentGroup))]
-        public int CommentGroupId { get; set; }
-        public DBPostCommentGroup CommentGroup { get; set; }
+        public int PostCommentGroupId { get; set; }
+        public DBPostCommentGroup PostCommentGroup { get; set; }
     }
 }

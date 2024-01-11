@@ -67,6 +67,6 @@ app.MapControllers();
 RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), Cron.MinuteInterval(1));
 RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), Cron.MinuteInterval(1));
 RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), Cron.MinuteInterval(1));
-RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), Cron.MinuteInterval(1));
+RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), Cron.MinuteInterval(20));
 
 app.Run();

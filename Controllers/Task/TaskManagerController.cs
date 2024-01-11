@@ -80,5 +80,19 @@ namespace BASAccountManager.Controllers.Task
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
         }
+
+        [HttpPost]
+        public async Task<string> CommentingTask([FromBody] CommentingTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.ClientTaskName;
+            task.TaskType = TaskType.Commenting;
+            task.UsefulData = JsonConvert.SerializeObject(new CommentingTaskWorkerUsefulDataDTO() { CommentsPerAccount = newTask.CommentsPerAccount, PostGroup = newTask.PostGroup });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
     }
 }

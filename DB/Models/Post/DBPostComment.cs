@@ -7,6 +7,7 @@ namespace BASAccountManager.DB.Models.Post
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public string? ErrorMessage { get; set; }
         public DateTime? CommentTime { get; set; }
 
         [ForeignKey(nameof(DBInstPost))]
@@ -18,7 +19,7 @@ namespace BASAccountManager.DB.Models.Post
         public DBComment Comment { get; set; }
 
         [ForeignKey(nameof(DBInstagramAccount))]
-        public int? AccountId { get; set; }
+        public int? SenderAccountId { get; set; }
         public DBInstagramAccount? SenderAccount { get; set; }
 
         public CommentStatus CommentStatus { get; set; }
@@ -27,6 +28,8 @@ namespace BASAccountManager.DB.Models.Post
     public enum CommentStatus
     {
         Published,
-        NotPublished
+        NotPublished,
+        InProcessPublication,
+        ErrorPublication
     }
 }

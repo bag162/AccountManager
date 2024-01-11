@@ -1,15 +1,19 @@
-﻿using BASAccountManager.Controllers.BASTask.DTO;
+﻿using AutoMapper;
+using BASAccountManager.BackgroundTask.DTO;
+using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 
 namespace BASAccountManager.BackgroundTask
 {
     public class AssignmentWriter
     {
+        private IMapper mapper;
         private ILogger<AssignmentWriter> logger;
         private ISMSServiceDB SMSServiceDB;
         private IProxyDBService proxyDBService;
@@ -34,7 +38,8 @@ namespace BASAccountManager.BackgroundTask
             IPostGroupDBService postGroupDBService,
             IInstPostDBService instPostDBService,
             IPostCommentGroupDBService postCommentGroupDBService,
-            IPostCommentDBService postCommentDBService)
+            IPostCommentDBService postCommentDBService,
+            IMapper mapper)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -48,13 +53,14 @@ namespace BASAccountManager.BackgroundTask
             this.instPostDBService = instPostDBService;
             this.postCommentGroupDBService = postCommentGroupDBService;
             this.postCommentDBService = postCommentDBService;
+            this.mapper = mapper;
         }
 
         // Парсит посты на наличие новых комментариев и добаляет их в базу задач
         public async Task CommentParserAsync()
         {
             // Получаем все активные посты
-            var instPosts = await this.instPostDBService.GetAllInstPostAsync();
+            var instPosts = await this.instPostDBService.GetAllInstPostAsyncAsNoTracking();
             // Оставляем только выложенные посты
             instPosts = instPosts.Where(x => x.InstPostStatus == InstPostStatus.Published).Where(x => x.Post.PostStatus == PostStatus.Active).ToList();
             
@@ -66,7 +72,7 @@ namespace BASAccountManager.BackgroundTask
                 // Узнаем сколько комментариев нам нужно добавить
                 var requiredComments = instPost.Post.RequiredCountComments - instPost.ListComment.Count();
                 // Получаем образцы комментариев которые мы будем добавлять для поста
-                var sampleComments = this.postCommentGroupDBService.GetCommentGroupById(instPost.Post.PostCommentGroupId).ListComment;
+                var sampleComments = instPost.Post.PostCommentGroup.ListComment;
 
                 foreach (var currentComment in instPost.ListComment)
                 {
@@ -76,6 +82,13 @@ namespace BASAccountManager.BackgroundTask
                         sampleComments.Remove(sampleComments.Where(x => x.Id == currentComment.CommentId).First());
                     }
                 }
+                // Если нет комментариев которые можем добавить, то пропускаем пост
+                if (sampleComments.Count() == 0)
+                {
+                    continue;
+                }
+                // Перемешивание строк
+                sampleComments = sampleComments.OrderBy(x => Guid.NewGuid().ToString()).ToList();
                 // Создаем список комментариев, по образцам которых будем создавать комменты
                 var sampleCommentsToAdd = sampleComments.Take(requiredComments).ToList();
                 var commentsToAdd = new List<DBPostComment>();
@@ -119,7 +132,7 @@ namespace BASAccountManager.BackgroundTask
         // Парсит Task и добавляет WorkerTask
         public async Task TaskParserAsync()
         {
-            var addedTask = this.taskDbService.GetTask().Where(x => x.Status == StatusTask.Added || x.Status == StatusTask.AddingProcess);
+            var addedTask = this.taskDbService.GetTask().Where(x => x.Status == StatusTask.Added || x.Status == StatusTask.AddingProcess).ToList();
             foreach (var newTask in addedTask)
             {
                 await this.GenWorkerTaskAsync(newTask);
@@ -138,6 +151,9 @@ namespace BASAccountManager.BackgroundTask
                     break;
                 case TaskType.Posting:
                     await ParsePostingTask(task);
+                    break;
+                case TaskType.Commenting:
+                    await ParseCommentTask(task);
                     break;
                 default:
                     break;
@@ -331,6 +347,119 @@ namespace BASAccountManager.BackgroundTask
             }
             await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
             return;
+        }
+
+        private async Task ParseCommentTask(DBTask task)
+        {
+            task.Status = StatusTask.AddingProcess;
+            await this.taskDbService.UpdateTaskAsync(task);
+            List<DBWorkerTask> workerTaskList = new();
+
+            // Получае список всех добавленных задач на комментинг
+            var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+
+            // Получаем все аккаунты по группе и оставляем только авторизованные
+            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+
+            // Удаляем из списка аккаунты, для которых уже были добавлены комментарии
+            foreach (var addedTask in addedTasks)
+            {
+                if (accounts.Where(x => x.Id == addedTask.AccountId).Count() != 0)
+                {
+                    accounts.Remove(accounts.Where(x => x.Id == addedTask.AccountId).First());
+                }
+            }
+            var usefulData = JsonConvert.DeserializeObject<CommentingTaskWorkerUsefulDataDTO>(task.UsefulData);
+
+            var posts = new List<DBInstPost>();
+            // Получаем все посты по группам
+            if (usefulData.PostGroup == "All groups")
+            {
+                posts = await this.instPostDBService.GetAllInstPostAsync();
+            }
+            else
+            {
+                posts = await this.instPostDBService.GetAllPostByGroupAsync(usefulData.PostGroup);
+            }
+
+            // Получаем все комментарии по выбраннной группе
+            var allComments = new List<DBPostComment>();
+            foreach (var post in posts)
+            {
+                allComments.AddRange(post.ListComment);
+            }
+
+            // Оставляем только неопубликованные комментарии к которым не привязан аккаунт
+            var allFilteredComments = allComments.Where(x => x.CommentStatus == CommentStatus.NotPublished).Where(x => x.SenderAccountId == null).ToList();
+
+            foreach (var accountToTask in accounts)
+            {
+                var commentsToTask = new List<DBPostComment>(); 
+
+                // Если аккаунт который будет публиковать комментарий не является владельцем поста, то добавляем его в задачу
+                foreach (var newComment in allFilteredComments)
+                {
+                    if (commentsToTask.Count() == usefulData.CommentsPerAccount)
+                    {
+                        break;
+                    } 
+
+                    // Проверка, что аккаунт будет публиковать комментарий не на свой пст
+                    if (newComment.Post.AccountId != accountToTask.Id)
+                    {
+                        // Проверка, что аккаунт не публиковало ранее на этот пост комментарий
+                        if (!allComments.Where(x => x.SenderAccountId == accountToTask.Id).Select(x => x.PostId).Contains(newComment.PostId)) // TODO Fix it
+                        {
+                            // Пверока, что в листе на добавление комментариев нет комментов на этот пост, что бы 1 аккаунт не публиковал 2 комментария на 1 пост
+                            if (commentsToTask.Where(x => x.PostId == newComment.PostId).Count() == 0)
+                            {
+                                commentsToTask.Add(newComment);
+                            }
+                            
+                        }
+                    }
+                }
+                if (commentsToTask.Count == 0)
+                {
+                    continue;
+                }
+                // удаляем комментарии из листа на добавление
+                foreach (var newComment in commentsToTask)
+                {
+                    allFilteredComments.Remove(newComment);
+                }
+                // Прикрепляем к комментарию аккаунт
+                foreach (var updatedComment in commentsToTask)
+                {
+                    updatedComment.SenderAccountId = accountToTask.Id;
+                }
+                await this.postCommentDBService.UpdatePostCommentAsync(commentsToTask);
+
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
+                var commentsList = this.mapper.Map<List<CommentUsefulDataDTO>>(commentsToTask);
+                var newTask = new DBWorkerTask()
+                {
+                    AccountId = accountToTask.Id,
+                    ProxyId = proxy.Id,
+                    Status = DB.Models.TaskStatus.NotTaken,
+                    TaskType = TaskType.Commenting,
+                    TaskId = task.Id,
+                    UsefulData = JsonConvert.SerializeObject(commentsList)
+                };
+                
+                workerTaskList.Add(newTask);
+            }
+            if (workerTaskList.Count() == accounts.Count())
+            {
+                task.Status = StatusTask.Performed;
+                await this.taskDbService.UpdateTaskAsync(task);
+            }
+            await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
         }
     }
 }

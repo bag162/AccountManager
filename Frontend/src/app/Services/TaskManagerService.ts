@@ -4,6 +4,7 @@ import { AddRegistrationTaskDTO } from '../ControlPanel/TaskManagerModule/Regist
 import { environment } from 'src/environments/environment';
 import { AuthorizationTaskDTO } from '../ControlPanel/TaskManagerModule/AuthorizationTaskComponent/authorizationtask.component';
 import { AddPostingTaskDTO } from '../ControlPanel/TaskManagerModule/PostingTaskComponent/postingtask.component';
+import { AddCommentingTaskDTO } from '../ControlPanel/TaskManagerModule/CommentingTaskComponent/commentingtask.component';
 
 @Injectable({ providedIn: 'root' })
 export class TaskManagerService {
@@ -26,5 +27,10 @@ export class TaskManagerService {
     public async AddPostingTask(data: AddPostingTaskDTO)
     {
         return this.httpClient.post(this.address + "PostingTask", data);
+    }
+
+    public async AddCommentingTask(data: AddCommentingTaskDTO)
+    {
+        return this.httpClient.post(this.address + "CommentingTask", data);
     }
 }

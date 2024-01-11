@@ -28,4 +28,13 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string AccountGroup { get; set; }
         public int PostPerAccount { get; set; }
     }
+
+    public class CommentingTaskDTO
+    {
+        public string? ClientTaskName { get; set; }
+        public string ProxyGroup { get; set; }
+        public string AccountGroup { get; set; }
+        public string PostGroup { get; set; }
+        public int CommentsPerAccount { get; set; }
+    }
 }

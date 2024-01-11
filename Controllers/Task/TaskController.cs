@@ -60,6 +60,11 @@ namespace BASAccountManager.Controllers.InstTask
                 }
                 // Обновляем прокси
                 await this.ProxyDBService.UpdateProxyAsync(updatedProxy);
+                // Если остановленная задача является задачей Commenting, то удаляем все воркеры в ней
+                if (stoppedTask.TaskType == TaskType.Commenting.ToString())
+                {
+                    await this.WorkerTaskDBService.RemoveWorkerTaskAsync(taskWorkers);
+                }
                 return JsonConvert.SerializeObject("True");
             }
             else
