@@ -9,6 +9,7 @@ using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using BASAccountManager.TaskManagers.InstManager.DTO;
 using Hangfire.Server;
 using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace BASAccountManager.TaskManagers.InstManager
 {
@@ -22,6 +23,9 @@ namespace BASAccountManager.TaskManagers.InstManager
         private IBASExeptionDBService BASExeption { get; set; }
         private IInstPostDBService instPostDBService { get; set; }
         private IPostCommentDBService postCommentDBService { get; set; }
+        private IPostLikeDBService postLikeDBService { get; set; }
+        private IFollowDBService followDBService { get; set; }
+
 
         public InstTaskManager(ILogger<InstTaskManager> logger,
             IMapper mapper,
@@ -30,7 +34,9 @@ namespace BASAccountManager.TaskManagers.InstManager
             ITaskDBService taskDBService,
             IBASExeptionDBService BASExeption,
             IInstPostDBService instPostDBService,
-            IPostCommentDBService postCommentDBService)
+            IPostCommentDBService postCommentDBService,
+            IPostLikeDBService postLikeDBService,
+            IFollowDBService followDBService)
         {
             this.Logger = logger;
             this.mapper = mapper;
@@ -40,6 +46,8 @@ namespace BASAccountManager.TaskManagers.InstManager
             this.BASExeption = BASExeption;
             this.instPostDBService = instPostDBService;
             this.postCommentDBService = postCommentDBService;
+            this.postLikeDBService = postLikeDBService;
+            this.followDBService = followDBService;
         }
 
         public async Task<string> GetTaskAsync(GetTaskDTO getTaskData)
@@ -61,6 +69,11 @@ namespace BASAccountManager.TaskManagers.InstManager
                     return await PostingTaskImplAsync(returnedTask, getTaskData);
                 case TaskType.Commenting:
                     return await CommentingTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.Liking:
+                    return await LikingTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.Following:
+                    return await FollowingTaskImplAsync(returnedTask, getTaskData);
+
             }
             this.Logger.LogWarning("Skip switch on InstTaskManager");
             return "No tasks";
@@ -140,6 +153,40 @@ namespace BASAccountManager.TaskManagers.InstManager
             postComment.CommentTime = DateTime.Now;
             postComment.CommentStatus = DB.Models.Post.CommentStatus.Published;
             await this.postCommentDBService.UpdatePostCommentAsync(postComment);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> EndLikingTaskAsync(EndLikingTaskDTO endData)
+        {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            taskWorker.Proxy.ProxyStatus = ProxyStatus.Free;
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> IntermediateEndLikingTask(IntermediateEndLikingTaskDTO endData)
+        {
+            var postLike = this.postLikeDBService.GetPostLikeById(endData.PostLikeId);
+            postLike.LikeStatus = LikeStatus.Published;
+            await this.postLikeDBService.UpdateLikeAsync(postLike);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> EndFollowingTaskTasync(EndFollowingTaskDTO endData)
+        {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            taskWorker.Proxy.ProxyStatus = ProxyStatus.Free;
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> IntermediateEndFollowingTask(IntermediateEndFollowingTaskDTO endData)
+        {
+            var follow = this.followDBService.GetFollowById(endData.FollowId);
+            follow.FollowStatus = FollowStatus.Published;
+            await this.followDBService.UpdateFollowAsync(follow);
             return JsonConvert.SerializeObject(true);
         }
 
@@ -251,6 +298,66 @@ namespace BASAccountManager.TaskManagers.InstManager
             postComment.CommentStatus = DB.Models.Post.CommentStatus.ErrorPublication;
             postComment.ErrorMessage = ErrorMessage;
             await this.postCommentDBService.UpdatePostCommentAsync(postComment);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorLikingTaskAsync(LikingTaskErrorType error, int workerId)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+            workerTask.Proxy.ProxyStatus = ProxyStatus.Free;
+
+            switch (error)
+            {
+                case LikingTaskErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+                case LikingTaskErrorType.DeauthorizedError:
+                    workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    break;
+            }
+
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorIntermediateLikingAsync(int WorkerId, int PostLikeId, string ErrorMessage)
+        {
+            var postLike = this.postLikeDBService.GetPostLikeById(PostLikeId);
+            postLike.LikeStatus = LikeStatus.ErrorPublication;
+            postLike.ErrorMessage = ErrorMessage;
+            await this.postLikeDBService.UpdateLikeAsync(postLike);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorFollowingTaskAsync(FollowingTaskErrorType error, int workerId)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+            workerTask.Proxy.ProxyStatus = ProxyStatus.Free;
+
+            switch (error)
+            {
+                case FollowingTaskErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+                case FollowingTaskErrorType.DeauthorizedError:
+                    workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    break;
+            }
+
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorIntermediateFollowingAsync(int WorkerId, int followId, string ErrorMessage)
+        {
+            var follow = this.followDBService.GetFollowById(followId);
+            follow.FollowStatus = FollowStatus.ErrorFollow;
+            follow.ErrorMessage = ErrorMessage;
+            await this.followDBService.UpdateFollowAsync(follow);
             return JsonConvert.SerializeObject(true);
         }
 
@@ -378,6 +485,53 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             var task = this.mapper.Map<GetCommentingTaskDTO>(returnedTask);
             task.Comments = comments;
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> LikingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+
+            var likes = JsonConvert.DeserializeObject<List<LikeUsefulDataDTO>>(returnedTask.UsefulData);
+
+            List<DBPostLikes> updatedLikes = new();
+            foreach (var like in likes)
+            {
+                var updatedlike = this.postLikeDBService.GetPostLikeById(like.PostLikeId);
+                updatedlike.LikeStatus = LikeStatus.InProcessPublication;
+                updatedLikes.Add(updatedlike);
+            }
+            await this.postLikeDBService.UpdateLikesAsync(updatedLikes);
+
+            var task = this.mapper.Map<GetLikingTaskDTO>(returnedTask);
+            task.Likes = likes;
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> FollowingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+
+            var followIds = JsonConvert.DeserializeObject<List<int>>(returnedTask.UsefulData);
+            var follows = new List<FollowUsefulDataDTO>();
+            foreach (var followid in followIds)
+            {
+                var newFollow = this.followDBService.GetFollowById(followid);
+                newFollow.FollowStatus = FollowStatus.InProcessFollow;
+                await this.followDBService.UpdateFollowAsync(newFollow);
+                follows.Add(mapper.Map<FollowUsefulDataDTO>(newFollow));
+            }
+
+            var task = this.mapper.Map<GetFollowingTaskDTO>(returnedTask);
+            task.Follows = follows;
             return JsonConvert.SerializeObject(task);
         }
     }

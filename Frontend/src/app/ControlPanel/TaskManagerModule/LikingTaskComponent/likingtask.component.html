@@ -1,21 +1,29 @@
 <div class="container">
     <div class="row mb-3">
         <div class="col">
-            <label class="form-label">Account Group</label>
+            <label>Account Group</label>
             <select-account-group></select-account-group>
         </div>
         <div class="col">
-            <label class="form-label">Proxy Group</label>
+            <label>Proxy Group</label>
             <select-proxy-group></select-proxy-group>
         </div>
     </div>
     <div class="row mb-3">
         <div class="col">
-            <label class="form-label">Number of published posts per 1 account</label>
-            <input type="number" class="form-control" [(ngModel)]="postPerAccount">
+            <label>Count likes per 1 account</label>
+            <input type="number" class="form-control" [(ngModel)]="likesPerAccount">
         </div>
         <div class="col">
-            <label class="form-label">Task name</label>
+            <label>Group of posts for liking</label>
+            <select class="form-control" id="selectPostGroup">
+                <option *ngFor="let Group of postGroups">{{Group}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-6">
+            <label>Task name</label>
             <input type="text" class="form-control" [(ngModel)]="taskName">
         </div>
     </div>

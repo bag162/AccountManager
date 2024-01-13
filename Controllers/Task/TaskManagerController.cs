@@ -94,5 +94,38 @@ namespace BASAccountManager.Controllers.Task
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
         }
+
+        [HttpPost]
+        public async Task<string> LikingTask([FromBody] LikingTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.ClientTaskName;
+            task.TaskType = TaskType.Liking;
+            task.UsefulData = JsonConvert.SerializeObject(new LikingTaskWorkerUsefulDatadTO() { LikesPerAccount = newTask.LikesPerAccount, PostGroup = newTask.PostGroup });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        [HttpPost]
+        public async Task<string> FollowingTask([FromBody] FollowingTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.ClientTaskName;
+            task.TaskType = TaskType.Following;
+            task.UsefulData = JsonConvert.SerializeObject(new FollowingTaskWorkerUsefulDataDTO() 
+            { 
+                FollowsPerAccount = newTask.FollowsPerAccount,
+                AccountGroupForSubscription = newTask.AccountGroupForSubscription,
+                RequiredFollowersPerAccount = newTask.RequiredFollowersPerAccount
+            });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
     }
 }

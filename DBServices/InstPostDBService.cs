@@ -33,6 +33,7 @@ namespace BASAccountManager.DBServices
             return await this.dbcontext.InstPost
                 .Include(x => x.Post).ThenInclude(x => x.PostCommentGroup).ThenInclude(x => x.ListComment)
                 .Include(x => x.ListComment).ThenInclude(x => x.Comment)
+                .Include(x => x.ListLikes)
                 .ToListAsync();
         }
 
@@ -41,6 +42,7 @@ namespace BASAccountManager.DBServices
             return await this.dbcontext.InstPost
                  .Include(x => x.Post).ThenInclude(x => x.PostCommentGroup).ThenInclude(x => x.ListComment)
                  .Include(x => x.ListComment).ThenInclude(x => x.Comment)
+                 .Include(x => x.ListLikes)
                  .AsNoTracking()
                  .ToListAsync();
         }
@@ -48,7 +50,11 @@ namespace BASAccountManager.DBServices
         public async Task<List<DBInstPost>> GetAllPostByGroupAsync(string group)
         {
             var postgroupId = this.dbcontext.PostGroup.Where(x => x.Name == group).Select(x => x.Id).First();
-            var instPosts = this.dbcontext.InstPost.Include(x => x.ListComment).ThenInclude(x => x.Comment).Include(x => x.Post).Where(x => x.Post.GroupId == postgroupId).ToList();
+            var instPosts = this.dbcontext.InstPost
+                .Include(x => x.ListComment).ThenInclude(x => x.Comment)
+                .Include(x => x.Post)
+                .Include(x => x.ListLikes)
+                .Where(x => x.Post.GroupId == postgroupId).ToList();
             return instPosts;
         }
 

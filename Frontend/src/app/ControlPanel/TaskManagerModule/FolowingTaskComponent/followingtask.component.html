@@ -1,0 +1,38 @@
+<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+           <label>Account group</label>
+           <select-account-group></select-account-group>
+        </div>
+        <div class="col">
+            <label>Proxy group</label>
+            <select-proxy-group></select-proxy-group>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label>Accounts group will follow</label>
+            <select class="form-control" id="selectAccountGroupForSubscription">
+                <option *ngFor="let group of accountGroups">{{group}}</option>
+            </select>
+        </div>
+        <div class="col">
+            <label>Follows per 1 account</label>
+            <input type="number" class="form-control" [(ngModel)]="followsPerAccount">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label>Task name</label>
+            <input type="text" class="form-control" [(ngModel)]="taskName">
+        </div>
+        <div class="col">
+            <label>Required followers per 1 account</label>
+            <input type="number" class="form-control" [(ngModel)]="requiredFollowerPerAccount">
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3" (click)="AddTask()">Submit</button>
+    <div id="successNot" class="alert alert-success" role="alert">Success</div>
+    <div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+</div>

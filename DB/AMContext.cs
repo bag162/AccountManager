@@ -30,6 +30,10 @@ namespace BASAccountManager.DB
         public DbSet<DBPostCommentGroup> CommentGroup { get; set; }
         public DbSet<DBPostComment> PostComment { get; set; }
 
+        public DbSet<DBPostLikes> PostLike { get; set; }
+        public DbSet<DBFollow> Follow { get; set; }
+        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DBProxyGroup>().HasIndex(x => x.Name).IsUnique();

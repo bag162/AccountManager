@@ -7,7 +7,6 @@ namespace BASAccountManager.DB.Models.Post
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public int LikesCount { get; set; }
 
         public string? PostingErrorMessage { get; set; }
         public string? PostURI { get; set; }
@@ -22,7 +21,8 @@ namespace BASAccountManager.DB.Models.Post
 
         public InstPostStatus InstPostStatus { get; set; }
 
-        public List<DBPostComment> ListComment { get; set; } = new List<DBPostComment>();
+        public List<DBPostComment> ListComment { get; set; }
+        public List<DBPostLikes> ListLikes { get; set; }
     }
 
     public enum InstPostStatus

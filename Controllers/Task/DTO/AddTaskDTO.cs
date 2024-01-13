@@ -36,5 +36,24 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string AccountGroup { get; set; }
         public string PostGroup { get; set; }
         public int CommentsPerAccount { get; set; }
+    } 
+
+    public class LikingTaskDTO
+    {
+        public string? ClientTaskName { get; set; }
+        public string ProxyGroup { get; set; }
+        public string AccountGroup { get; set; }
+        public string PostGroup { get; set; }
+        public int LikesPerAccount { get; set; }
+    }
+
+    public class FollowingTaskDTO
+    {
+        public string? ClientTaskName { get; set; }
+        public string ProxyGroup { get; set; }
+        public string AccountGroupForSubscription { get; set; }
+        public string AccountGroup { get; set; }
+        public int FollowsPerAccount { get; set; }
+        public int RequiredFollowersPerAccount { get; set; }
     }
 }

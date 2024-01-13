@@ -16,13 +16,17 @@ namespace BASAccountManager.BackgroundTask
         private ITaskDBService taskDbService { get; set; }
         private IWorkerTaskDBService workerTaskDbService { get; set; }
         private IPostCommentDBService postCommentDBService { get; set; }
+        private IPostLikeDBService postLikeDBService { get; set; }
+        private IFollowDBService followDBService { get; set; }
 
         public StatusMonitor(ITaskDBService taskDbService, 
             IWorkerTaskDBService workerTaskDbService, 
             IProxyDBService proxyDBService, 
             ISMSServiceDB SMSServiceDB, 
             ILogger<StatusMonitor> logger,
-            IPostCommentDBService postCommentDBService)
+            IPostCommentDBService postCommentDBService,
+            IPostLikeDBService postLikeDBService,
+            IFollowDBService followDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -30,6 +34,8 @@ namespace BASAccountManager.BackgroundTask
             this.SMSServiceDB = SMSServiceDB;
             this.logger = logger;
             this.postCommentDBService = postCommentDBService;
+            this.postLikeDBService = postLikeDBService;
+            this.followDBService = followDBService;
         }
 
         public async Task CheckTaskWorkerStatusAsync()
@@ -127,6 +133,70 @@ namespace BASAccountManager.BackgroundTask
 
             await this.postCommentDBService.UpdatePostCommentAsync(listToUpdate);
             return;
+        }
+
+        public async Task CheckUntakenLikes()
+        {
+            var allPostLikes = this.postLikeDBService.GetAllLikes()
+                .Where(x => x.LikeStatus == LikeStatus.NotPublished)
+                .Where(x => x.SenderAccountId != null).ToList();
+
+            var allWorkerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
+            allWorkerTasks = allWorkerTasks
+                .Where(x => x.TaskType == DB.Models.TaskType.Liking)
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken)
+                .ToList();
+
+            var activeLikesId = new List<int>();
+
+            foreach (var worker in allWorkerTasks)
+            {
+                var likeDTO = JsonConvert.DeserializeObject<List<LikeUsefulDataDTO>>(worker.UsefulData);
+                activeLikesId.AddRange(likeDTO.Select(x => x.PostLikeId).ToList());
+            }
+
+            var listToUpdate = new List<DBPostLikes>();
+
+            foreach (var postLike in allPostLikes)
+            {
+                if (!activeLikesId.Contains(postLike.Id))
+                {
+                    postLike.SenderAccountId = null;
+                    listToUpdate.Add(postLike);
+                }
+            }
+
+            await this.postLikeDBService.UpdateLikesAsync(listToUpdate);
+            return;
+        }
+
+        public async Task CheckUntakenFollows()
+        {
+            var allWorkerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
+
+            var activeAccounts = allWorkerTasks
+                .Where(x => x.TaskType == DB.Models.TaskType.Following)
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken)
+                .Select(x => x.Account)
+                .ToList();
+
+            var follows = this.followDBService.GetFollows().ToList();
+            var followsToCheck = follows
+                .Where(x => x.FollowStatus == DB.Models.FollowStatus.NotPublished)
+                .ToDictionary(x => x.SenderAccountId);
+
+            foreach (var account in activeAccounts)
+            {
+                if (followsToCheck.ContainsKey(account.Id))
+                {
+                    followsToCheck.Remove(account.Id);
+                }
+            }
+
+            await this.followDBService.RemoveByIdsAsync(followsToCheck.Select(x => x.Value).Select(x => x.Id).ToList());
+
+            var errorFollows = follows.Where(x => x.FollowStatus == DB.Models.FollowStatus.ErrorFollow).ToList();
+            await this.followDBService.RemoveFollows(errorFollows);
         }
     }
 }

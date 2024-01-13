@@ -57,6 +57,31 @@ namespace BASAccountManager.Controllers.BASTask
         }
 
         [HttpPost]
+        public async Task<string> LikingTaskError([FromBody] LikingErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorLikingTaskAsync(error.LikingTaskErrorType, error.workerId);
+        }
+        
+        [HttpPost]
+        public async Task<string> LikingIntermediateError([FromBody] LikingIntermediateErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorIntermediateLikingAsync(error.WorkerId, error.PostLikeId, error.ErrorMessage);
+        }
+
+        [HttpPost]
+        public async Task<string> FollowingTaskError([FromBody] FollowingErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorFollowingTaskAsync(error.FollowingTaskErrorType, error.workerId);
+        }
+
+        [HttpPost]
+        public async Task<string> FollowingIntermediateError([FromBody] FollowingIntermediateErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorIntermediateFollowingAsync(error.WorkerId, error.FollowId, error.ErrorMessage);
+        }
+
+
+        [HttpPost]
         public async Task<string> VerifyServiceError([FromBody] VerifyServiceErrorDTO error)
         {
             return await this.InstTaskManager.ErrorVerifyServiceAsync(error);

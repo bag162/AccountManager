@@ -5,6 +5,8 @@ import { environment } from 'src/environments/environment';
 import { AuthorizationTaskDTO } from '../ControlPanel/TaskManagerModule/AuthorizationTaskComponent/authorizationtask.component';
 import { AddPostingTaskDTO } from '../ControlPanel/TaskManagerModule/PostingTaskComponent/postingtask.component';
 import { AddCommentingTaskDTO } from '../ControlPanel/TaskManagerModule/CommentingTaskComponent/commentingtask.component';
+import { AddLikingTaskDTO } from '../ControlPanel/TaskManagerModule/LikingTaskComponent/likingtask.component';
+import { AddFollowingTaskDTO } from '../ControlPanel/TaskManagerModule/FolowingTaskComponent/followingtask.component';
 
 @Injectable({ providedIn: 'root' })
 export class TaskManagerService {
@@ -32,5 +34,15 @@ export class TaskManagerService {
     public async AddCommentingTask(data: AddCommentingTaskDTO)
     {
         return this.httpClient.post(this.address + "CommentingTask", data);
+    }
+
+    public async AddLikingTask(data: AddLikingTaskDTO)
+    {
+        return this.httpClient.post(this.address + "LikingTask", data);
+    }
+
+    public async AddFollowingTask(data: AddFollowingTaskDTO)
+    {
+        return this.httpClient.post(this.address + "FollowingTask", data);
     }
 }

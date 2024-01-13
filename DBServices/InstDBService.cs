@@ -4,6 +4,7 @@ using BASAccountManager.Controllers.Instagram.DTO;
 using BASAccountManager.DB;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
+using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace BASAccountManager.DBServices
@@ -120,7 +121,12 @@ namespace BASAccountManager.DBServices
             var deleteAccounts = new List<DBInstagramAccount>();
             foreach (var removedAccount in removedAccs)
             {
-                deleteAccounts.Add(this.dbcontext.InstAccount.Include(x => x.ListComments).Include(x => x.ListPost).Where(x => x.Id == removedAccount.Id).First());
+                deleteAccounts.Add(this.dbcontext.InstAccount
+                    .Include(x => x.ListComments)
+                    .Include(x => x.ListPost)
+                    .Include(x => x.ListLikes)
+                    .Where(x => x.Id == removedAccount.Id)
+                    .First());
             }
             this.dbcontext.InstAccount.RemoveRange(deleteAccounts);
             await this.dbcontext.SaveChangesAsync();

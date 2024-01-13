@@ -64,6 +64,15 @@ namespace BASAccountManager
                 .ForMember(dest => dest.PostCommentId, opt => opt.MapFrom(src => src.Id))
                 .ReverseMap();
 
+            CreateMap<DBPostLikes, LikeUsefulDataDTO>()
+                .ForMember(dest => dest.PostLikeId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.PostLikeURI, opt => opt.MapFrom(src => src.Post.PostURI))
+                .ReverseMap();
+            CreateMap<DBFollow, FollowUsefulDataDTO>()
+                .ForMember(dest => dest.FollowId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.FollowURI, opt => opt.MapFrom(src => src.RecipientAccount.ProfileLink))
+                .ReverseMap();
+
             /*** BAS task Mapping ***/
 
             // Get task Mapping
@@ -74,6 +83,16 @@ namespace BASAccountManager
             CreateMap<DBWorkerTask, GetCommentingTaskDTO>()
                 .ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account))
                 .ForMember(dest => dest.Comments, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<DBWorkerTask, GetLikingTaskDTO>()
+                .ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account))
+                .ForMember(dest => dest.Likes, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<DBWorkerTask, GetFollowingTaskDTO>()
+                .ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account))
+                .ForMember(dest => dest.Follows, opt => opt.Ignore())
                 .ReverseMap();
 
             // End task Mapping

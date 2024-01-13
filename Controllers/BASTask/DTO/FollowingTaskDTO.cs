@@ -3,23 +3,23 @@ using BASAccountManager.DB.Models;
 
 namespace BASAccountManager.Controllers.BASTask.DTO
 {
-    public class GetCommentingTaskDTO
+    public class GetFollowingTaskDTO
     {
         public int Id { get; set; }
         public DBInstagramAccount InstAccount { get; set; }
         public DBProxy Proxy { get; set; }
-        public List<CommentUsefulDataDTO> Comments { get; set; }
+        public List<FollowUsefulDataDTO> Follows { get; set; }
         public string TaskType { get; set; }
     }
 
-    public class EndCommentingTaskDTO
+    public class EndFollowingTaskDTO
     {
         public int WorkerId { get; set; }
     }
 
-    public class IntermediateEndCommentingTaskDTO
+    public class IntermediateEndFollowingTaskDTO
     {
         public int WorkerId { get; set; }
-        public int PostCommentId { get; set; }
+        public int FollowId { get; set; }
     }
 }

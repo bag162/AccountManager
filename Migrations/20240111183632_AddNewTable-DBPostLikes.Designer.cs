@@ -4,6 +4,7 @@ using BASAccountManager.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BASAccountManager.Migrations
 {
     [DbContext(typeof(AMContext))]
-    partial class AMContextModelSnapshot : ModelSnapshot
+    [Migration("20240111183632_AddNewTable-DBPostLikes")]
+    partial class AddNewTableDBPostLikes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,35 +83,6 @@ namespace BASAccountManager.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Email");
-                });
-
-            modelBuilder.Entity("BASAccountManager.DB.Models.DBFollow", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("FollowStatus")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RecipientAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SenderAccountId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipientAccountId");
-
-                    b.HasIndex("SenderAccountId");
-
-                    b.ToTable("Follow");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstAccountGroup", b =>
@@ -439,6 +412,9 @@ namespace BASAccountManager.Migrations
                     b.Property<int>("InstPostStatus")
                         .HasColumnType("int");
 
+                    b.Property<int>("LikesCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
@@ -551,12 +527,6 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("LikeStatus")
-                        .HasColumnType("int");
-
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
@@ -569,7 +539,7 @@ namespace BASAccountManager.Migrations
 
                     b.HasIndex("SenderAccountId");
 
-                    b.ToTable("PostLike");
+                    b.ToTable("Like");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBBASExeption", b =>
@@ -591,25 +561,6 @@ namespace BASAccountManager.Migrations
                     b.Navigation("Proxy");
 
                     b.Navigation("Task");
-                });
-
-            modelBuilder.Entity("BASAccountManager.DB.Models.DBFollow", b =>
-                {
-                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "RecipientAccount")
-                        .WithMany()
-                        .HasForeignKey("RecipientAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "SenderAccount")
-                        .WithMany()
-                        .HasForeignKey("SenderAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RecipientAccount");
-
-                    b.Navigation("SenderAccount");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstagramAccount", b =>
@@ -749,7 +700,7 @@ namespace BASAccountManager.Migrations
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostLikes", b =>
                 {
                     b.HasOne("BASAccountManager.DB.Models.Post.DBInstPost", "Post")
-                        .WithMany("ListLikes")
+                        .WithMany()
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -788,8 +739,6 @@ namespace BASAccountManager.Migrations
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBInstPost", b =>
                 {
                     b.Navigation("ListComment");
-
-                    b.Navigation("ListLikes");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.Post.DBPostCommentGroup", b =>

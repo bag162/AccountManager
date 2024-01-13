@@ -26,7 +26,8 @@ namespace BASAccountManager.BackgroundTask
         private IInstPostDBService instPostDBService { get; set; }
         private IPostCommentGroupDBService postCommentGroupDBService { get; set; }
         private IPostCommentDBService postCommentDBService { get; set; }
-
+        private IPostLikeDBService postLikeDBService { get; set; }
+        private IFollowDBService followDBService { get; set; }
         public AssignmentWriter(ITaskDBService taskDbService,
             IWorkerTaskDBService workerTaskDbService,
             IProxyDBService proxyDBService,
@@ -39,7 +40,9 @@ namespace BASAccountManager.BackgroundTask
             IInstPostDBService instPostDBService,
             IPostCommentGroupDBService postCommentGroupDBService,
             IPostCommentDBService postCommentDBService,
-            IMapper mapper)
+            IMapper mapper,
+            IPostLikeDBService postLikeDBService,
+            IFollowDBService followDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -54,6 +57,8 @@ namespace BASAccountManager.BackgroundTask
             this.postCommentGroupDBService = postCommentGroupDBService;
             this.postCommentDBService = postCommentDBService;
             this.mapper = mapper;
+            this.postLikeDBService = postLikeDBService;
+            this.followDBService = followDBService;
         }
 
         // Парсит посты на наличие новых комментариев и добаляет их в базу задач
@@ -107,6 +112,33 @@ namespace BASAccountManager.BackgroundTask
             }
         }
 
+        public async Task LikesParserAsync()
+        {
+            // Получаем все активные посты
+            var instPosts = await this.instPostDBService.GetAllInstPostAsyncAsNoTracking();
+            // Оставляем только выложенные посты
+            instPosts = instPosts.Where(x => x.InstPostStatus == InstPostStatus.Published).Where(x => x.Post.PostStatus == PostStatus.Active).ToList();
+
+            foreach (var instPost in instPosts)
+            {
+                if (instPost.ListLikes.Count() >= instPost.Post.RequiredCountLikes)
+                    continue;
+
+                var requiredLikes = instPost.Post.RequiredCountLikes - instPost.ListLikes.Count();
+                var likesToAdd = new List<DBPostLikes>();
+                for (int i = 0; i < requiredLikes; i++)
+                {
+                    var templateLike = new DBPostLikes()
+                    {
+                        PostId = instPost.Id,
+                        LikeStatus = LikeStatus.NotPublished
+                    };
+                    likesToAdd.Add(templateLike);
+                }
+                await this.postLikeDBService.AddLikesAsync(likesToAdd);
+            }
+        }
+
         // Парсит Post и добавляет InstPost
         public async Task PostParserAsync()
         {
@@ -154,6 +186,12 @@ namespace BASAccountManager.BackgroundTask
                     break;
                 case TaskType.Commenting:
                     await ParseCommentTask(task);
+                    break;
+                case TaskType.Liking:
+                    await ParseLikingTask(task);
+                    break;
+                case TaskType.Following:
+                    await ParseFollowingTask(task);
                     break;
                 default:
                     break;
@@ -246,28 +284,16 @@ namespace BASAccountManager.BackgroundTask
             var addedTask = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
 
             // Получае список всех аккаунтов в группе на авторизацию
-            var addedList = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-
-            // Создаем список на удаление задач из списка на добавление. Если у задачи Status != Error, то удаляем эти аккаунты
-            var deleteOutAddedList = addedTask.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList();
-            // Удаляем из списка на добавление аккаунтов все аккаунты, у задач которых статус != Error
-            var listToAdd = new List<DBInstagramAccount>(); listToAdd.AddRange(addedList);
-            if (deleteOutAddedList != null && deleteOutAddedList.Count != 0 && addedList != null && addedList.Count != 0)
-            {
-                foreach (var accToAdd in addedList)
-                {
-                    if (deleteOutAddedList.Where(x => x.Id == accToAdd.Id).Count() != 0)
-                    {
-                        listToAdd.Remove(accToAdd);
-                    }
-                }
-            }
-            // Оставляем только неавторизованные аккаунты
+            var listToAdd = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
             listToAdd = listToAdd.Where(x => x.AccountStatus == AccountStatus.NotAuthorized).ToList();
 
-            // Создаем список, который будет сигнализивать что мы обратали все аккаунты, что бы установить статус Performed
-            var checkFullAddList = new List<DBInstagramAccount>();
-            checkFullAddList.AddRange(listToAdd); // TODO Сделать как в PostingParser, убрать лишний код
+            // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
+            foreach (var account in addedTask.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
+            {
+                // Не авторизуем аккаунты если он содержится в workerList, а если и содержится, то эта задача завершилась неудачно
+                if (listToAdd.Contains(account))
+                    listToAdd.Remove(account);
+            }
 
             foreach (var newAccount in listToAdd)
             {
@@ -284,12 +310,11 @@ namespace BASAccountManager.BackgroundTask
                     AccountId = newAccount.Id,
                     ProxyId = proxy.Id
                 };
-                checkFullAddList.Remove(newAccount);
                 workerTaskList.Add(newTask);
             }
 
             // Если все аккаунты добавлены, то обновляем статус головной задачи
-            if (checkFullAddList.Count == 0)
+            if (workerTaskList.Count() == listToAdd.Count())
             {
                 task.Status = StatusTask.Performed;
                 await this.taskDbService.UpdateTaskAsync(task);
@@ -308,9 +333,11 @@ namespace BASAccountManager.BackgroundTask
             // Получаем список аккаунтов, для которых будем осуществлять постинг
             var accountList = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
             // Используем только авторизованные аккаунты
-            accountList = accountList.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
-            // Используем аккаунты, у которых есть посты для публикации
-            accountList = accountList.Where(x => x.ListPost.Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0).ToList();
+            accountList = accountList.Where(x => x.AccountStatus == AccountStatus.Authorized)
+                // Используем аккаунты, у которых есть посты для публикации
+                .Where(x => x.ListPost.Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0)
+                .ToList();
+            
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
             foreach (var account in addedWorkers.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
             {
@@ -409,7 +436,7 @@ namespace BASAccountManager.BackgroundTask
                     if (newComment.Post.AccountId != accountToTask.Id)
                     {
                         // Проверка, что аккаунт не публиковало ранее на этот пост комментарий
-                        if (!allComments.Where(x => x.SenderAccountId == accountToTask.Id).Select(x => x.PostId).Contains(newComment.PostId)) // TODO Fix it
+                        if (!allComments.Where(x => x.SenderAccountId == accountToTask.Id).Select(x => x.PostId).Contains(newComment.PostId))
                         {
                             // Пверока, что в листе на добавление комментариев нет комментов на этот пост, что бы 1 аккаунт не публиковал 2 комментария на 1 пост
                             if (commentsToTask.Where(x => x.PostId == newComment.PostId).Count() == 0)
@@ -460,6 +487,218 @@ namespace BASAccountManager.BackgroundTask
                 await this.taskDbService.UpdateTaskAsync(task);
             }
             await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+        }
+
+        private async Task ParseLikingTask(DBTask task)
+        {
+            // Обновляем статус задачи
+            task.Status = StatusTask.AddingProcess;
+            await this.taskDbService.UpdateTaskAsync(task);
+            List<DBWorkerTask> workerTaskList = new();
+
+            // Получаем уже добавленные задачи
+            var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+
+            // Получаем авторизованные аккаунты по группе
+            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            
+            var usefulData = JsonConvert.DeserializeObject<LikingTaskWorkerUsefulDatadTO>(task.UsefulData);
+
+            // Получаем посты которые будем лайкать
+            var postsForLiking = new List<DBInstPost>();
+            if (usefulData.PostGroup == "All groups")
+            {
+                postsForLiking = await this.instPostDBService.GetAllInstPostAsync();
+            }
+            else
+            {
+                postsForLiking = await this.instPostDBService.GetAllPostByGroupAsync(usefulData.PostGroup);
+            }
+
+            // Вытягиваем из постов все сущности Like
+            var allLikes = new List<DBPostLikes>();
+            foreach (var instPost in postsForLiking)
+            {
+                allLikes.AddRange(instPost.ListLikes.Where(x => x.LikeStatus == LikeStatus.NotPublished).Where(x => x.SenderAccountId == null).ToList());
+            }
+
+            // Удаляем аккаунты для которых уже созданы задачи
+            foreach (var addedTask in addedTasks)
+            {
+                if (accounts.Where(x => x.Id == addedTask.AccountId).Count() != 0)
+                {
+                    accounts.Remove(accounts.Where(x => x.Id == addedTask.AccountId).First());
+                }
+            }
+
+            foreach (var accToAdd in accounts)
+            {
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
+
+                // Получаем лайки для добавления в задачу
+                var likesWorkerList = allLikes.Take(usefulData.LikesPerAccount).ToList();
+                allLikes.RemoveRange(0, usefulData.LikesPerAccount);
+
+                // Закрепляем за лайком аккаунт
+                foreach (var likeToUpdate in likesWorkerList)
+                {
+                    likeToUpdate.SenderAccountId = accToAdd.Id;
+                }
+                await this.postLikeDBService.UpdateLikesAsync(likesWorkerList);
+
+                var likesList = this.mapper.Map<List<LikeUsefulDataDTO>>(likesWorkerList);
+                var newTask = new DBWorkerTask()
+                {
+                    AccountId = accToAdd.Id,
+                    ProxyId = proxy.Id,
+                    Status = DB.Models.TaskStatus.NotTaken,
+                    TaskType = TaskType.Liking,
+                    TaskId = task.Id,
+                    UsefulData = JsonConvert.SerializeObject(likesList)
+                };
+
+                workerTaskList.Add(newTask);
+            }
+
+            if (workerTaskList.Count() == accounts.Count())
+            {
+                task.Status = StatusTask.Performed;
+                await this.taskDbService.UpdateTaskAsync(task);
+            }
+            await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+        }
+
+        private async Task ParseFollowingTask(DBTask task)
+        {
+            List<DBWorkerTask> workerTaskList = new();
+
+            // Парсим UsefulData
+            var usefulData = JsonConvert.DeserializeObject<FollowingTaskWorkerUsefulDataDTO>(task.UsefulData);
+
+            // Обновляем статус задачи
+            task.Status = StatusTask.AddingProcess;
+            await this.taskDbService.UpdateTaskAsync(task);
+
+            // Получаем уже добавленные задачи
+            var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+
+            // Получаем авторизованные аккаунты по группе
+            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
+            foreach (var account in addedTasks.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
+            {
+                // Не подписываемся на  аккаунты если он содержится в workerList, а если и содержится, то эта задача завершилась неудачно
+                if (accounts.Contains(account))
+                    accounts.Remove(account);
+                // Не подписываемся на аккаунты если у них статус не равнен NotAuthorized
+                if (account.AccountStatus != AccountStatus.NotAuthorized)
+                    accounts.Remove(account);
+            }
+
+            // Получаем аккаунты на которые будем подписываться
+            var accountsToSubscription = new List<DBInstagramAccount>();
+            if (usefulData.AccountGroupForSubscription == "All groups")
+            {
+                accountsToSubscription = this.instDBService.GetInstAccounts().Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            }
+            else
+            {
+                accountsToSubscription = await this.instDBService.GetInstAccountsByGroupAsync(usefulData.AccountGroupForSubscription);
+                accountsToSubscription = accountsToSubscription.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            }
+
+            var listFollows = new List<DBFollow>();
+            // Создаем подписки на аккаунты
+            foreach (var acc in accountsToSubscription)
+            {
+                // Получаем существующие подписки на аккаунт
+                var accFollows = this.followDBService.GetFollowsByRecipientAccountId(acc.Id)
+                    .Where(x => x.FollowStatus != FollowStatus.ErrorFollow)
+                    .ToList();
+
+                // Если достаточное кол-во подписок уже есть, то пропускаем
+                if (accFollows.Count() >= usefulData.RequiredFollowersPerAccount)
+                    continue;
+
+                // Создаем цикл который будет создавать необходимо кол-во подписок
+                for (int i = 0; i < usefulData.RequiredFollowersPerAccount - accFollows.Count(); i++)
+                {
+                    foreach (var account in accounts)
+                    {
+                        if (accFollows
+                            // Проверяем делал ли аккаунт подписку ранее
+                            .Where(x => x.SenderAccountId == account.Id)
+                            .Where(x => x.FollowStatus != FollowStatus.ErrorFollow)
+                            .Count() == 0 
+                            // Проверяем что это не 2-а одинаковых аккаунта
+                            && acc.Id != account.Id
+                            // Проверяем что эта подписка не создана
+                            && listFollows
+                            .Where(x => x.SenderAccountId == account.Id)
+                            .Where(x => x.RecipientAccountId == acc.Id)
+                            .Count() == 0)
+                        {
+                            listFollows.Add(new DBFollow()
+                            {
+                                FollowStatus = FollowStatus.NotPublished,
+                                SenderAccountId = account.Id,
+                                RecipientAccountId = acc.Id
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Получае Id аккаунтов для которых будем создавать воркеров
+            var accountIds = listFollows.Select(x => x.SenderAccountId).ToList();
+
+            // Создаем воркеров
+            foreach (var accountId in accountIds)
+            {
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
+
+                // Получаем follows для аккаунта
+                var followList = listFollows.Where(x => x.SenderAccountId == accountId).Take(usefulData.FollowsPerAccount).ToList();
+                // Добавляем follows в базу
+                await this.followDBService.AddFollowsAsync(followList);
+
+                // Получаем их Id для передачи в TaskWorker
+                var listToWorker = this.followDBService.GetFollowsBySenderAccountId(accountId)
+                    .Where(x => x.FollowStatus == FollowStatus.NotPublished)
+                    .Select(x => x.Id)
+                    .ToList();
+
+                var newTask = new DBWorkerTask()
+                {
+                    AccountId = accountId,
+                    ProxyId = proxy.Id,
+                    Status = DB.Models.TaskStatus.NotTaken,
+                    TaskType = TaskType.Following,
+                    TaskId = task.Id,
+                    UsefulData = JsonConvert.SerializeObject(listToWorker)
+                };
+
+                workerTaskList.Add(newTask);
+            }
+
+            if (workerTaskList.Count() == accountIds.Count())
+            {
+                task.Status = StatusTask.Performed;
+                await this.taskDbService.UpdateTaskAsync(task);
+            }
+            await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+
         }
     }
 }

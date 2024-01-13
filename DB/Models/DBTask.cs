@@ -30,6 +30,8 @@ namespace BASAccountManager.DB.Models
         RegistrationAccounts,
         AuthorizationAccounts,
         Posting,
-        Commenting
+        Commenting,
+        Liking,
+        Following
     }
 }

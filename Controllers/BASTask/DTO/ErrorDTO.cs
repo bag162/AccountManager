@@ -58,7 +58,7 @@
     {
         FullBan,
         UnrecognizedError,
-        DeauthorizedError // TODO impl it in insttaskparser
+        DeauthorizedError
     }
 
     public class CommentingErrorDTO
@@ -78,7 +78,47 @@
     {
         FullBan,
         UnrecognizedError,
-        DeauthorizedError // TODO impl it in insttaskparser
+        DeauthorizedError
+    }
+
+    public class LikingErrorDTO
+    {
+        public LikingTaskErrorType LikingTaskErrorType { get; set; }
+        public int workerId { get; set; }
+    }
+
+    public class LikingIntermediateErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int PostLikeId { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public enum LikingTaskErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError
+    }
+
+    public class FollowingErrorDTO
+    {
+        public FollowingTaskErrorType FollowingTaskErrorType { get; set; }
+        public int workerId { get; set; }
+    }
+
+    public class FollowingIntermediateErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int FollowId { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public enum FollowingTaskErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError
     }
 
     // Global Error

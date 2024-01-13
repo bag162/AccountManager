@@ -4,6 +4,7 @@ using BASAccountManager.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BASAccountManager.Migrations
 {
     [DbContext(typeof(AMContext))]
-    partial class AMContextModelSnapshot : ModelSnapshot
+    [Migration("20240112181453_AddNewTable-Follow")]
+    partial class AddNewTableFollow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,23 +93,24 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<int>("AccountToFollowId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ErrorMessage")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("FollowStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("RecipientAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SenderAccountId")
+                    b.Property<int>("FollowingAccountId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RecipientAccountId");
+                    b.HasIndex("AccountToFollowId");
 
-                    b.HasIndex("SenderAccountId");
+                    b.HasIndex("FollowingAccountId");
 
                     b.ToTable("Follow");
                 });
@@ -595,21 +598,21 @@ namespace BASAccountManager.Migrations
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBFollow", b =>
                 {
-                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "RecipientAccount")
+                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "AccountToFollow")
                         .WithMany()
-                        .HasForeignKey("RecipientAccountId")
+                        .HasForeignKey("AccountToFollowId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "SenderAccount")
+                    b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "FollowingAccount")
                         .WithMany()
-                        .HasForeignKey("SenderAccountId")
+                        .HasForeignKey("FollowingAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("RecipientAccount");
+                    b.Navigation("AccountToFollow");
 
-                    b.Navigation("SenderAccount");
+                    b.Navigation("FollowingAccount");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstagramAccount", b =>

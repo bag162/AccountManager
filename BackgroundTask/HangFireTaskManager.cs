@@ -20,12 +20,16 @@ namespace BASAccountManager
         public async Task TaskParser()
         {
             await this.AssignmentWriter.TaskParserAsync();
-            
         }
 
         public async Task CommentParser()
         {
             await this.AssignmentWriter.CommentParserAsync();
+        }
+
+        public async Task LikesParser()
+        {
+            await this.AssignmentWriter.LikesParserAsync();
         }
 
         public async Task MonitorStatus()
@@ -34,6 +38,8 @@ namespace BASAccountManager
             await this.StatusMonitor.CheckTaskWorkerStatusAsync();
             await this.StatusMonitor.CheckInactiveTask();
             await this.StatusMonitor.CheckUntakenComments();
+            await this.StatusMonitor.CheckUntakenLikes();
+            await this.StatusMonitor.CheckUntakenFollows();
         }
     }
 }

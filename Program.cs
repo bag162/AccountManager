@@ -25,6 +25,8 @@ builder.Services.AddTransient<IPostCommentDBService, PostCommentDBService>();
 builder.Services.AddTransient<IPostGroupDBService, PostGroupDBService>();
 builder.Services.AddTransient<IInstPostDBService, InstPostDBService>();
 builder.Services.AddTransient<IPostCommentGroupDBService, PostCommentGroupDBService>();
+builder.Services.AddTransient<IPostLikeDBService, PostLikeDBService>();
+builder.Services.AddTransient<IFollowDBService, FollowDBService>();
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
@@ -67,6 +69,8 @@ app.MapControllers();
 RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), Cron.MinuteInterval(1));
 RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), Cron.MinuteInterval(1));
 RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), Cron.MinuteInterval(1));
-RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), Cron.MinuteInterval(20));
+RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), Cron.MinuteInterval(1));
+RecurringJob.AddOrUpdate<HangFireTaskManager>("LikesParser", (method) => method.LikesParser(), Cron.MinuteInterval(1));
+
 
 app.Run();
