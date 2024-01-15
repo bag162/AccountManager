@@ -22,6 +22,10 @@ namespace BASAccountManager.DBServices
 
         public async Task AddTaskAsync(List<DBTask> newTask)
         {
+            foreach (var task in newTask)
+            {
+                task.CreatedDate = DateTime.Now;
+            }
             await this.dbcontext.Task.AddRangeAsync(newTask);
             await this.dbcontext.SaveChangesAsync();
             return;
@@ -29,6 +33,7 @@ namespace BASAccountManager.DBServices
 
         public async Task AddTaskAsync(DBTask newTask)
         {
+            newTask.CreatedDate = DateTime.Now;
             await this.dbcontext.Task.AddAsync(newTask);
             await this.dbcontext.SaveChangesAsync();
             return;

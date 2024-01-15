@@ -16,6 +16,7 @@ import { PostingTaskComponent } from './PostingTaskComponent/postingtask.compone
 import { CommentingTaskComponent } from './CommentingTaskComponent/commentingtask.component'
 import { LikingTaskComponent } from './LikingTaskComponent/likingtask.component'
 import { FollowingTaskComponent } from './FolowingTaskComponent/followingtask.component'
+import { ControlPanelComponent } from '../controlpanel.component';
 
 
 
@@ -23,15 +24,19 @@ import { FollowingTaskComponent } from './FolowingTaskComponent/followingtask.co
     imports: [
         RouterModule.forChild([
             {
-                path: 'taskmanager', component: TaskManagerComponent, children: [
-                    { path: "taskdata", component: TaskDataComponent },
-                    { path: "registration", component: RegistrationTaskComponent },
-                    { path: "authorization", component: AuthorizatioonTaskComponent },
-                    { path: "posting", component: PostingTaskComponent },
-                    { path: "commenting", component: CommentingTaskComponent },
-                    { path: "liking", component: LikingTaskComponent },
-                    { path: "folowing", component: FollowingTaskComponent },
-                    { path: "workertaskdata/:id", component: WorkerTaskDataComponent }
+                path: '', component: ControlPanelComponent, children: [
+                    {
+                        path: 'taskmanager', component: TaskManagerComponent, children: [
+                            { path: "taskdata", component: TaskDataComponent },
+                            { path: "registration", component: RegistrationTaskComponent },
+                            { path: "authorization", component: AuthorizatioonTaskComponent },
+                            { path: "posting", component: PostingTaskComponent },
+                            { path: "commenting", component: CommentingTaskComponent },
+                            { path: "liking", component: LikingTaskComponent },
+                            { path: "folowing", component: FollowingTaskComponent },
+                            { path: "workertaskdata/:id", component: WorkerTaskDataComponent }
+                        ]
+                    }
                 ]
             }
         ]),

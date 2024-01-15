@@ -5,6 +5,7 @@ using BASAccountManager.DB;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
 
 namespace BASAccountManager.DBServices
 {
@@ -28,6 +29,19 @@ namespace BASAccountManager.DBServices
             {
                 proxy.ProxyStatus = ProxyStatus.Free;
                 proxy.ProxyGroupId = groupId;
+                proxy.CreatedDate = DateTime.Now;
+                if (proxy.ChangeIpURI != null)
+                {
+                    try
+                    {
+                        new Uri(proxy.ChangeIpURI);
+                    }
+                    catch (Exception)
+                    {
+                        throw new Exception("The URI is invalid. Enter an absolute URI\r\n​");
+                    }
+                    
+                }
             }
             await this.dbcontext.Proxy.AddRangeAsync(newProxy.ToArray());
             await this.dbcontext.SaveChangesAsync();
@@ -39,10 +53,14 @@ namespace BASAccountManager.DBServices
             return this.dbcontext.Proxy.Include(x => x.ProxyGroup).ToList();
         }
 
-
         public async Task RemoveProxyAsync(List<DBProxy> removedProxy)
         {
-            this.dbcontext.Proxy.RemoveRange(removedProxy);
+            var proxyToDelete = new List<DBProxy>();
+            foreach (var proxy in removedProxy)
+            {
+                proxyToDelete.Add(this.dbcontext.Proxy.Include(x => x.BASExeptions).Where(x => x.Id == proxy.Id).First());
+            }
+            this.dbcontext.Proxy.RemoveRange(proxyToDelete);
             await this.dbcontext.SaveChangesAsync();
             return;
         }
@@ -163,6 +181,24 @@ namespace BASAccountManager.DBServices
             this.dbcontext.Proxy.Update(updatedProxy);
             await this.dbcontext.SaveChangesAsync();
             return;
+        }
+
+        public async Task SetProxyFreeStatusAsync(int proxyId)
+        {
+            var proxy = this.dbcontext.Proxy.Find(proxyId);
+            if (proxy.ProxyStatus == ProxyStatus.Free)
+            {
+                return;
+            }
+            if (proxy.ChangeIpURI != null)
+            {
+                HttpClient httpClient = new(){ BaseAddress = new Uri(proxy.ChangeIpURI) };
+                await httpClient.GetAsync("");
+            }
+
+            proxy.ProxyStatus = ProxyStatus.Free;
+            this.dbcontext.Proxy.Update(proxy);
+            await this.dbcontext.SaveChangesAsync();
         }
     }
 }

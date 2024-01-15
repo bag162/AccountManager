@@ -8,6 +8,7 @@ namespace BASAccountManager.DB.Models.Post
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string? ErrorMessage { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         [ForeignKey(nameof(DBInstPost))]
         public int PostId { get; set; }

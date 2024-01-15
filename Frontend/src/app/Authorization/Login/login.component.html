@@ -1,0 +1,13 @@
+<form>
+    <div class="form-group">
+        <label for="exampleInputEmail1">Login</label>
+        <input type="text" class="form-control" id="exampleInputLogin" aria-describedby="loginHelp" placeholder="Enter login" [(ngModel)]="login" required>
+    </div>
+    <div class="form-group">
+        <label for="exampleInputPassword1">Password</label>
+        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" [(ngModel)]="password">
+    </div>
+    <button type="submit" class="btn btn-primary mb-2"(click)="Login()" >Submit</button>
+    <div id="successNot" class="alert alert-success" role="alert">Success</div>
+    <div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+</form>

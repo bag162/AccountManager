@@ -12,15 +12,17 @@ namespace BASAccountManager.DB.Models
         public string Port { get; set; }
 
         public string? ChangeIpURI { get; set; }
-        public int? StandartRotationSec { get; set; }
         public string? Login { get; set; }
         public string? Password { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         [ForeignKey(nameof(DBProxyGroup))]
         public int ProxyGroupId { get; set; }
         public DBProxyGroup ProxyGroup { get; set; }
 
         public ProxyStatus ProxyStatus { get; set; }
+
+        public List<DBBASExeption> BASExeptions { get; set; }
     }
 
     public enum ProxyStatus

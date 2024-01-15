@@ -13,15 +13,15 @@ namespace BASAccountManager.Controllers.Post.Comment
     [Route("api/[controller]/[action]")]
     public class PostCommentController : ControllerBase
     {
-        private IPostCommentDBService postCommentDBService;
+        private ICommentDBService commentDBService;
         private IMapper mapper { get; set; }
         private readonly ILogger<PostCommentController> logger;
 
-        public PostCommentController(IMapper mapper, ILogger<PostCommentController> logger, IPostCommentDBService postCommentDBService)
+        public PostCommentController(IMapper mapper, ILogger<PostCommentController> logger, ICommentDBService commentDBService)
         {
             this.mapper = mapper;
             this.logger = logger;
-            this.postCommentDBService = postCommentDBService;
+            this.commentDBService = commentDBService;
         }
 
         [Route("{groupId:int}")]
@@ -30,7 +30,7 @@ namespace BASAccountManager.Controllers.Post.Comment
         {
             StringValues searchData;
             this.Request.Query.TryGetValue("search[value]", out searchData);
-            JqueryDataTable<CommentDTO> returnedData = this.postCommentDBService.GetCommentsByGroup(start, length, searchData, groupId);
+            JqueryDataTable<CommentDTO> returnedData = this.commentDBService.GetCommentsByGroup(start, length, searchData, groupId);
             returnedData.draw = draw;
             return JsonConvert.SerializeObject(returnedData);
         }
@@ -40,7 +40,7 @@ namespace BASAccountManager.Controllers.Post.Comment
         {
             StringValues searchData;
             this.Request.Query.TryGetValue("search[value]", out searchData);
-            JqueryDataTable<CommentDTO> returnedData = this.postCommentDBService.GetComments(start, length, searchData);
+            JqueryDataTable<CommentDTO> returnedData = this.commentDBService.GetComments(start, length, searchData);
             returnedData.draw = draw;
             return JsonConvert.SerializeObject(returnedData);
         }
@@ -48,14 +48,14 @@ namespace BASAccountManager.Controllers.Post.Comment
         [HttpPost]
         public async Task<string> Post([FromBody] CRUDCommentDTO[] comments)
         {
-            await this.postCommentDBService.AddCommentAsync(comments.ToList());
+            await this.commentDBService.AddCommentAsync(comments.ToList());
             return JsonConvert.SerializeObject(true);
         }
 
         [HttpDelete]
         public async Task<string> Delete([FromBody] CRUDCommentDTO[] comments)
         {
-            await this.postCommentDBService.DeleteCommentAsync(comments.ToList());
+            await this.commentDBService.RemoveCommentsAsync(comments.ToList());
             return JsonConvert.SerializeObject(true);
         }
     }

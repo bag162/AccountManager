@@ -11,6 +11,7 @@ namespace BASAccountManager.DB.Models
         public string AccountGroup { get; set; }
         public string ProxyGroup { get; set; }
         public string? UsefulData { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         public StatusTask Status { get; set; }
         public TaskType TaskType { get; set; }

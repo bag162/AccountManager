@@ -8,6 +8,7 @@ namespace BASAccountManager.DB.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string? ErrorMessage { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         [ForeignKey(nameof(DBInstagramAccount))]
         public int RecipientAccountId { get; set; }

@@ -68,6 +68,9 @@ namespace BASAccountManager.Migrations
                     b.Property<string>("APIToken")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("EmailType")
                         .HasColumnType("int");
 
@@ -90,6 +93,9 @@ namespace BASAccountManager.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
@@ -193,6 +199,9 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -242,6 +251,9 @@ namespace BASAccountManager.Migrations
                     b.Property<string>("ChangeIpURI")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Ip")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -260,9 +272,6 @@ namespace BASAccountManager.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("ProxyStatus")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("StandartRotationSec")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -308,6 +317,9 @@ namespace BASAccountManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ServiceName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -335,6 +347,9 @@ namespace BASAccountManager.Migrations
                     b.Property<string>("ClientTaskName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ProxyGroup")
                         .IsRequired()
@@ -364,6 +379,9 @@ namespace BASAccountManager.Migrations
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
@@ -411,6 +429,9 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -435,6 +456,9 @@ namespace BASAccountManager.Migrations
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("InstPostStatus")
                         .HasColumnType("int");
@@ -551,6 +575,9 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
 
@@ -579,7 +606,7 @@ namespace BASAccountManager.Migrations
                         .HasForeignKey("AccountId");
 
                     b.HasOne("BASAccountManager.DB.Models.DBProxy", "Proxy")
-                        .WithMany()
+                        .WithMany("BASExeptions")
                         .HasForeignKey("ProxyId");
 
                     b.HasOne("BASAccountManager.DB.Models.DBTask", "Task")
@@ -755,7 +782,7 @@ namespace BASAccountManager.Migrations
                         .IsRequired();
 
                     b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "SenderAccount")
-                        .WithMany()
+                        .WithMany("ListLikes")
                         .HasForeignKey("SenderAccountId");
 
                     b.Navigation("Post");
@@ -772,12 +799,19 @@ namespace BASAccountManager.Migrations
                 {
                     b.Navigation("ListComments");
 
+                    b.Navigation("ListLikes");
+
                     b.Navigation("ListPost");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBPost", b =>
                 {
                     b.Navigation("ListPost");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBProxy", b =>
+                {
+                    b.Navigation("BASExeptions");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBProxyGroup", b =>

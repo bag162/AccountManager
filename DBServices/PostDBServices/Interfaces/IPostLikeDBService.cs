@@ -9,5 +9,6 @@ namespace BASAccountManager.DBServices.PostDBServices.Interfaces
         public Task UpdateLikesAsync(List<DBPostLikes> likes);
         public Task UpdateLikeAsync(DBPostLikes like);
         public Task AddLikesAsync(List<DBPostLikes> likes);
+        public Task RemoveLikesAsync(List<DBPostLikes> likes);
     }
 }

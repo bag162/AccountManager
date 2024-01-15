@@ -22,6 +22,10 @@ namespace BASAccountManager.DBServices
 
         public async Task AddEmailAsync(List<DBEmail> newEmail)
         {
+            foreach (var email in newEmail)
+            {
+                email.CreatedDate = DateTime.Now;
+            }
             await this.dbcontext.Email.AddRangeAsync(newEmail);
             await this.dbcontext.SaveChangesAsync();
             return;

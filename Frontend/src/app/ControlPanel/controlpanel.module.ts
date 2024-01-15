@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ControlPanelComponent } from './ControlPanelComponent/controlpanel.conponent';
+import { ControlPanelComponent } from './controlpanel.component';
 import { ProxyComponent } from './ProxyComponent/proxy.component'
 import { SMSServiceComponent } from './SMSServiceComponent/smsservice.component'
 import { DataTablesModule } from 'angular-datatables';
@@ -15,14 +15,16 @@ import { PostModule } from './PostModule/post.module'
 @NgModule({
     imports: [
         RouterModule.forChild([
-            { path: '', component: ControlPanelComponent },
-            { path: 'proxy', component: ProxyComponent },
-            { path: 'smsservice', component: SMSServiceComponent },
-            { path: 'Instaccount', component: InstAccountComponent },
-            { path: 'taskmanager', component: TaskManagerModule },
-            { path: 'postgroup', component: PostModule },
-            { path: 'email', component: EmailComponent }
-
+            {
+                path: '', component: ControlPanelComponent, children: [
+                    { path: 'proxy', component: ProxyComponent },
+                    { path: 'smsservice', component: SMSServiceComponent },
+                    { path: 'Instaccount', component: InstAccountComponent },
+                    { path: 'taskmanager', component: TaskManagerModule },
+                    { path: 'postgroup', component: PostModule },
+                    { path: 'email', component: EmailComponent }
+                ]
+            },
         ]),
         DataTablesModule,
         BrowserModule,

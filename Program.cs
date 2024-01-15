@@ -8,6 +8,14 @@ using BASAccountManager.BackgroundTask;
 using BASAccountManager.TaskManagers.InstManager;
 using BASAccountManager.DBServices.PostDBServices;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using BASAccountManager.DB.Models;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
+using Hangfire.Dashboard;
+using System.Configuration;
+using Microsoft.Extensions.Hosting.Internal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +35,7 @@ builder.Services.AddTransient<IInstPostDBService, InstPostDBService>();
 builder.Services.AddTransient<IPostCommentGroupDBService, PostCommentGroupDBService>();
 builder.Services.AddTransient<IPostLikeDBService, PostLikeDBService>();
 builder.Services.AddTransient<IFollowDBService, FollowDBService>();
+builder.Services.AddTransient<ICommentDBService, CommentDBService>();
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
@@ -39,10 +48,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(AutoMapperConf));
-builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+
+builder.Services.AddCors(o => o.AddPolicy("DevCorsPolicy", builder =>
 {
     builder
-    .SetIsOriginAllowed(origin => true)
+    .WithOrigins("http://localhost:4200")
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials();
@@ -50,10 +60,34 @@ builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
 
 // DB Services
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AMContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
+builder.Services.AddDbContext<AMContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+builder.Services.AddDbContext<AMIdentityContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+
+builder.Services.AddIdentity<DBUser, IdentityRole>(config =>
+{
+    config.Password.RequireNonAlphanumeric = false;
+    config.Password.RequiredLength = 1;
+    config.Password.RequireUppercase = false;
+    config.Password.RequireDigit = false;
+    config.Password.RequireLowercase = false;
+})
+    .AddEntityFrameworkStores<AMIdentityContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddMvc(opt =>
+{
+    opt.EnableEndpointRouting = false;
+});
+builder.Services.AddSpaStaticFiles(configuration =>
+{
+    configuration.RootPath = "wwwroot";
+});
 var app = builder.Build();
 
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -61,16 +95,35 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors("CorsPolicy");
-app.UseStaticFiles(); // TODO после добавления авторизации, сделать закрытым
-app.UseAuthorization();
+app.UseCors("DevCorsPolicy"); // TODO edit to before deploy
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseHangfireDashboard();
-app.MapControllers();
-RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), Cron.MinuteInterval(1));
-RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), Cron.MinuteInterval(1));
-RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), Cron.MinuteInterval(1));
-RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), Cron.MinuteInterval(1));
-RecurringJob.AddOrUpdate<HangFireTaskManager>("LikesParser", (method) => method.LikesParser(), Cron.MinuteInterval(1));
+app.UseMvc();
+app.UseSpa(spa =>
+{
+    spa.Options.SourcePath = "Frontend";
+});
+RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), "*/1 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), "*/1 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), "*/1 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), "*/1 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("LikesParser", (method) => method.LikesParser(), "*/1 * * * * *");
 
+// Init Roles
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var rolesManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        await RoleInitializer.InitializeAsync(rolesManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
 
 app.Run();

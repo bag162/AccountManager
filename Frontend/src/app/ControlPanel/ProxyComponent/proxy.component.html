@@ -6,7 +6,9 @@
                 <div class="form-group">
                     <label for="exampleFormControlSelect1">Proxy fromat</label>
                     <select class="form-control" id="exampleFormControlSelect1">
+                        <option>ip:port</option>
                         <option>ip:port:login:password</option>
+                        <option>ip:port:login:password:changeIpURI</option>
                     </select>
                 </div>
             </div>
@@ -51,7 +53,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Id</label>
-                    <input type="text" class="form-control" id="idModal" placeholder="127.0.0.1" disabled>
+                    <input type="text" class="form-control" id="idModal" placeholder="1" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Ip</label>
@@ -63,11 +65,15 @@
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Login</label>
-                    <input type="text" class="form-control" id="loginModal" placeholder="proxyLogin">
+                    <input type="text" class="form-control" id="loginModal" placeholder="Proxy login">
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Password</label>
-                    <input type="text" class="form-control" id="passwordModal" placeholder="proxyPassword">
+                    <input type="text" class="form-control" id="passwordModal" placeholder="Proxy password">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Password</label>
+                    <input type="text" class="form-control" id="changeIpURI" placeholder="Change ip URI">
                 </div>
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Group</label>

@@ -16,5 +16,6 @@ namespace BASAccountManager.DBServices.Interfaces
         public Task UpdateProxyAsync(List<DBProxy> updatedProxy, string newGroup);
         public List<string> GetAllGroups();
         public Task AddGroupAsync(DBProxyGroup addedGroup);
+        public Task SetProxyFreeStatusAsync(int proxyId);
     }
 }

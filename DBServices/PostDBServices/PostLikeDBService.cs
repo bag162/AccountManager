@@ -35,6 +35,13 @@ namespace BASAccountManager.DBServices.PostDBServices
             return this.dbcontext.PostLike.Find(id);
         }
 
+        public async Task RemoveLikesAsync(List<DBPostLikes> likes)
+        {
+            this.dbcontext.PostLike.RemoveRange(likes);
+            await this.dbcontext.SaveChangesAsync();
+            return;
+        }
+
         public async Task UpdateLikeAsync(DBPostLikes like)
         {
             this.dbcontext.PostLike.Update(like);

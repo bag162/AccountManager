@@ -48,6 +48,9 @@ export class ProxyComponent implements OnInit {
         title: 'Password',
         data: 'Password'
       }, {
+        title: 'Change ip URI',
+        data: 'ChangeIpURI'
+      }, {
         title: 'Group',
         data: 'Group'
       }, {
@@ -108,7 +111,7 @@ export class ProxyComponent implements OnInit {
       var deletedProxy = new Array<ProxyDTO>;
       for (let index = 0; index < data.length; index++) {
         const element = data[index];
-        var newItem = new ProxyDTO(element["Id"], element["Ip"], element["Port"], element["Login"], element["Password"], element["Group"], element["ProxyStatus"]);
+        var newItem = new ProxyDTO(element["Id"], element["Ip"], element["Port"], element["Login"], element["Password"], element["Group"], element["ProxyStatus"], element["ChangeIpURI"]);
         deletedProxy.push(newItem);
       }
       await ProxyService.DeleteProxy(deletedProxy).subscribe({
@@ -140,6 +143,7 @@ export class ProxyComponent implements OnInit {
       $("#loginModal").val(element["Login"]);
       $("#passwordModal").val(element["Password"]);
       $("#statusModal").val(element["ProxyStatus"]);
+      $("#changeIpURI").val(element["ChangeIpURI"]);
       new bootstrap.Modal("#proxyModal").show();
     }
 
@@ -156,7 +160,18 @@ export class ProxyComponent implements OnInit {
     var addedProxy = new Array<ProxyDTO>();
     proxyArray.forEach(element => {
       var elements = element.split(":");
-      var newItem = new ProxyDTO('0', elements[0], elements[1], elements[2], elements[3], $("#groupAddModal").val().toString(), "0");
+      var changeIpURI: string = "";
+      if (elements.length > 4) {
+        for (let index = 4; index < elements.length; index++) {
+          const element = elements[index];
+            changeIpURI = changeIpURI + element + ":";
+        }
+        changeIpURI = changeIpURI.slice(0, -1);
+      }
+      else {
+        changeIpURI = elements[4]
+      }
+      var newItem = new ProxyDTO('0', elements[0], elements[1], elements[2], elements[3], $("#groupAddModal").val().toString(), "0", changeIpURI);
       addedProxy.push(newItem);
     });
 
@@ -185,7 +200,7 @@ export class ProxyComponent implements OnInit {
 
   async UpdateProxy() {
     var updatedArray = new Array<ProxyDTO>;
-    var updatedProxy = new ProxyDTO($("#idModal").val().toString(), $("#ipModal").val().toString(), $("#portModal").val().toString(), $("#loginModal").val().toString(), $("#passwordModal").val().toString(), $("#groupUpdateModal").val().toString(), $("#statusModal").val().toString());
+    var updatedProxy = new ProxyDTO($("#idModal").val().toString(), $("#ipModal").val().toString(), $("#portModal").val().toString(), $("#loginModal").val().toString(), $("#passwordModal").val().toString(), $("#groupUpdateModal").val().toString(), $("#statusModal").val().toString(), $("#changeIpURI").val().toString());
     updatedArray.push(updatedProxy);
     await (await ProxyService.UpdateProxy(updatedArray)).subscribe({
       next: (data: boolean) => {
@@ -209,7 +224,7 @@ export class ProxyComponent implements OnInit {
 }
 
 export class ProxyDTO {
-  constructor(id: string, ip: string, port: string, login: string, password: string, group: string, ProxyStatus: string) {
+  constructor(id: string, ip: string, port: string, login: string, password: string, group: string, ProxyStatus: string, ChangeIpURI: string) {
     this.id = id;
     this.Ip = ip;
     this.Port = port;
@@ -217,6 +232,7 @@ export class ProxyDTO {
     this.Password = password;
     this.Group = group;
     this.ProxyStatus = ProxyStatus;
+    this.ChangeIpURI = ChangeIpURI;
 
   }
   public id: string;
@@ -226,4 +242,5 @@ export class ProxyDTO {
   public Password: string;
   public Group: string;
   public ProxyStatus: string;
+  public ChangeIpURI: string;
 }

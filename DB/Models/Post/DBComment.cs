@@ -8,6 +8,7 @@ namespace BASAccountManager.DB.Models.Post
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Message { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         [ForeignKey(nameof(DBPostCommentGroup))]
         public int PostCommentGroupId { get; set; }

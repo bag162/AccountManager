@@ -77,9 +77,7 @@ namespace BASAccountManager.BackgroundTask
                 if (allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.NotTaken).Count() != 0)
                     continue;
                 
-
-                proxy.ProxyStatus = DB.Models.ProxyStatus.Free;
-                await this.proxyDBService.UpdateProxyAsync(proxy);
+                await this.proxyDBService.SetProxyFreeStatusAsync(proxy.Id);
             }
         }
 
@@ -132,6 +130,9 @@ namespace BASAccountManager.BackgroundTask
             }
 
             await this.postCommentDBService.UpdatePostCommentAsync(listToUpdate);
+
+            var commentsToDelete = allPostComments.Where(x => x.CommentStatus == CommentStatus.ErrorPublication).ToList();
+            await this.postCommentDBService.RemoveCommentsAsync(commentsToDelete);
             return;
         }
 
@@ -167,6 +168,9 @@ namespace BASAccountManager.BackgroundTask
             }
 
             await this.postLikeDBService.UpdateLikesAsync(listToUpdate);
+
+            var likesToRemove = allPostLikes.Where(x => x.LikeStatus == LikeStatus.ErrorPublication).ToList();
+            await this.postLikeDBService.RemoveLikesAsync(likesToRemove);
             return;
         }
 

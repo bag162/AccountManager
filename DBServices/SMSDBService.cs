@@ -22,6 +22,10 @@ namespace BASAccountManager.DBServices
 
         public async Task AddSMSServiceAsync(List<DBSMSActivation> newSMSService)
         {
+            foreach (var smsservice in newSMSService)
+            {
+                smsservice.CreatedDate = DateTime.Now;
+            }
             await this.dbcontext.SMSActivation.AddRangeAsync(newSMSService.ToArray());
             await this.dbcontext.SaveChangesAsync();
             return;

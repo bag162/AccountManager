@@ -11,6 +11,7 @@ namespace BASAccountManager.DB.Models
         public string? InstanceId { get; set; }
         public string? UsefulData { get; set; }
         public string? ErrorMessage { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         [ForeignKey(nameof(DBInstagramAccount))]
         public int AccountId { get; set; }

@@ -10,6 +10,7 @@ namespace BASAccountManager.DB.Models.Post
 
         public string? PostingErrorMessage { get; set; }
         public string? PostURI { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         [ForeignKey(nameof(DBPost))]
         public int PostId { get; set; }

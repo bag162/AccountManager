@@ -23,6 +23,10 @@ namespace BASAccountManager.DBServices
 
         public async Task AddWorkerTaskAsync(List<DBWorkerTask> addedTask)
         {
+            foreach (var workerTask in addedTask)
+            {
+                workerTask.CreatedDate = DateTime.Now;
+            }
             await this.dbcontext.WorkerTask.AddRangeAsync(addedTask);
             await this.dbcontext.SaveChangesAsync();
             return;

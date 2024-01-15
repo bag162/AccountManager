@@ -7,14 +7,27 @@ import { HttpClientModule } from '@angular/common/http';
 import { ControlPanelModule } from './ControlPanel/controlpanel.module'
 import { DataTablesModule } from 'angular-datatables';
 import { TaskManagerModule } from './ControlPanel/TaskManagerModule/taskmanager.module';
+import { LoginComponent } from './Authorization/Login/login.component'
+import { RegistrationComponent } from './Authorization/Registration/registration.component'
+import { AuthorizationComponent } from './Authorization/authorization.component'
 
 @NgModule({
   declarations: [
     AppComponent,
+    LoginComponent,
+    RegistrationComponent,
+    AuthorizationComponent
   ],
   imports: [
     RouterModule.forRoot([
+      {
+        path: 'auth', component: AuthorizationComponent, children: [
+          { path: 'login', component: LoginComponent },
+          { path: 'registration', component: RegistrationComponent }
+        ]
+      },
       { path: '', component: ControlPanelModule }
+
     ]),
     BrowserModule,
     HttpClientModule,

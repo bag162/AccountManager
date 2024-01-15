@@ -56,10 +56,8 @@ namespace BASAccountManager.Controllers.InstTask
                 var updatedProxy = taskWorkers.Where(x => x.Proxy.ProxyStatus == ProxyStatus.BookedForWork).Select(x => x.Proxy).ToList();
                 foreach (var proxy in updatedProxy)
                 {
-                    proxy.ProxyStatus = ProxyStatus.Free;
+                    await this.ProxyDBService.SetProxyFreeStatusAsync(proxy.Id);
                 }
-                // Обновляем прокси
-                await this.ProxyDBService.UpdateProxyAsync(updatedProxy);
                 // Если остановленная задача является задачей Commenting, то удаляем все воркеры в ней
                 if (stoppedTask.TaskType == TaskType.Commenting.ToString())
                 {

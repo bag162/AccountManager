@@ -10,6 +10,7 @@ namespace BASAccountManager.DB.Models
         public string Name { get; set; }
         public string? APIToken { get; set; }
         public string? MailDomain { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         public EmailType EmailType { get; set; }
     }

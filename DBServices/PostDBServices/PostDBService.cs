@@ -29,6 +29,7 @@ namespace BASAccountManager.DBServices.PostDBServices
             var commentGroupId = this.dbcontext.CommentGroup.Where(x => x.Name == post.CommentGroupName).Select(x => x.Id).First();
             addedPost.PostCommentGroupId = commentGroupId;
             addedPost.GroupId = postGroupId;
+            addedPost.CreatedDate = DateTime.Now;
             var path = "wwwroot/images/posts/" + post.PostGroupName;
 
             string filePath = await ImageService.AddBase64ImageAsync(post.ImageFormat, post.ImageBase64, path, post.Name);
