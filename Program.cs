@@ -46,17 +46,16 @@ builder.Services.AddTransient<InstTaskManager>();
 builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddHangfireServer();
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(AutoMapperConf));
 
-builder.Services.AddCors(o => o.AddPolicy("DevCorsPolicy", builder =>
+builder.Services.AddCors(o => o.AddDefaultPolicy(builder =>
 {
     builder
-    .WithOrigins("http://localhost:4200")
+    .WithOrigins("http://localhost:80")
+    .AllowCredentials()
     .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials();
+    .AllowAnyMethod();
 }));
 
 // DB Services
@@ -64,6 +63,14 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<AMContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 builder.Services.AddDbContext<AMIdentityContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+
+builder.Services.ConfigureApplicationCookie(opt =>
+{
+    opt.LoginPath = "/auth/login";
+    opt.LogoutPath = "/auth/logut";
+    opt.AccessDeniedPath = "/";
+    opt.ExpireTimeSpan = TimeSpan.MaxValue;
+});
 
 builder.Services.AddIdentity<DBUser, IdentityRole>(config =>
 {
@@ -76,13 +83,9 @@ builder.Services.AddIdentity<DBUser, IdentityRole>(config =>
     .AddEntityFrameworkStores<AMIdentityContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddMvc(opt =>
-{
-    opt.EnableEndpointRouting = false;
-});
 builder.Services.AddSpaStaticFiles(configuration =>
 {
-    configuration.RootPath = "wwwroot/app";
+    configuration.RootPath = "wwwroot";
 });
 var app = builder.Build();
 
@@ -96,11 +99,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors("DevCorsPolicy"); // TODO edit to before deploy
+app.UseCors();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseHangfireDashboard();
-app.UseMvc();
+
+app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapDefaultControllerRoute();
+});
+
 app.UseSpa(spa =>
 {
     spa.Options.SourcePath = "ClientApp";
@@ -110,11 +119,14 @@ app.UseSpa(spa =>
         spa.UseProxyToSpaDevelopmentServer("http://localhost:4200");
     }
 });
+
+
 RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("LikesParser", (method) => method.LikesParser(), "*/1 * * * * *");
+
 
 // Init Roles
 using (var scope = app.Services.CreateScope())

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { PostGroupService } from '../../../Services/PostGroupService';
 import { environment } from '../../../../environments/environment';
 import { InstAccountService } from 'src/app/Services/InstAccountService';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'post-group',
@@ -9,15 +10,17 @@ import { InstAccountService } from 'src/app/Services/InstAccountService';
 })
 
 export class PostGroupComponent implements OnInit {
+    public static router: Router;
     dtOptions: any;
     PostGroupService: PostGroupService;
     InstAccountService: InstAccountService;
     accountGroupNames: string[];
     PostGroupName: string;
 
-    constructor(PostGroupService: PostGroupService,  InstAccountService: InstAccountService) {
+    constructor(PostGroupService: PostGroupService,  InstAccountService: InstAccountService, router: Router) {
         this.PostGroupService = PostGroupService;
         this.InstAccountService = InstAccountService;
+        PostGroupComponent.router = router;
     }
 
     async ngOnInit() {
@@ -92,7 +95,7 @@ export class PostGroupComponent implements OnInit {
         })
         async function RedirectToPostManager(data: string)
         {
-            $(location).attr('href', window.location.origin.toString() + "/post/manager/" + data["Id"]);
+            PostGroupComponent.router.navigate(["/post/manager/" + data["Id"]])
         }
 
         async function Delete(data: string[], dt: any) {

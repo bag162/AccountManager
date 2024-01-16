@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PostService } from '../../../Services/PostService'
 import { environment } from '../../../../environments/environment';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
     selector: 'post-manager',
@@ -9,11 +9,13 @@ import { ActivatedRoute } from '@angular/router';
 })
 
 export class PostManagerComponent implements OnInit {
+    public static router: Router;
     dtOptions: any;
     PostService: PostService;
     URIPath: string;
     postName: string;
-    constructor(PostService: PostService, activateRoute: ActivatedRoute) {
+    constructor(PostService: PostService, activateRoute: ActivatedRoute, router: Router) {
+        PostManagerComponent.router = router;
         this.PostService = PostService;
         var groupId = activateRoute.snapshot.params["groupId"];
         if (groupId == undefined) {
@@ -124,12 +126,12 @@ export class PostManagerComponent implements OnInit {
 
         function Add()
         {
-            $(location).attr('href', window.location.origin.toString() + "/post/manager/add");
+            PostManagerComponent.router.navigate(["/post/manager/add"]);
         }
 
         function ViewOrUpdate(postId: number)
         {
-            $(location).attr('href', window.location.origin.toString() + "/post/manager/update/" + postId);
+            PostManagerComponent.router.navigate(["/post/manager/update/" + postId]);
         }
     }
 }

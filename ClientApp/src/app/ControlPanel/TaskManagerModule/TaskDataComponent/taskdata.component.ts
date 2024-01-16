@@ -3,6 +3,7 @@ import { TaskService } from 'src/app/Services/TaskService'
 import { environment } from 'src/environments/environment'
 import * as bootstrap from "bootstrap";
 import * as $ from 'jquery';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'taskdata',
@@ -10,12 +11,14 @@ import * as $ from 'jquery';
 })
 
 export class TaskDataComponent implements OnInit {
+    public static router: Router;
     dtOptions: any;
     TaskData: string;
     taskService: TaskService;
 
-    constructor(taskService: TaskService) {
+    constructor(taskService: TaskService, router: Router) {
         this.taskService = taskService;
+        TaskDataComponent.router = router;
     }
 
     ngOnInit() {
@@ -174,7 +177,7 @@ export class TaskDataComponent implements OnInit {
         }
 
         async function RouteToWorkerData(data: string, dt: any) {
-            $(location).attr('href', window.location.origin.toString() + "/taskmanager/workertaskdata/" + data["Id"]);
+            TaskDataComponent.router.navigate(["/taskmanager/workertaskdata/" + data["Id"]])
         }
     }
 }

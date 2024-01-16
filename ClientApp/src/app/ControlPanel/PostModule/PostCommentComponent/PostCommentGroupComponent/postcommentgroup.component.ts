@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PostCommentGroupService } from "../../../../Services/PostCommentGroupService"
 import { environment } from 'src/environments/environment';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -9,11 +10,13 @@ import { environment } from 'src/environments/environment';
 })
 
 export class PostCommentGroupComponent implements OnInit {
+    public static router: Router;
     postGroupService: PostCommentGroupService;
     dtOptions: any;
     newGroup: string;
 
-    constructor(postGroupService: PostCommentGroupService) {
+    constructor(postGroupService: PostCommentGroupService, router: Router) {
+        PostCommentGroupComponent.router = router;
         this.postGroupService = postGroupService;
     }
 
@@ -85,7 +88,7 @@ export class PostCommentGroupComponent implements OnInit {
         };
         function RedirectToCommentManagerByGroup(group: any)
         {
-            $(location).attr('href', window.location.origin.toString() + "/post/comment/manager/" + group["Id"]);
+            PostCommentGroupComponent.router.navigate(["/post/comment/manager/" + group["Id"]]);
         }
 
         async function Delete(data: string[], dt: any) {
