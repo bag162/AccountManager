@@ -1,4 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using BASAccountManager.Controllers.Task.DTO;
+using BASAccountManager.DB.Models;
+using BASAccountManager.DBServices;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Hosting;
+using System.Net;
+using System.Security.Principal;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BASAccountManager
 {
@@ -11,65 +18,79 @@ namespace BASAccountManager
                 await roleManager.CreateAsync(new IdentityRole("admin"));
             }
 
-            if (await roleManager.FindByNameAsync("email") == null)
+            if (await roleManager.FindByNameAsync("/proxy") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("email"));
+                await roleManager.CreateAsync(new IdentityRole("/proxy"));
             }
-
-            if (await roleManager.FindByNameAsync("email") == null)
+            if (await roleManager.FindByNameAsync("/Instaccount") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("email"));
+                await roleManager.CreateAsync(new IdentityRole("/Instaccount"));
             }
-
-            if (await roleManager.FindByNameAsync("instAccount") == null)
+            if (await roleManager.FindByNameAsync("/smsservice") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("instAccount"));
+                await roleManager.CreateAsync(new IdentityRole("/smsservice"));
             }
-
-            if (await roleManager.FindByNameAsync("instGroup") == null)
+            if (await roleManager.FindByNameAsync("/email") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("instGroup"));
+                await roleManager.CreateAsync(new IdentityRole("/email"));
             }
-
-            if (await roleManager.FindByNameAsync("post") == null)
+            if (await roleManager.FindByNameAsync("/taskmanager/taskdata") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("post"));
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/taskdata"));
             }
-
-            if (await roleManager.FindByNameAsync("postComment") == null)
+            if (await roleManager.FindByNameAsync("/taskmanager/registration") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("postComment"));
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/registration"));
             }
-
-            if (await roleManager.FindByNameAsync("postGroup") == null)
+            if (await roleManager.FindByNameAsync("/taskmanager/authorization") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("postGroup"));
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/authorization"));
             }
-
-            if (await roleManager.FindByNameAsync("proxy") == null)
+            if (await roleManager.FindByNameAsync("/taskmanager/posting") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("proxy"));
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/posting"));
             }
-
-            if (await roleManager.FindByNameAsync("proxyGroup") == null)
+            if (await roleManager.FindByNameAsync("/taskmanager/commenting") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("proxyGroup"));
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/commenting"));
             }
-
-            if (await roleManager.FindByNameAsync("smsService") == null)
+            if (await roleManager.FindByNameAsync("/taskmanager/liking") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("smsService"));
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/liking"));
             }
-
-            if (await roleManager.FindByNameAsync("taskManager") == null)
+            if (await roleManager.FindByNameAsync("/taskmanager/folowing") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("taskManager"));
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/folowing"));
             }
-
-            if (await roleManager.FindByNameAsync("task") == null)
+            if (await roleManager.FindByNameAsync("/post/group") == null)
             {
-                await roleManager.CreateAsync(new IdentityRole("task"));
+                await roleManager.CreateAsync(new IdentityRole("/post/group"));
             }
+            if (await roleManager.FindByNameAsync("/post/manager") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/post/manager"));
+            }
+            if (await roleManager.FindByNameAsync("/post/comment/group") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/post/comment/group"));
+            }
+            if (await roleManager.FindByNameAsync("/post/comment/manager") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/post/comment/manager"));
+            }
+            if (await roleManager.FindByNameAsync("/taskmanager/workertaskdata") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/workertaskdata"));
+            }
+            if (await roleManager.FindByNameAsync("/post/manager/add") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/post/manager/add"));
+            }
+            if (await roleManager.FindByNameAsync("/post/manager/update") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/post/manager/update"));
+            }
+            
         }
     }
 }

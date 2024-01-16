@@ -4,6 +4,7 @@ using BASAccountManager.Controllers.Post.Comment.DTO;
 using BASAccountManager.Controllers.Post.Post.DTO;
 using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -14,6 +15,8 @@ namespace BASAccountManager.Controllers.Post.Comment.CommentGroup
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "/post/comment/group")]
     public class PostCommentGroupController : ControllerBase
     {
         private IMapper mapper { get; set; }

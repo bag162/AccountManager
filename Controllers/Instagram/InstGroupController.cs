@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BASAccountManager.Controllers.Instagram.DTO;
 using BASAccountManager.DBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -8,6 +9,8 @@ namespace BASAccountManager.Controllers.Instagram
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "/InstGroup")]
     public class InstGroupController : ControllerBase
     {
         private IMapper mapper { get; set; }

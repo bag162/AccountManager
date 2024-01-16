@@ -3,6 +3,7 @@ using BASAccountManager.Controllers.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -11,6 +12,8 @@ namespace BASAccountManager.Controllers.InstTask
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "/taskmanager/taskdata")]
     public class TaskController : ControllerBase
     {
         private IMapper mapper;

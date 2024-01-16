@@ -4,6 +4,7 @@ using BASAccountManager.Controllers.Post.Group.DTO;
 using BASAccountManager.Controllers.Post.Post.DTO;
 using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -12,6 +13,8 @@ namespace BASAccountManager.Controllers.Post.Group
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "/post/group")]
     public class PostGroupController : ControllerBase
     {
         private IMapper mapper { get; set; }

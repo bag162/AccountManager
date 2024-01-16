@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Frontend\**" />
-    <Content Remove="Frontend\**" />
-    <EmbeddedResource Remove="Frontend\**" />
-    <None Remove="Frontend\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,5 +33,5 @@
   <ItemGroup>
     <Folder Include="TaskManagers\InstManager\DTO\" />
   </ItemGroup>
-
+	
 </Project>

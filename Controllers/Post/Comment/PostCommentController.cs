@@ -3,6 +3,7 @@ using BASAccountManager.Controllers.DTO;
 using BASAccountManager.Controllers.Post.Comment.DTO;
 using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -11,6 +12,8 @@ namespace BASAccountManager.Controllers.Post.Comment
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "/post/comment/manager")]
     public class PostCommentController : ControllerBase
     {
         private ICommentDBService commentDBService;

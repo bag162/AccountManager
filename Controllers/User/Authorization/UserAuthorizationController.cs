@@ -2,6 +2,7 @@
 using BASAccountManager.Controllers.InstTask;
 using BASAccountManager.Controllers.User.Authorization.DTO;
 using BASAccountManager.DB.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -51,8 +52,11 @@ namespace BASAccountManager.Controllers.User.Login
             var returnedData = new LoginUserDataDTO();
             if (result.Succeeded)
             {
+                var newUser = await userManager.FindByNameAsync(user.Login);
+                var roles = await userManager.GetRolesAsync(newUser);
                 returnedData.Login = user.Login;
                 returnedData.Error = false;
+                returnedData.Roles = roles.ToArray();
                 return JsonConvert.SerializeObject(returnedData);
             }
             else

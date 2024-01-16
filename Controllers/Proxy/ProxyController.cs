@@ -3,6 +3,7 @@ using BASAccountManager.Controllers.DTO;
 using BASAccountManager.Controllers.Proxy.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -11,6 +12,8 @@ namespace BASAccountManager.Controllers.Proxy
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "/proxy")]
     public class ProxyController : ControllerBase
     {
         private IMapper mapper { get; set; }

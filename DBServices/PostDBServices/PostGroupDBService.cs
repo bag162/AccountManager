@@ -29,6 +29,7 @@ namespace BASAccountManager.DBServices.PostDBServices
             {
                 var newGroup = this.mapper.Map<DBPostGroup>(group);
                 newGroup.AccountGroupId = this.dbcontext.InstAccountGroup.Where(x => x.Name == group.AccountGroupName).Select(x => x.Id).First();
+                newGroups.Add(newGroup);
             }
             await this.dbcontext.PostGroup.AddRangeAsync(newGroups);
             await this.dbcontext.SaveChangesAsync();

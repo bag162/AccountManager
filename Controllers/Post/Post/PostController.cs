@@ -3,6 +3,7 @@ using BASAccountManager.Controllers.DTO;
 using BASAccountManager.Controllers.Post.Post.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -25,6 +26,8 @@ namespace BASAccountManager.Controllers.Post.Post
 
         [Route("{postId:int}")]
         [HttpGet]
+        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "/post/manager/update")]
         public string Get(int postId)
         {
             var post = this.postDBService.GetPostById(postId);
@@ -32,6 +35,8 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpGet]
+        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "/post/manager")]
         public async Task<string> Get(int start, int length, int draw)
         {
             StringValues searchData;
@@ -42,6 +47,8 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpDelete]
+        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "/post/manager/update")]
         public async Task<string> Delete([FromBody] PostListDTO[] group)
         {
             await this.postDBService.DeletePostAsync(mapper.Map<List<DBPost>>(group.ToList()));
@@ -49,6 +56,8 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "/post/manager/add")]
         public async Task<string> Post([FromBody] CRUDPostDTO post)
         {
             await this.postDBService.AddPostAsync(post);
@@ -56,6 +65,8 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpPut]
+        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "/post/manager/update")]
         public async Task<string> Put([FromBody] UpdatePostDTO post)
         {
             await this.postDBService.UpdatePostAsync(post);

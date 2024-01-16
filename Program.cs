@@ -16,6 +16,7 @@ using Microsoft.Net.Http.Headers;
 using Hangfire.Dashboard;
 using System.Configuration;
 using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.AspNetCore.SpaServices.AngularCli;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,7 +82,7 @@ builder.Services.AddMvc(opt =>
 });
 builder.Services.AddSpaStaticFiles(configuration =>
 {
-    configuration.RootPath = "wwwroot";
+    configuration.RootPath = "wwwroot/app";
 });
 var app = builder.Build();
 
@@ -102,7 +103,12 @@ app.UseHangfireDashboard();
 app.UseMvc();
 app.UseSpa(spa =>
 {
-    spa.Options.SourcePath = "Frontend";
+    spa.Options.SourcePath = "ClientApp";
+    if (app.Environment.IsDevelopment())
+    {
+        spa.UseAngularCliServer(npmScript: "start");
+        spa.UseProxyToSpaDevelopmentServer("http://localhost:4200");
+    }
 });
 RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), "*/1 * * * * *");
