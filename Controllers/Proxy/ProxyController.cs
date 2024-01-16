@@ -12,8 +12,7 @@ namespace BASAccountManager.Controllers.Proxy
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/proxy")]
+    [Authorize(Roles = "/proxy,admin")]
     public class ProxyController : ControllerBase
     {
         private IMapper mapper { get; set; }

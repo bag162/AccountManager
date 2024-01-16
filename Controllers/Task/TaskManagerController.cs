@@ -29,8 +29,7 @@ namespace BASAccountManager.Controllers.Task
 
         [Route("{id:int}")]
         [HttpGet]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/taskmanager/workertaskdata")]
+        [Authorize(Roles = "/taskmanager/workertaskdata,admin")]
         public string Get(int start, int length, int draw, int id)
         {
             StringValues searchData;
@@ -41,8 +40,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/taskmanager/registration")]
+        [Authorize(Roles = "/taskmanager/registration,admin")]
         public async Task<string> RegistrationTask(RegistrationTaskDTO newTask)
         {
             var task = new DBTask();
@@ -58,8 +56,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/taskmanager/authorization")]
+        [Authorize(Roles = "/taskmanager/authorization,admin")]
         public async Task<string> AuthorizationTask([FromBody] AuthorizationTaskDTO newTask)
         {
             var task = new DBTask();
@@ -74,8 +71,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/taskmanager/posting")]
+        [Authorize(Roles = "/taskmanager/posting,admin")]
         public async Task<string> PostingTask([FromBody] PostingTaskDTO newTask)
         {
             var task = new DBTask();
@@ -91,8 +87,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/taskmanager/commenting")]
+        [Authorize(Roles = "/taskmanager/commenting,admin")]
         public async Task<string> CommentingTask([FromBody] CommentingTaskDTO newTask)
         {
             var task = new DBTask();
@@ -107,8 +102,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/taskmanager/liking")]
+        [Authorize(Roles = "/taskmanager/liking,admin")]
         public async Task<string> LikingTask([FromBody] LikingTaskDTO newTask)
         {
             var task = new DBTask();
@@ -123,8 +117,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/taskmanager/folowing")]
+        [Authorize(Roles = "/taskmanager/folowing,admin")]
         public async Task<string> FollowingTask([FromBody] FollowingTaskDTO newTask)
         {
             var task = new DBTask();

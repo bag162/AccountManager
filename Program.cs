@@ -69,7 +69,7 @@ builder.Services.ConfigureApplicationCookie(opt =>
     opt.LoginPath = "/auth/login";
     opt.LogoutPath = "/auth/logut";
     opt.AccessDeniedPath = "/";
-    opt.ExpireTimeSpan = TimeSpan.MaxValue;
+    opt.ExpireTimeSpan = TimeSpan.FromDays(180);
 });
 
 builder.Services.AddIdentity<DBUser, IdentityRole>(config =>

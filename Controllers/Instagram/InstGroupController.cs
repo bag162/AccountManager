@@ -9,8 +9,7 @@ namespace BASAccountManager.Controllers.Instagram
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/InstGroup")]
+    [Authorize(Roles = "/InstGroup,admin")]
     public class InstGroupController : ControllerBase
     {
         private IMapper mapper { get; set; }

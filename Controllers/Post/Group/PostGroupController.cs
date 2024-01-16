@@ -13,8 +13,7 @@ namespace BASAccountManager.Controllers.Post.Group
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/post/group")]
+    [Authorize(Roles = "/post/group,admin")]
     public class PostGroupController : ControllerBase
     {
         private IMapper mapper { get; set; }

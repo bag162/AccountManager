@@ -12,8 +12,7 @@ namespace BASAccountManager.Controllers.Post.Comment
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/post/comment/manager")]
+    [Authorize(Roles = "/post/comment/manager,admin")]
     public class PostCommentController : ControllerBase
     {
         private ICommentDBService commentDBService;

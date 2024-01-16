@@ -90,7 +90,14 @@ namespace BASAccountManager
             {
                 await roleManager.CreateAsync(new IdentityRole("/post/manager/update"));
             }
-            
+            if (await roleManager.FindByNameAsync("/InstGroup") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/InstGroup"));
+            }
+            if (await roleManager.FindByNameAsync("/proxygroup") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/proxygroup"));
+            }
         }
     }
 }

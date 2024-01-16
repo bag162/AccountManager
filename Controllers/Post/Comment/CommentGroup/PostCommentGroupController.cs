@@ -15,8 +15,7 @@ namespace BASAccountManager.Controllers.Post.Comment.CommentGroup
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/post/comment/group")]
+    [Authorize(Roles = "/post/comment/group,admin")]
     public class PostCommentGroupController : ControllerBase
     {
         private IMapper mapper { get; set; }

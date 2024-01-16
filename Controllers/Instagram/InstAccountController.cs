@@ -12,8 +12,7 @@ namespace BASAccountManager.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/Instaccount")]
+    [Authorize(Roles = "/Instaccount,admin")]
     public class InstAccountController : ControllerBase
     {
         private IMapper mapper { get; set; }

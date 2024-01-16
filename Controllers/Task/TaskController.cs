@@ -12,8 +12,7 @@ namespace BASAccountManager.Controllers.InstTask
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/taskmanager/taskdata")]
+    [Authorize(Roles = "/taskmanager/taskdata,admin")]
     public class TaskController : ControllerBase
     {
         private IMapper mapper;

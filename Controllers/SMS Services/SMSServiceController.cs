@@ -12,8 +12,7 @@ namespace BASAccountManager.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/smsservice")]
+    [Authorize(Roles = "/smsservice,admin")]
     public class SMSServiceController : ControllerBase
     {
         private IMapper mapper { get; set; }

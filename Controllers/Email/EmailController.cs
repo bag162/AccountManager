@@ -12,8 +12,7 @@ namespace BASAccountManager.Controllers.Email
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles = "admin")]
-    [Authorize(Roles = "/email")]
+    [Authorize(Roles = "/email,admin")]
     public class EmailController : ControllerBase
     {
         private IMapper mapper { get; set; }

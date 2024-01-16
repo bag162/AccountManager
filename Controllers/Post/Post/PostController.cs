@@ -26,8 +26,7 @@ namespace BASAccountManager.Controllers.Post.Post
 
         [Route("{postId:int}")]
         [HttpGet]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/post/manager/update")]
+        [Authorize(Roles = "/post/manager/update,admin")]
         public string Get(int postId)
         {
             var post = this.postDBService.GetPostById(postId);
@@ -35,8 +34,7 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpGet]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/post/manager")]
+        [Authorize(Roles = "/post/manager,admin")]
         public async Task<string> Get(int start, int length, int draw)
         {
             StringValues searchData;
@@ -47,8 +45,7 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpDelete]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/post/manager/update")]
+        [Authorize(Roles = "/post/manager/update,admin")]
         public async Task<string> Delete([FromBody] PostListDTO[] group)
         {
             await this.postDBService.DeletePostAsync(mapper.Map<List<DBPost>>(group.ToList()));
@@ -56,8 +53,7 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/post/manager/add")]
+        [Authorize(Roles = "/post/manager/add,admin")]
         public async Task<string> Post([FromBody] CRUDPostDTO post)
         {
             await this.postDBService.AddPostAsync(post);
@@ -65,8 +61,7 @@ namespace BASAccountManager.Controllers.Post.Post
         }
 
         [HttpPut]
-        [Authorize(Roles = "admin")]
-        [Authorize(Roles = "/post/manager/update")]
+        [Authorize(Roles = "/post/manager/update,admin")]
         public async Task<string> Put([FromBody] UpdatePostDTO post)
         {
             await this.postDBService.UpdatePostAsync(post);
