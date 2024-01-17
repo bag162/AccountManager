@@ -10,6 +10,7 @@ import { TaskManagerModule } from './ControlPanel/TaskManagerModule/taskmanager.
 import { LoginComponent } from './Authorization/Login/login.component'
 import { RegistrationComponent } from './Authorization/Registration/registration.component'
 import { AuthorizationComponent } from './Authorization/authorization.component'
+import { GuardService } from './Services/GuardService';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,7 @@ import { AuthorizationComponent } from './Authorization/authorization.component'
     DataTablesModule
   ],
   providers: [
-
+    
   ],
   bootstrap: [AppComponent]
 })

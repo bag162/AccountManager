@@ -67,14 +67,12 @@ namespace BASAccountManager.Controllers.User.Login
             }
         }
 
-        /*[HttpGet]
-        public async Task<string> GetRoles()
+        [HttpGet]
+        public async Task<string> SignOut()
         {
-            var currnedUser = await userManager.FindByLoginAsync(user.Login, user.Login);
-            var roles = await userManager.GetRolesAsync(currnedUser);
-
-            returnedData.Roles = roles.ToArray();
-        }*/
+            await signInManager.SignOutAsync();
+            return JsonConvert.SerializeObject(true);
+        }
 
         [HttpPost]
         public async Task<string> Registration([FromBody] UserRegistrationDTO user)

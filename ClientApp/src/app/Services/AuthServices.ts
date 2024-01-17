@@ -23,6 +23,11 @@ export class AuthService {
     public async RegisterUser(user: RegisterUserDTO) {
         return this.httpClient.post(this.address + "Registration", user);
     }
+
+    public async SignOut()
+    {
+        return this.httpClient.get(this.address + "SignOut");
+    }
 }
 
 export class CheckLoginDTO {

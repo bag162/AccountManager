@@ -10,13 +10,9 @@ using BASAccountManager.DBServices.PostDBServices;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using BASAccountManager.DB.Models;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
-using Hangfire.Dashboard;
-using System.Configuration;
-using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Hangfire.Dashboard.BasicAuthorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +40,10 @@ builder.Services.AddTransient<StatusMonitor>();
 builder.Services.AddTransient<InstTaskManager>();
 
 builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(opt =>
+{
+    opt.StopTimeout = TimeSpan.FromMinutes(5);
+});
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(AutoMapperConf));
@@ -99,10 +98,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+var allowedRollesFromSAServices = new string[]{"admin"};
+var authRequirement = new RolesAuthorizationRequirement(allowedRollesFromSAServices);
 app.UseCors();
 app.UseDefaultFiles();
 app.UseStaticFiles();
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthFilter() }
+});
 
 app.MapControllers();
 app.UseEndpoints(endpoints =>

@@ -63,6 +63,18 @@
     </li>
     </ul>
     </div>
+    <form class="form-inline mr-5">
+        <li class="nav-item dropdown" style="list-style-type: none;">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                {{UserLogin}}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" (click)="SignOut()">SignOut</a>
+            </div>
+        </li>
+    </form>
+
 </nav>
 
 <div class="container" style="margin-top: 3%;">

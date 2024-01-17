@@ -1,23 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { db } from '../Services/DBStoreService'
-import { ActivatedRouteSnapshot, RouterStateSnapshot } from "@angular/router";
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from "@angular/router";
 
 @Injectable({ providedIn: 'root' })
 export class GuardService {
     private static HttpClient: HttpClient;
-    constructor(HttpClient: HttpClient) {
+    constructor(HttpClient: HttpClient, router: Router) {
         GuardService.HttpClient = HttpClient;
     }
 
     public static async CanAccess(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
-        // Если admin
-
-        // var adminAccess = await db.accessData.where("Role").equalsIgnoreCase("admin").count();
-        // if (adminAccess != 0) {
-        //     return true;
-        // }
-
         var accessData = await db.accessData.toArray();
         var accessResult: boolean = false;
 

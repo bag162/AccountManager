@@ -98,6 +98,10 @@ namespace BASAccountManager
             {
                 await roleManager.CreateAsync(new IdentityRole("/proxygroup"));
             }
+            if (await roleManager.FindByNameAsync("/dashboard") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/dashboard"));
+            }
         }
     }
 }
