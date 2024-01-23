@@ -11,13 +11,11 @@ namespace BASAccountManager.DBServices
     public class WorkerTaskDBService : IWorkerTaskDBService
     {
         private AMContext dbcontext;
-        private ILogger<WorkerTaskDBService> logger;
         private IMapper mapper;
 
-        public WorkerTaskDBService(AMContext amcontext, ILogger<WorkerTaskDBService> logger, IMapper mapper)
+        public WorkerTaskDBService(AMContext amcontext, IMapper mapper)
         {
-            this.dbcontext = amcontext; ;
-            this.logger = logger;
+            this.dbcontext = amcontext;
             this.mapper = mapper;
         }
 
@@ -129,6 +127,14 @@ namespace BASAccountManager.DBServices
 
         public async Task RemoveWorkerTaskAsync(List<DBWorkerTask> deletedTask)
         {
+            var taskToDel = new List<DBWorkerTask>();
+            foreach (var item in deletedTask)
+            {
+                if (item.Status != DB.Models.TaskStatus.AtWork)
+                {
+                    taskToDel.Add(item);
+                }
+            }
             this.dbcontext.WorkerTask.RemoveRange(deletedTask);
             await this.dbcontext.SaveChangesAsync();
             return;

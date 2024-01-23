@@ -135,7 +135,6 @@ export class EmailComponent implements OnInit {
         emailArray.forEach(element => {
             var elements = element.split(":");
             var newItem = new EmailDTO('0', elements[0], "kopeechkaStore", elements[1], elements[2]);
-            console.log(newItem)
             addedemail.push(newItem);
         });
 

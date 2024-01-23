@@ -9,13 +9,11 @@ namespace BASAccountManager.DBServices
     public class FollowDBService : IFollowDBService
     {
         private AMContext dbcontext;
-        private ILogger<FollowDBService> logger;
         private IMapper mapper;
 
-        public FollowDBService(AMContext amcontext, ILogger<FollowDBService> logger, IMapper mapper)
+        public FollowDBService(AMContext amcontext, IMapper mapper)
         {
-            this.dbcontext = amcontext; ;
-            this.logger = logger;
+            this.dbcontext = amcontext;
             this.mapper = mapper;
         }
 

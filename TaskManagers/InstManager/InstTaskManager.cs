@@ -9,6 +9,7 @@ using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using BASAccountManager.TaskManagers.InstManager.DTO;
 using Hangfire.Server;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace BASAccountManager.TaskManagers.InstManager
@@ -89,6 +90,8 @@ namespace BASAccountManager.TaskManagers.InstManager
                     return await LikingTaskImplAsync(returnedTask, getTaskData);
                 case TaskType.Following:
                     return await FollowingTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.FillingProfile:
+                    return await ProfileFillingTaskImplAsync(returnedTask, getTaskData);
 
             }
             this.Logger.LogWarning("Skip switch on InstTaskManager");
@@ -106,8 +109,8 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             taskWorker.AccountId = accountId;
             taskWorker.Status = DB.Models.TaskStatus.Completed;
-            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
 
+            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             return JsonConvert.SerializeObject(true);
         }
@@ -208,6 +211,33 @@ namespace BASAccountManager.TaskManagers.InstManager
             return JsonConvert.SerializeObject(true);
         }
 
+        public async Task<string> EndProfileFillingTaskAsync(EndProfileFillingTask endData)
+        {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            var profileFillingData = JsonConvert.DeserializeObject<ProfileFillingUsefulDataDTO>(taskWorker.UsefulData);
+
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+            taskWorker.Account.FillingDataId = profileFillingData.Id;
+
+            if (endData.NewName != "not")
+            {
+                taskWorker.Account.Name = endData.NewName;
+                taskWorker.Account.Surname = endData.NewSurname;
+            }
+            if (endData.NewSurname != "not")
+            {
+                taskWorker.Account.AccountStatus = AccountStatus.NotAuthorized;
+                taskWorker.Account.Login = endData.NewUsername;
+                taskWorker.Account.ProfileLink = "instagram.com/" + endData.NewUsername;
+            }
+            
+
+            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
+
+
 
         public async Task<string> ErrorRegistrationTaskAsync(RegistrationTaskErrorType error, int workerId)
         {
@@ -226,7 +256,6 @@ namespace BASAccountManager.TaskManagers.InstManager
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
-            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             switch (error)
             {
                 case AuthorizationTaskErrorType.FullBan:
@@ -236,7 +265,7 @@ namespace BASAccountManager.TaskManagers.InstManager
                     workerTask.Account.AccountStatus = AccountStatus.IncorrectCredentionalData;
                     break;
             }
-
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
@@ -263,7 +292,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
-            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
+            
 
             switch (error)
             {
@@ -275,6 +304,7 @@ namespace BASAccountManager.TaskManagers.InstManager
                     break;
             }
 
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
@@ -294,7 +324,6 @@ namespace BASAccountManager.TaskManagers.InstManager
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
-            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
 
             switch (error)
             {
@@ -306,6 +335,7 @@ namespace BASAccountManager.TaskManagers.InstManager
                     break;
             }
 
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
@@ -324,7 +354,6 @@ namespace BASAccountManager.TaskManagers.InstManager
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
-            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
 
             switch (error)
             {
@@ -336,6 +365,7 @@ namespace BASAccountManager.TaskManagers.InstManager
                     break;
             }
 
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
@@ -354,7 +384,6 @@ namespace BASAccountManager.TaskManagers.InstManager
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
-            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
 
             switch (error)
             {
@@ -366,6 +395,7 @@ namespace BASAccountManager.TaskManagers.InstManager
                     break;
             }
 
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
@@ -376,6 +406,27 @@ namespace BASAccountManager.TaskManagers.InstManager
             follow.FollowStatus = FollowStatus.ErrorFollow;
             follow.ErrorMessage = ErrorMessage;
             await this.followDBService.UpdateFollowAsync(follow);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorProfileFillingTaskAsync(ProfileFillingTaskErrorType error, int workerId)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+
+            switch (error)
+            {
+                case ProfileFillingTaskErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+                case ProfileFillingTaskErrorType.DeauthorizedError:
+                    workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    break;
+            }
+
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
 
@@ -391,10 +442,10 @@ namespace BASAccountManager.TaskManagers.InstManager
                 ExeptionTime = DateTime.Now
             };
 
-            await this.BASExeption.AddAsync(exeption);
-            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = "GlobalExeption: " + error.ExeptionMessage;
+            await this.BASExeption.AddAsync(exeption);
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
@@ -432,17 +483,17 @@ namespace BASAccountManager.TaskManagers.InstManager
             returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
             returnedTask.WorkerId = getTaskData.WorkerId;
             returnedTask.InstanceId = getTaskData.InstanceId;
-            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            
 
             var task = this.mapper.Map<GetAuthorizationTaskDTO>(returnedTask);
-
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
             return JsonConvert.SerializeObject(task);
         }
 
         private async Task<string> PostingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
         {
             var postList = this.instPostDBService.GetInstPospsByAccount(returnedTask.AccountId);
-            if (postList.Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished).Count() == 0)
+            if (postList.Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished || x.InstPostStatus == InstPostStatus.PostingError).Count() == 0)
             {
                 returnedTask.Status = DB.Models.TaskStatus.Completed;
                 await this.proxyDBService.SetProxyFreeStatusAsync(returnedTask.Proxy.Id);
@@ -456,13 +507,13 @@ namespace BASAccountManager.TaskManagers.InstManager
             returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
             returnedTask.WorkerId = getTaskData.WorkerId;
             returnedTask.InstanceId = getTaskData.InstanceId;
-            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
 
             var countPost = JsonConvert.DeserializeObject<PostingTaskWorkerUsefilDataDTO>(returnedTask.UsefulData).PostPerAccount;
             var task = this.mapper.Map<GetPostingTaskDTO>(returnedTask);
 
             task.Posts = postList
-                .Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished)
+                .OrderBy(x => Guid.NewGuid().ToString())
+                .Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished || x.InstPostStatus == DB.Models.Post.InstPostStatus.PostingError)
                 .Take(countPost)
                 .Select(x => x.Post)
                 .ToList();
@@ -473,12 +524,13 @@ namespace BASAccountManager.TaskManagers.InstManager
             {
                 post.InstPostStatus = DB.Models.Post.InstPostStatus.InProcessPublication;
             }
-            await this.instPostDBService.UpdateInstPostAsync(updatedPosts);
 
             foreach (var post in task.Posts)
             {
                 post.ListPost = null;
             }
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            await this.instPostDBService.UpdateInstPostAsync(updatedPosts);
             return JsonConvert.SerializeObject(task);
         }
 
@@ -488,7 +540,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
             returnedTask.WorkerId = getTaskData.WorkerId;
             returnedTask.InstanceId = getTaskData.InstanceId;
-            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            
 
             var comments = JsonConvert.DeserializeObject<List<CommentUsefulDataDTO>>(returnedTask.UsefulData);
 
@@ -499,10 +551,12 @@ namespace BASAccountManager.TaskManagers.InstManager
                 updatedComment.CommentStatus = CommentStatus.InProcessPublication;
                 updatedComments.Add(updatedComment);
             }
-            await this.postCommentDBService.UpdatePostCommentAsync(updatedComments);
+            
 
             var task = this.mapper.Map<GetCommentingTaskDTO>(returnedTask);
             task.Comments = comments;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            await this.postCommentDBService.UpdatePostCommentAsync(updatedComments);
             return JsonConvert.SerializeObject(task);
         }
 
@@ -512,7 +566,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
             returnedTask.WorkerId = getTaskData.WorkerId;
             returnedTask.InstanceId = getTaskData.InstanceId;
-            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            
 
             var likes = JsonConvert.DeserializeObject<List<LikeUsefulDataDTO>>(returnedTask.UsefulData);
 
@@ -523,10 +577,12 @@ namespace BASAccountManager.TaskManagers.InstManager
                 updatedlike.LikeStatus = LikeStatus.InProcessPublication;
                 updatedLikes.Add(updatedlike);
             }
-            await this.postLikeDBService.UpdateLikesAsync(updatedLikes);
+            
 
             var task = this.mapper.Map<GetLikingTaskDTO>(returnedTask);
             task.Likes = likes;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            await this.postLikeDBService.UpdateLikesAsync(updatedLikes);
             return JsonConvert.SerializeObject(task);
         }
 
@@ -536,7 +592,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
             returnedTask.WorkerId = getTaskData.WorkerId;
             returnedTask.InstanceId = getTaskData.InstanceId;
-            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            
 
             var followIds = JsonConvert.DeserializeObject<List<int>>(returnedTask.UsefulData);
             var follows = new List<FollowUsefulDataDTO>();
@@ -550,6 +606,21 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             var task = this.mapper.Map<GetFollowingTaskDTO>(returnedTask);
             task.Follows = follows;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> ProfileFillingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+
+            var task = this.mapper.Map<GetProfileFillingTask>(returnedTask);
+            task.ProfileFillingData = JsonConvert.DeserializeObject<ProfileFillingUsefulDataDTO>(returnedTask.UsefulData);
+
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
             return JsonConvert.SerializeObject(task);
         }
     }

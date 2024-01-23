@@ -15,7 +15,11 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Hangfire.Dashboard.BasicAuthorization;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Host.ConfigureLogging(opt =>
+{
+    opt.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+    opt.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+});
 // Add services to the container.
 builder.Services.AddTransient<IProxyDBService, ProxyDBService>();
 builder.Services.AddTransient<IInstDBService, InstDBService>();
@@ -33,6 +37,7 @@ builder.Services.AddTransient<IPostCommentGroupDBService, PostCommentGroupDBServ
 builder.Services.AddTransient<IPostLikeDBService, PostLikeDBService>();
 builder.Services.AddTransient<IFollowDBService, FollowDBService>();
 builder.Services.AddTransient<ICommentDBService, CommentDBService>();
+builder.Services.AddTransient<IFillingDataDBService, FillingDataDBService>();
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
@@ -86,6 +91,7 @@ builder.Services.AddSpaStaticFiles(configuration =>
 {
     configuration.RootPath = "wwwroot";
 });
+
 var app = builder.Build();
 
 app.UseRouting();
@@ -98,8 +104,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-var allowedRollesFromSAServices = new string[]{"admin"};
-var authRequirement = new RolesAuthorizationRequirement(allowedRollesFromSAServices);
+
 app.UseCors();
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -143,8 +148,6 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
 

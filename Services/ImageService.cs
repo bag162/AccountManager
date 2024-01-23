@@ -8,6 +8,10 @@
             {
                 Directory.CreateDirectory(imagePath);
             }
+            if (File.Exists(imagePath + "/" + fileName + "." + imageFormat))
+            {
+                File.Delete(imagePath + "/" + fileName + "." + imageFormat);
+            }
             byte[] bytes = Convert.FromBase64String(base64Image);
             File.WriteAllBytes(imagePath + "/" + fileName + "." + imageFormat, bytes);
             return imagePath + "/" + fileName + "." + imageFormat;

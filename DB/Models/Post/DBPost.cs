@@ -1,9 +1,12 @@
 ﻿using BASAccountManager.DB.Models.Post;
+using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Plugins;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BASAccountManager.DB.Models
 {
+    [Index(nameof(Name), IsUnique = true)]
     public class DBPost
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

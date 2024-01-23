@@ -1,4 +1,4 @@
-<div class="container form-group">
+<div class="container">
     <div class="row">
         <div class="col-4">
             <label>Post Image</label>
@@ -26,7 +26,8 @@
                     <div class="row">
                         <div class="col">
                             <label>Status</label>
-                            <select class="form-control" [(ngModel)]="postData.PostStatus">
+                            <!-- TODO сделать нормальное отображение как и в post group, проверить нужно ли это вообще -->
+                            <select class="form-control" [(ngModel)]="postData.PostStatus"> 
                                 <option>Active</option>
                                 <option>Inactive</option>
                             </select>

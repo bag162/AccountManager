@@ -144,7 +144,6 @@ export class InstAccountComponent implements OnInit {
             var newItem = new InstAccountDTO('0', elements[0], elements[1], $("#groupAddModal").val().toString(), "NotAuthorized");
             addedAccount.push(newItem);
         });
-        console.log(addedAccount);
 
         (await this.InstAccountService.AddAccounts(addedAccount)).subscribe({
             next: (data: boolean) => {

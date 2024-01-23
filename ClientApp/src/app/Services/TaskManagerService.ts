@@ -7,6 +7,7 @@ import { AddPostingTaskDTO } from '../ControlPanel/TaskManagerModule/PostingTask
 import { AddCommentingTaskDTO } from '../ControlPanel/TaskManagerModule/CommentingTaskComponent/commentingtask.component';
 import { AddLikingTaskDTO } from '../ControlPanel/TaskManagerModule/LikingTaskComponent/likingtask.component';
 import { AddFollowingTaskDTO } from '../ControlPanel/TaskManagerModule/FolowingTaskComponent/followingtask.component';
+import { AddFillingProfileTaskDTO } from '../ControlPanel/TaskManagerModule/ProfileFillingTaskComponent/profilefillingtask.component';
 
 @Injectable({ providedIn: 'root' })
 export class TaskManagerService {
@@ -44,5 +45,10 @@ export class TaskManagerService {
     public async AddFollowingTask(data: AddFollowingTaskDTO)
     {
         return this.httpClient.post(this.address + "FollowingTask", data);
+    }
+
+    public async AddFillingProfileTask(data: AddFillingProfileTaskDTO)
+    {
+        return this.httpClient.post(this.address + "FillingProfileTask", data);
     }
 }

@@ -1,0 +1,110 @@
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <div class="container">
+                <div class="row">
+                    <label>Avatar Image</label>
+                </div>
+                <div class="row">
+                    <img class="img-fluid img-thumbnail" alt="Responsive image" src="{{profileData.AvatarPath}}"
+                        id="uploadedImage">
+                    <div class="mt-1" id="loadImageEl">
+                        <input class="form-control" type="file" [(ngModel)]="data" (ngModelChange)="AddImage()">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <label>Filling name</label>
+                        <input type="text" class="form-control" placeholder=""
+                            [disabled]="this.profileFillingDataId != undefined" [(ngModel)]="profileData.Name">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>About me</label>
+                        <textarea class="form-control" [(ngModel)]="profileData.AboutMe"
+                            [disabled]="this.profileFillingDataId != undefined"></textarea>
+                    </div>
+                    <div class="col">
+                        <label>Gender</label>
+                        <select *ngIf="this.profileFillingDataId == undefined" class="form-control" id="selectGender">
+                            <option>Male</option>
+                            <option>Female</option>
+                        </select>
+                        <select *ngIf="this.profileFillingDataId != undefined" class="form-control" id="selectGender"
+                            disabled>
+                            <option>{{profileData.Gender}}</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>Enable account recommendations in profiles</label>
+                        <select *ngIf="this.profileFillingDataId == undefined" class="form-control"
+                            id="selectAccountRecomendation">
+                            <option>Enable</option>
+                            <option>Disable</option>
+                        </select>
+                        <select *ngIf="this.profileFillingDataId != undefined" class="form-control"
+                            id="selectAccountRecomendation" disabled>
+                            <option *ngIf="this.profileData.EnableRecomendations">Enable</option>
+                            <option *ngIf="!this.profileData.EnableRecomendations">Disable</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>Closed account</label>
+                        <select *ngIf="this.profileFillingDataId == undefined" class="form-control"
+                            id="selectClosedAccount">
+                            <option>Disable</option>
+                            <option>Enable</option>
+                        </select>
+                        <select *ngIf="this.profileFillingDataId != undefined" class="form-control"
+                            id="selectClosedAccount" disabled>
+                            <option *ngIf="!this.profileData.ClosedAccount">Disable</option>
+                            <option *ngIf="this.profileData.ClosedAccount">Enable</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                [(ngModel)]="changeEditNameOrSurname" (change)="ChangeVisibleEditNameOrSurname()">
+                            <label class="form-check-label" for="flexSwitchCheckChecked">Change Name or Surname</label>
+                        </div>
+                        <div id="changeNameOrSurnameform">
+                            <label>Name or Surname gen string</label>
+                            <textarea [(ngModel)]="changeNameOrUsernameData" type="text"
+                                class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                [(ngModel)]="changeEditUsername" (change)="ChangeVisibleUsername()">
+                            <label class="form-check-label" for="flexSwitchCheckChecked">Change Username</label>
+                        </div>
+                        <div id="changeUsernameForm">
+                            <label>Username gen string</label>
+                            <textarea [(ngModel)]="changeUsernameData" type="text"
+                                class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-3 mb-3">
+        <button type="button" class="btn btn-primary" id="addFillingDataBtn" (click)="AddFillingData()">Add filling
+            data</button>
+    </div>
+
+
+    <div id="successNot" class="alert alert-success" role="alert">Success</div>
+    <div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+</div>

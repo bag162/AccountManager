@@ -12,13 +12,11 @@ namespace BASAccountManager.DBServices.PostDBServices
     public class PostCommentDBService : IPostCommentDBService
     {
         private AMContext dbcontext;
-        private ILogger<PostCommentDBService> logger;
         private IMapper mapper;
 
-        public PostCommentDBService(AMContext amcontext, ILogger<PostCommentDBService> logger, IMapper mapper)
+        public PostCommentDBService(AMContext amcontext, IMapper mapper)
         {
-            this.dbcontext = amcontext; ;
-            this.logger = logger;
+            this.dbcontext = amcontext;
             this.mapper = mapper;
         }
 

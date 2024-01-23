@@ -80,6 +80,11 @@ namespace BASAccountManager.Controllers.BASTask
             return await this.InstTaskManager.ErrorIntermediateFollowingAsync(error.WorkerId, error.FollowId, error.ErrorMessage);
         }
 
+        [HttpPost]
+        public async Task<string> FillingProfileError([FromBody] ProfileFillingErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorProfileFillingTaskAsync(error.ProfileFillingTaskErrorType, error.workerId);
+        }
 
         [HttpPost]
         public async Task<string> VerifyServiceError([FromBody] VerifyServiceErrorDTO error)

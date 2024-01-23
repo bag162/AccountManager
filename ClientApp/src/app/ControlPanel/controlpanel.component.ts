@@ -12,7 +12,7 @@ export class ControlPanelComponent implements OnInit {
     private router: Router;
     private authService: AuthService;
     public UserLogin: string;
-    constructor(authService: AuthService, router: Router) { 
+    constructor(authService: AuthService, router: Router) {
         this.authService = authService;
         this.router = router;
     }

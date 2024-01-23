@@ -129,8 +129,8 @@ export class PostCommentGroupComponent implements OnInit {
         (await this.postGroupService.AddGroup(newGroup)).subscribe({
             next: (data: boolean) => {
                 if (data) {
+                    $('#addGroupForm').hide(500);
                     $("#successNot").show(200);
-                    $("#accountForm").hide(200);
                     $("#successNot").delay(400).hide(200);
                 }
                 else {

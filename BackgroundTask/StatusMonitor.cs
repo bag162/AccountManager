@@ -10,7 +10,6 @@ namespace BASAccountManager.BackgroundTask
 {
     public class StatusMonitor
     {
-        private ILogger<StatusMonitor> logger;
         private ISMSServiceDB SMSServiceDB { get; set; }
         private IProxyDBService proxyDBService { get; set; }
         private ITaskDBService taskDbService { get; set; }
@@ -22,8 +21,7 @@ namespace BASAccountManager.BackgroundTask
         public StatusMonitor(ITaskDBService taskDbService, 
             IWorkerTaskDBService workerTaskDbService, 
             IProxyDBService proxyDBService, 
-            ISMSServiceDB SMSServiceDB, 
-            ILogger<StatusMonitor> logger,
+            ISMSServiceDB SMSServiceDB,
             IPostCommentDBService postCommentDBService,
             IPostLikeDBService postLikeDBService,
             IFollowDBService followDBService)
@@ -32,7 +30,6 @@ namespace BASAccountManager.BackgroundTask
             this.workerTaskDbService = workerTaskDbService;
             this.proxyDBService = proxyDBService;
             this.SMSServiceDB = SMSServiceDB;
-            this.logger = logger;
             this.postCommentDBService = postCommentDBService;
             this.postLikeDBService = postLikeDBService;
             this.followDBService = followDBService;
@@ -187,17 +184,22 @@ namespace BASAccountManager.BackgroundTask
             var follows = this.followDBService.GetFollows().ToList();
             var followsToCheck = follows
                 .Where(x => x.FollowStatus == DB.Models.FollowStatus.NotPublished)
-                .ToDictionary(x => x.SenderAccountId);
+                .ToList();
 
             foreach (var account in activeAccounts)
             {
-                if (followsToCheck.ContainsKey(account.Id))
+                
+                if (followsToCheck.Where(x => x.SenderAccountId == account.Id).Count() != 0)
                 {
-                    followsToCheck.Remove(account.Id);
+                    var deletedFollows = followsToCheck.Where(x => x.SenderAccountId == account.Id).ToList();
+                    foreach (var delFollow in deletedFollows)
+                    {
+                        followsToCheck.Remove(delFollow);
+                    }
                 }
             }
 
-            await this.followDBService.RemoveByIdsAsync(followsToCheck.Select(x => x.Value).Select(x => x.Id).ToList());
+            await this.followDBService.RemoveByIdsAsync(followsToCheck.Select(x => x.Id).ToList());
 
             var errorFollows = follows.Where(x => x.FollowStatus == DB.Models.FollowStatus.ErrorFollow).ToList();
             await this.followDBService.RemoveFollows(errorFollows);

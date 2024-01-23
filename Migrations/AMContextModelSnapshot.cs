@@ -86,6 +86,47 @@ namespace BASAccountManager.Migrations
                     b.ToTable("Email");
                 });
 
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBFillingData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AboutMe")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AvatarPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("ClosedAccount")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EnableRecomendations")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("NameOrSurnameGenString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsernameGenString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("FillingData");
+                });
+
             modelBuilder.Entity("BASAccountManager.DB.Models.DBFollow", b =>
                 {
                     b.Property<int>("Id")
@@ -152,6 +193,9 @@ namespace BASAccountManager.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("FillingDataId")
+                        .HasColumnType("int");
+
                     b.Property<int>("InstGroupId")
                         .HasColumnType("int");
 
@@ -182,6 +226,8 @@ namespace BASAccountManager.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FillingDataId");
 
                     b.HasIndex("InstGroupId");
 
@@ -214,7 +260,7 @@ namespace BASAccountManager.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("PostCommentGroupId")
                         .HasColumnType("int");
@@ -234,6 +280,9 @@ namespace BASAccountManager.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.HasIndex("PostCommentGroupId");
 
@@ -641,11 +690,17 @@ namespace BASAccountManager.Migrations
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstagramAccount", b =>
                 {
+                    b.HasOne("BASAccountManager.DB.Models.DBFillingData", "FillingData")
+                        .WithMany("ListAccounts")
+                        .HasForeignKey("FillingDataId");
+
                     b.HasOne("BASAccountManager.DB.Models.DBInstAccountGroup", "InstGroup")
                         .WithMany("InstAccounts")
                         .HasForeignKey("InstGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("FillingData");
 
                     b.Navigation("InstGroup");
                 });
@@ -788,6 +843,11 @@ namespace BASAccountManager.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("SenderAccount");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBFillingData", b =>
+                {
+                    b.Navigation("ListAccounts");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstAccountGroup", b =>

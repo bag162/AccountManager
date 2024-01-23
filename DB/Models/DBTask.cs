@@ -15,6 +15,8 @@ namespace BASAccountManager.DB.Models
 
         public StatusTask Status { get; set; }
         public TaskType TaskType { get; set; }
+
+        public List<DBBASExeption> ListBASExeptions { get; set; }
     }
 
     public enum StatusTask
@@ -33,6 +35,7 @@ namespace BASAccountManager.DB.Models
         Posting,
         Commenting,
         Liking,
-        Following
+        Following,
+        FillingProfile
     }
 }

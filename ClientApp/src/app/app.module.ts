@@ -11,22 +11,23 @@ import { LoginComponent } from './Authorization/Login/login.component'
 import { RegistrationComponent } from './Authorization/Registration/registration.component'
 import { AuthorizationComponent } from './Authorization/authorization.component'
 import { GuardService } from './Services/GuardService';
+import { NoAccessComponent } from './NoAccess/noaccess.component'
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     RegistrationComponent,
-    AuthorizationComponent
+    AuthorizationComponent,
+    NoAccessComponent
   ],
   imports: [
     RouterModule.forRoot([
-      {
-        path: 'auth', component: AuthorizationComponent, children: [
+      { path: 'noaccess', component: NoAccessComponent },
+      { path: 'auth', component: AuthorizationComponent, canActivate: [GuardService.CanAccessAuthComponent], children: [
           { path: 'login', component: LoginComponent },
           { path: 'registration', component: RegistrationComponent }
-        ]
-      },
+        ]},
       { path: '', component: ControlPanelModule }
 
     ]),
@@ -38,7 +39,7 @@ import { GuardService } from './Services/GuardService';
     DataTablesModule
   ],
   providers: [
-    
+
   ],
   bootstrap: [AppComponent]
 })

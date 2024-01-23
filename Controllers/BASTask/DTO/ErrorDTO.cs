@@ -121,6 +121,19 @@
         DeauthorizedError
     }
 
+    public class ProfileFillingErrorDTO
+    {
+        public ProfileFillingTaskErrorType ProfileFillingTaskErrorType { get; set; }
+        public int workerId { get; set; }
+    }
+
+    public enum ProfileFillingTaskErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError
+    }
+
     // Global Error
     public class GlobalErrorDTO
     {

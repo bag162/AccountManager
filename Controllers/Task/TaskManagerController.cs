@@ -135,5 +135,19 @@ namespace BASAccountManager.Controllers.Task
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
         }
+
+        [HttpPost]
+        public async Task<string> FillingProfileTask([FromBody] FillingProfileTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.ClientTaskName;
+            task.TaskType = TaskType.FillingProfile;
+            task.UsefulData = JsonConvert.SerializeObject(new FillingProfileTaskWorkerUsefulDataDTO() { FillingProfileName = newTask.FillingProfileName });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
     }
 }

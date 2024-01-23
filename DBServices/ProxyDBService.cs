@@ -12,13 +12,11 @@ namespace BASAccountManager.DBServices
     public class ProxyDBService : IProxyDBService
     {
         private AMContext dbcontext;
-        private ILogger<ProxyDBService> logger;
         private IMapper mapper;
 
-        public ProxyDBService(AMContext amcontext, ILogger<ProxyDBService> logger, IMapper mapper)
+        public ProxyDBService(AMContext amcontext, IMapper mapper)
         {
-            this.dbcontext = amcontext; ;
-            this.logger = logger;
+            this.dbcontext = amcontext;
             this.mapper = mapper;
         }
 

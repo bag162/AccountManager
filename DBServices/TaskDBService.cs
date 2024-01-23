@@ -4,19 +4,18 @@ using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BASAccountManager.DBServices
 {
     public class TaskDBService : ITaskDBService
     {
         private AMContext dbcontext;
-        private ILogger<TaskDBService> logger;
         private IMapper mapper;
 
-        public TaskDBService(AMContext amcontext, ILogger<TaskDBService> logger, IMapper mapper)
+        public TaskDBService(AMContext amcontext, IMapper mapper)
         {
             this.dbcontext = amcontext; ;
-            this.logger = logger;
             this.mapper = mapper;
         }
 
@@ -96,14 +95,17 @@ namespace BASAccountManager.DBServices
 
         public async Task RemoveTaskAsync(List<DBTask> removedTask)
         {
-            this.dbcontext.Task.RemoveRange(removedTask);
-            await this.dbcontext.SaveChangesAsync();
+            foreach (var item in removedTask)
+            {
+                await RemoveTaskAsync(item);
+            }
             return;
         }
 
         public async Task RemoveTaskAsync(DBTask removedTask)
         {
-            this.dbcontext.Task.Remove(removedTask);
+            var task = await this.dbcontext.Task.Include(x => x.ListBASExeptions).Where(x => x.Id == removedTask.Id).FirstAsync();
+            this.dbcontext.Task.Remove(task);
             await this.dbcontext.SaveChangesAsync();
             return;
         }

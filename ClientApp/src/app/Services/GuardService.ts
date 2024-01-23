@@ -5,15 +5,12 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from "@angular/ro
 
 @Injectable({ providedIn: 'root' })
 export class GuardService {
-    private static HttpClient: HttpClient;
-    constructor(HttpClient: HttpClient, router: Router) {
-        GuardService.HttpClient = HttpClient;
+    constructor() {
     }
 
     public static async CanAccess(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
         var accessData = await db.accessData.toArray();
         var accessResult: boolean = false;
-
         accessData.forEach(element => {
             var checlUrl = state.url;
             var splitedEl = state.url.split('/');
@@ -50,6 +47,18 @@ export class GuardService {
             return true;
         }
         else {
+            $(location).attr('href', window.location.origin.toString() + "/noaccess");
+            return false;
+        }
+    }
+
+    public static async CanAccessAuthComponent(): Promise<boolean> {
+        if (await db.userData.count() == 0) {
+            return true;
+        }
+        else
+        {
+            $(location).attr('href', window.location.origin.toString());
             return false;
         }
     }

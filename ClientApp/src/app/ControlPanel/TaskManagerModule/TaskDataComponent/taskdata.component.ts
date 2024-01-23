@@ -124,7 +124,6 @@ export class TaskDataComponent implements OnInit {
                 (await TaskService.StartTask(startTask)).subscribe(
                     {
                         next: (data: boolean) => {
-                            console.log(data)
                             if (data) {
                                 $("#successNot").show(200);
                                 $("#successNot").delay(400).hide(200);

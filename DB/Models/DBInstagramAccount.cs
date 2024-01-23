@@ -23,11 +23,16 @@ namespace BASAccountManager.DB.Models
         public int InstGroupId { get; set; }
         public DBInstAccountGroup InstGroup { get; set; }
 
+        [ForeignKey(nameof(DBFillingData))]
+        public int? FillingDataId { get; set; }
+        public DBFillingData? FillingData { get; set; }
+        
         public AccountStatus AccountStatus { get; set; }
 
         public List<DBInstPost> ListPost { get; set; } = new List<DBInstPost>();
         public List<DBPostComment> ListComments { get; set; } = new List<DBPostComment>();
         public List<DBPostLikes> ListLikes { get; set; } = new List<DBPostLikes>();
+        public List<DBBASExeption> ListBASExeption { get; set; }
     }
 
     public enum AccountStatus

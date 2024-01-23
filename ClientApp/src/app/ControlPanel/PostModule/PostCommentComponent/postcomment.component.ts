@@ -142,6 +142,7 @@ export class PostCommentComponent implements OnInit {
         (await this.PostCommentService.Add(newCommetsArray)).subscribe({
             next: (data: boolean) => {
                 if (data) {
+                    $('#addCommentsFormGroup').hide(500);
                     $("#successNot").show(200);
                     $("#successNot").delay(400).hide(200);
                 }

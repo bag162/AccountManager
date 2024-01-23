@@ -360,7 +360,7 @@ namespace BASAccountManager.Migrations
                         column: x => x.PostId,
                         principalTable: "Post",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

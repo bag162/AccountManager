@@ -10,13 +10,11 @@ namespace BASAccountManager.DBServices
     public class SMSDBService : ISMSServiceDB
     {
         private AMContext dbcontext;
-        private ILogger<SMSDBService> logger;
         private IMapper mapper;
 
-        public SMSDBService(AMContext amcontext, ILogger<SMSDBService> logger, IMapper mapper)
+        public SMSDBService(AMContext amcontext, IMapper mapper)
         {
             this.dbcontext = amcontext; ;
-            this.logger = logger;
             this.mapper = mapper;
         }
 

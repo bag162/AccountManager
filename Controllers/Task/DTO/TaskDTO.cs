@@ -46,4 +46,9 @@ namespace BASAccountManager.Controllers.Task.DTO
         public int FollowsPerAccount { get; set; }
         public int RequiredFollowersPerAccount { get; set; }
     }
+
+    public class FillingProfileTaskWorkerUsefulDataDTO
+    {
+        public string FillingProfileName { get; set; }
+    }
 }

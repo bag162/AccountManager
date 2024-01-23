@@ -2,19 +2,18 @@
 using BASAccountManager.DB;
 using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BASAccountManager.DBServices.PostDBServices
 {
     public class PostLikeDBService : IPostLikeDBService
     {
         private AMContext dbcontext;
-        private ILogger<PostLikeDBService> logger;
         private IMapper mapper;
 
-        public PostLikeDBService(AMContext amcontext, ILogger<PostLikeDBService> logger, IMapper mapper)
+        public PostLikeDBService(AMContext amcontext, IMapper mapper)
         {
-            this.dbcontext = amcontext; ;
-            this.logger = logger;
+            this.dbcontext = amcontext;
             this.mapper = mapper;
         }
 
@@ -29,7 +28,10 @@ namespace BASAccountManager.DBServices.PostDBServices
         {
             return this.dbcontext.PostLike.ToList();
         }
-
+        public List<DBPostLikes> GetAllLikesAsNoTracking()
+        {
+            return this.dbcontext.PostLike.AsNoTracking().ToList();
+        }
         public DBPostLikes GetPostLikeById(int id)
         {
             return this.dbcontext.PostLike.Find(id);

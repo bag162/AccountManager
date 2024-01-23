@@ -56,4 +56,13 @@ namespace BASAccountManager.Controllers.Task.DTO
         public int FollowsPerAccount { get; set; }
         public int RequiredFollowersPerAccount { get; set; }
     }
+
+    public class FillingProfileTaskDTO
+    {
+        public string? ClientTaskName { get; set; }
+        
+        public string ProxyGroup { get; set; }
+        public string AccountGroup { get; set; }
+        public string FillingProfileName { get; set; }
+    }
 }

@@ -18,7 +18,7 @@ import { LikingTaskComponent } from './LikingTaskComponent/likingtask.component'
 import { FollowingTaskComponent } from './FolowingTaskComponent/followingtask.component'
 import { ControlPanelComponent } from '../controlpanel.component';
 import { GuardService } from 'src/app/Services/GuardService';
-
+import { ProfileFillingTaskComponent } from './ProfileFillingTaskComponent/profilefillingtask.component'
 
 
 @NgModule({
@@ -28,14 +28,15 @@ import { GuardService } from 'src/app/Services/GuardService';
                 path: '', component: ControlPanelComponent, children: [
                     {
                         path: 'taskmanager', component: TaskManagerComponent, children: [
-                            { path: "taskdata", component: TaskDataComponent, canActivate: [GuardService.CanAccess]  },
-                            { path: "registration", component: RegistrationTaskComponent, canActivate: [GuardService.CanAccess]  },
-                            { path: "authorization", component: AuthorizatioonTaskComponent, canActivate: [GuardService.CanAccess]  },
-                            { path: "posting", component: PostingTaskComponent, canActivate: [GuardService.CanAccess]  },
-                            { path: "commenting", component: CommentingTaskComponent, canActivate: [GuardService.CanAccess]  },
-                            { path: "liking", component: LikingTaskComponent, canActivate: [GuardService.CanAccess]  },
-                            { path: "folowing", component: FollowingTaskComponent, canActivate: [GuardService.CanAccess]  },
-                            { path: "workertaskdata/:id", component: WorkerTaskDataComponent, canActivate: [GuardService.CanAccess]  }
+                            { path: "taskdata", component: TaskDataComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "registration", component: RegistrationTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "authorization", component: AuthorizatioonTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "posting", component: PostingTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "commenting", component: CommentingTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "liking", component: LikingTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "folowing", component: FollowingTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "profilefilling", component: ProfileFillingTaskComponent },
+                            { path: "workertaskdata/:id", component: WorkerTaskDataComponent, canActivate: [GuardService.CanAccess] }
                         ]
                     }
                 ]
@@ -59,7 +60,8 @@ import { GuardService } from 'src/app/Services/GuardService';
         PostingTaskComponent,
         CommentingTaskComponent,
         LikingTaskComponent,
-        FollowingTaskComponent
+        FollowingTaskComponent,
+        ProfileFillingTaskComponent
     ],
     providers: [],
     bootstrap: [TaskManagerComponent]

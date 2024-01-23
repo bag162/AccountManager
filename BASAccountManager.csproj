@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include="TaskManagers\InstManager\DTO\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 	
 </Project>

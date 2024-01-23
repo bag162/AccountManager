@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BASAccountManager.Abstraction;
 using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
@@ -7,6 +8,7 @@ using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Newtonsoft.Json;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 
 namespace BASAccountManager.BackgroundTask
@@ -14,7 +16,6 @@ namespace BASAccountManager.BackgroundTask
     public class AssignmentWriter
     {
         private IMapper mapper;
-        private ILogger<AssignmentWriter> logger;
         private ISMSServiceDB SMSServiceDB;
         private IProxyDBService proxyDBService;
         private ITaskDBService taskDbService { get; set; }
@@ -28,11 +29,12 @@ namespace BASAccountManager.BackgroundTask
         private IPostCommentDBService postCommentDBService { get; set; }
         private IPostLikeDBService postLikeDBService { get; set; }
         private IFollowDBService followDBService { get; set; }
+        private IFillingDataDBService fillingDataDBService { get; set; }
+
         public AssignmentWriter(ITaskDBService taskDbService,
             IWorkerTaskDBService workerTaskDbService,
             IProxyDBService proxyDBService,
             ISMSServiceDB SMSServiceDB,
-            ILogger<AssignmentWriter> logger,
             IEmailDBService emailDBService,
             IInstDBService instDBService,
             IPostDBService postDBService,
@@ -42,13 +44,13 @@ namespace BASAccountManager.BackgroundTask
             IPostCommentDBService postCommentDBService,
             IMapper mapper,
             IPostLikeDBService postLikeDBService,
-            IFollowDBService followDBService)
+            IFollowDBService followDBService,
+            IFillingDataDBService fillingDataDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
             this.proxyDBService = proxyDBService;
             this.SMSServiceDB = SMSServiceDB;
-            this.logger = logger;
             this.emailDBService = emailDBService;
             this.instDBService = instDBService;
             this.postDBService = postDBService;
@@ -59,6 +61,7 @@ namespace BASAccountManager.BackgroundTask
             this.mapper = mapper;
             this.postLikeDBService = postLikeDBService;
             this.followDBService = followDBService;
+            this.fillingDataDBService = fillingDataDBService;
         }
 
         // Парсит посты на наличие новых комментариев и добаляет их в базу задач
@@ -193,6 +196,9 @@ namespace BASAccountManager.BackgroundTask
                 case TaskType.Following:
                     await ParseFollowingTask(task);
                     break;
+                case TaskType.FillingProfile:
+                    await ParseFillingProfileTask(task);
+                    break;
                 default:
                     break;
             }
@@ -288,11 +294,11 @@ namespace BASAccountManager.BackgroundTask
             listToAdd = listToAdd.Where(x => x.AccountStatus == AccountStatus.NotAuthorized).ToList();
 
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
-            foreach (var account in addedTask.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
+            foreach (var account in addedTask.Select(x => x.Account).ToList())
             {
                 // Не авторизуем аккаунты если он содержится в workerList, а если и содержится, то эта задача завершилась неудачно
-                if (listToAdd.Contains(account))
-                    listToAdd.Remove(account);
+                if (listToAdd.Where(x => x.Id == account.Id).Count() != 0)
+                    listToAdd.Remove(listToAdd.Where(x => x.Id == account.Id).First());
             }
 
             foreach (var newAccount in listToAdd)
@@ -335,14 +341,17 @@ namespace BASAccountManager.BackgroundTask
             // Используем только авторизованные аккаунты
             accountList = accountList.Where(x => x.AccountStatus == AccountStatus.Authorized)
                 // Используем аккаунты, у которых есть посты для публикации
-                .Where(x => x.ListPost.Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0)
+                .Where(x => x.ListPost
+                .Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0 || x.ListPost.Where(x => x.InstPostStatus == InstPostStatus.PostingError).Count() != 0)
+
+                .OrderBy(x => Guid.NewGuid().ToString())
                 .ToList();
             
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
-            foreach (var account in addedWorkers.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
+            foreach (var account in addedWorkers.Select(x => x.Account).ToList())
             {
-                if (accountList.Contains(account))
-                    accountList.Remove(account);
+                if (accountList.Where(x => x.Id == account.Id).Count() != 0)
+                    accountList.Remove(accountList.Where(x => x.Id == account.Id).First());
             }
             // Проходимся по списку аккаунтов и добавляем посты
             foreach (var account in accountList)
@@ -387,7 +396,7 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем все аккаунты по группе и оставляем только авторизованные
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).OrderBy(x => Guid.NewGuid().ToString()).ToList();
 
             // Удаляем из списка аккаунты, для которых уже были добавлены комментарии
             foreach (var addedTask in addedTasks)
@@ -409,7 +418,6 @@ namespace BASAccountManager.BackgroundTask
             {
                 posts = await this.instPostDBService.GetAllPostByGroupAsync(usefulData.PostGroup);
             }
-
             // Получаем все комментарии по выбраннной группе
             var allComments = new List<DBPostComment>();
             foreach (var post in posts)
@@ -418,8 +426,12 @@ namespace BASAccountManager.BackgroundTask
             }
 
             // Оставляем только неопубликованные комментарии к которым не привязан аккаунт
-            var allFilteredComments = allComments.Where(x => x.CommentStatus == CommentStatus.NotPublished).Where(x => x.SenderAccountId == null).ToList();
-
+            var allFilteredComments = allComments
+                .Where(x => x.CommentStatus == CommentStatus.NotPublished)
+                .Where(x => x.SenderAccountId == null)
+                .OrderBy(x => Guid.NewGuid().ToString())
+                .ToList();
+            
             foreach (var accountToTask in accounts)
             {
                 var commentsToTask = new List<DBPostComment>(); 
@@ -501,7 +513,10 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем авторизованные аккаунты по группе
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            accounts = accounts
+                .Where(x => x.AccountStatus == AccountStatus.Authorized)
+                .OrderBy(x => Guid.NewGuid().ToString())
+                .ToList();
             
             var usefulData = JsonConvert.DeserializeObject<LikingTaskWorkerUsefulDatadTO>(task.UsefulData);
 
@@ -522,7 +537,7 @@ namespace BASAccountManager.BackgroundTask
             {
                 allLikes.AddRange(instPost.ListLikes.Where(x => x.LikeStatus == LikeStatus.NotPublished).Where(x => x.SenderAccountId == null).ToList());
             }
-
+            allLikes = allLikes.OrderBy(x => Guid.NewGuid().ToString()).ToList();
             // Удаляем аккаунты для которых уже созданы задачи
             foreach (var addedTask in addedTasks)
             {
@@ -539,10 +554,31 @@ namespace BASAccountManager.BackgroundTask
                 {
                     break;
                 }
+                // Все добавленные лайки
+                var allCurrentLikes = this.postLikeDBService.GetAllLikesAsNoTracking();
 
                 // Получаем лайки для добавления в задачу
-                var likesWorkerList = allLikes.Take(usefulData.LikesPerAccount).ToList();
-                allLikes.RemoveRange(0, usefulData.LikesPerAccount);
+                var likesWorkerList = new List<DBPostLikes>();
+                foreach (var like in allLikes)
+                {
+                    // Проверяем, что поста уже нет в листе задач
+                    if (likesWorkerList.Where(x => x.PostId == like.PostId).Count() == 0)
+                    {
+                        // Проверяем, что поста нет в листе задач с этим аккаунтом на глобальном уровен
+                        if (allCurrentLikes.Where(x => x.PostId == like.PostId).Where(x => x.SenderAccountId == accToAdd.Id).Count() == 0)
+                        {
+                            likesWorkerList.Add(like);
+                            if (likesWorkerList.Count() >= usefulData.LikesPerAccount)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+                foreach (var likeToRem in likesWorkerList)
+                {
+                    allLikes.Remove(likeToRem);
+                }
 
                 // Закрепляем за лайком аккаунт
                 foreach (var likeToUpdate in likesWorkerList)
@@ -589,16 +625,16 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем авторизованные аккаунты по группе
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            accounts = accounts
+                .Where(x => x.AccountStatus == AccountStatus.Authorized)
+                .OrderBy(x => Guid.NewGuid().ToString())
+                .ToList();
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
-            foreach (var account in addedTasks.Where(x => x.Status != DB.Models.TaskStatus.Error).Select(x => x.Account).ToList())
+            foreach (var account in addedTasks.Select(x => x.Account).ToList())
             {
                 // Не подписываемся на  аккаунты если он содержится в workerList, а если и содержится, то эта задача завершилась неудачно
-                if (accounts.Contains(account))
-                    accounts.Remove(account);
-                // Не подписываемся на аккаунты если у них статус не равнен NotAuthorized
-                if (account.AccountStatus != AccountStatus.NotAuthorized)
-                    accounts.Remove(account);
+                if (accounts.Where(x => x.Id == account.Id).Count() !=0)
+                    accounts.Remove(accounts.Where(x => x.Id == account.Id).First());
             }
 
             // Получаем аккаунты на которые будем подписываться
@@ -612,7 +648,7 @@ namespace BASAccountManager.BackgroundTask
                 accountsToSubscription = await this.instDBService.GetInstAccountsByGroupAsync(usefulData.AccountGroupForSubscription);
                 accountsToSubscription = accountsToSubscription.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
             }
-
+            accountsToSubscription = accountsToSubscription.OrderBy(x => Guid.NewGuid().ToString()).ToList();
             var listFollows = new List<DBFollow>();
             // Создаем подписки на аккаунты
             foreach (var acc in accountsToSubscription)
@@ -620,6 +656,7 @@ namespace BASAccountManager.BackgroundTask
                 // Получаем существующие подписки на аккаунт
                 var accFollows = this.followDBService.GetFollowsByRecipientAccountId(acc.Id)
                     .Where(x => x.FollowStatus != FollowStatus.ErrorFollow)
+                    .OrderBy(x => Guid.NewGuid().ToString())
                     .ToList();
 
                 // Если достаточное кол-во подписок уже есть, то пропускаем
@@ -699,6 +736,68 @@ namespace BASAccountManager.BackgroundTask
             }
             await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
 
+        }
+
+        private async Task ParseFillingProfileTask(DBTask task)
+        {
+            List<DBWorkerTask> workerTaskList = new();
+
+            // Парсим UsefulData
+            var usefulData = JsonConvert.DeserializeObject<FillingProfileTaskWorkerUsefulDataDTO>(task.UsefulData);
+
+            // Обновляем статус задачи
+            task.Status = StatusTask.AddingProcess;
+            await this.taskDbService.UpdateTaskAsync(task);
+
+            // Получаем уже добавленные задачи
+            var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+
+            // Получаем данные для заполнения профиля
+            var profileFilling = this.fillingDataDBService.GetFillingDataByName(usefulData.FillingProfileName);
+
+            // Получаем аккаунты, которые будем заполнять
+            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            accounts = accounts.Where(x => x.FillingDataId != profileFilling.Id).ToList();
+
+            // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
+            foreach (var taskAccount in addedTasks.Select(x => x.Account).ToList())
+            {
+                // Не заполняем аккаунты если он содержится в workerList, а если и содержится, то эта задача завершилась неудачно
+                if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
+                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
+                // Не заполняем аккаунты если у них статус не равнен Authorized
+                if (taskAccount.AccountStatus != AccountStatus.Authorized)
+                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
+            }
+
+            foreach (var accountToAdd in accounts)
+            {
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
+                ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(profileFilling);
+
+                var newTask = new DBWorkerTask()
+                {
+                    AccountId = accountToAdd.Id,
+                    ProxyId = proxy.Id,
+                    Status = DB.Models.TaskStatus.NotTaken,
+                    TaskType = TaskType.FillingProfile,
+                    TaskId = task.Id,
+                    UsefulData = JsonConvert.SerializeObject(serializedUsefulData)
+                };
+
+                workerTaskList.Add(newTask);
+            }
+
+            if (workerTaskList.Count() == accounts.Count())
+            {
+                task.Status = StatusTask.Performed;
+                await this.taskDbService.UpdateTaskAsync(task);
+            }
+            await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
         }
     }
 }

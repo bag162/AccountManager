@@ -32,6 +32,7 @@ namespace BASAccountManager.DB
 
         public DbSet<DBPostLikes> PostLike { get; set; }
         public DbSet<DBFollow> Follow { get; set; }
+        public DbSet<DBFillingData> FillingData { get; set; }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

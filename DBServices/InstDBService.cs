@@ -12,13 +12,11 @@ namespace BASAccountManager.DBServices
     public class InstDBService : IInstDBService
     {
         private AMContext dbcontext;
-        private ILogger<InstDBService> logger;
         private IMapper mapper;
 
-        public InstDBService(AMContext amcontext, ILogger<InstDBService> logger, IMapper mapper)
+        public InstDBService(AMContext amcontext, IMapper mapper)
         {
-            this.dbcontext = amcontext; ;
-            this.logger = logger;
+            this.dbcontext = amcontext;
             this.mapper = mapper;
         }
 
@@ -125,8 +123,11 @@ namespace BASAccountManager.DBServices
                     .Include(x => x.ListComments)
                     .Include(x => x.ListPost)
                     .Include(x => x.ListLikes)
+                    .Include(x => x.ListBASExeption)
                     .Where(x => x.Id == removedAccount.Id)
                     .First());
+                var removedFollows = this.dbcontext.Follow.AsQueryable().Where(x => x.SenderAccountId == removedAccount.Id).ToList();
+                this.dbcontext.Follow.RemoveRange(removedFollows);
             }
             this.dbcontext.InstAccount.RemoveRange(deleteAccounts);
             await this.dbcontext.SaveChangesAsync();
@@ -166,7 +167,7 @@ namespace BASAccountManager.DBServices
         public async Task<List<DBInstagramAccount>> GetInstAccountsByGroupAsync(string group)
         {
             var groupId = this.dbcontext.InstAccountGroup.Where(x => x.Name == group).First().Id;
-            return await this.dbcontext.InstAccount.Include(x => x.ListPost).AsQueryable().Where(x => x.InstGroupId == groupId).ToListAsync();
+            return await this.dbcontext.InstAccount.Include(x => x.ListPost).Include(x => x.FillingData).AsQueryable().Where(x => x.InstGroupId == groupId).ToListAsync();
         }
     }
 }

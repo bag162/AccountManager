@@ -7,6 +7,7 @@ using BASAccountManager.Controllers.Post.Comment.DTO;
 using BASAccountManager.Controllers.Post.Group.DTO;
 using BASAccountManager.Controllers.Post.Like.DTO;
 using BASAccountManager.Controllers.Post.Post.DTO;
+using BASAccountManager.Controllers.ProfileFilling.DTO;
 using BASAccountManager.Controllers.Proxy.DTO;
 using BASAccountManager.Controllers.SMS_Services.DTO;
 using BASAccountManager.Controllers.Task.DTO;
@@ -49,6 +50,14 @@ namespace BASAccountManager
                 .ForMember(dest => dest.CommentGroupName, opt => opt.MapFrom(src => src.PostCommentGroup.Name));
             CreateMap<CommentDTO, DBComment>();
             CreateMap<CRUDCommentDTO, DBComment>();
+
+            CreateMap<DBFillingData, ProfileFillingTableDTO>()
+                .ForMember(dest => dest.CountLinkedAccounts, opt => opt.MapFrom(src => src.ListAccounts.Count()));
+            CreateMap<ProfileFillingTableDTO, DBFillingData>();
+            CreateMap<DBFillingData, GetProfileFillingDTO>();
+            
+            CreateMap<AddFillingDataDTO, DBFillingData>();
+            CreateMap<DBFillingData, ProfileFillingUsefulDataDTO>();
             
             CreateMap<CRUDCommentGroupDTO, DBPostCommentGroup>();
             
@@ -93,6 +102,11 @@ namespace BASAccountManager
             CreateMap<DBWorkerTask, GetFollowingTaskDTO>()
                 .ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account))
                 .ForMember(dest => dest.Follows, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<DBWorkerTask, GetProfileFillingTask>()
+                .ForMember(dest => dest.InstAccount, opt => opt.MapFrom(src => src.Account))
+                .ForMember(dest => dest.ProfileFillingData, opt => opt.Ignore())
                 .ReverseMap();
 
             // End task Mapping

@@ -60,11 +60,8 @@ namespace BASAccountManager.Controllers.InstTask
                 {
                     await this.ProxyDBService.SetProxyFreeStatusAsync(proxy.Id);
                 }
-                // Если остановленная задача является задачей Commenting, то удаляем все воркеры в ней
-                if (stoppedTask.TaskType == TaskType.Commenting.ToString())
-                {
-                    await this.WorkerTaskDBService.RemoveWorkerTaskAsync(taskWorkers);
-                }
+                taskWorkers = taskWorkers.Where(x => x.Status != DB.Models.TaskStatus.AtWork).ToList();
+                await this.WorkerTaskDBService.RemoveWorkerTaskAsync(taskWorkers);
                 return JsonConvert.SerializeObject("True");
             }
             else

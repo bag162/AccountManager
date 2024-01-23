@@ -86,5 +86,11 @@ namespace BASAccountManager.Controllers
         {
             return await this.InstTaskManager.IntermediateEndFollowingTask(data);
         }
+
+        [HttpPost]
+        public async Task<string> EndFillingProfileTask(EndProfileFillingTask data)
+        {
+            return await this.InstTaskManager.EndProfileFillingTaskAsync(data);
+        }
     }
 }

@@ -10,13 +10,11 @@ namespace BASAccountManager.DBServices
     public class EmailDBService : IEmailDBService
     {
         private AMContext dbcontext;
-        private ILogger<EmailDBService> logger;
         private IMapper mapper;
 
-        public EmailDBService(AMContext amcontext, ILogger<EmailDBService> logger, IMapper mapper)
+        public EmailDBService(AMContext amcontext, IMapper mapper)
         {
-            this.dbcontext = amcontext; ;
-            this.logger = logger;
+            this.dbcontext = amcontext;
             this.mapper = mapper;
         }
 
