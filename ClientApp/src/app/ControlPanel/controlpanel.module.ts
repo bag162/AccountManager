@@ -15,6 +15,7 @@ import { PostModule } from './PostModule/post.module'
 import { DashboardController } from './DashboardController/dashboard.controller'
 import { GuardService } from '../Services/GuardService'
 import { ProfileFillingModule } from './ProfileFillingModule/profilefilling.module'
+import { AdvertisingResourcesModule } from './AdvertisingResources/advertisingresources.module'
 
 @NgModule({
     imports: [
@@ -28,7 +29,8 @@ import { ProfileFillingModule } from './ProfileFillingModule/profilefilling.modu
                     { path: 'taskmanager', component: TaskManagerModule, canActivate: [GuardService.CanAccess] },
                     { path: 'postgroup', component: PostModule, canActivate: [GuardService.CanAccess] },
                     { path: 'email', component: EmailComponent, canActivate: [GuardService.CanAccess] },
-                    { path: 'profilefilling', component: ProfileFillingModule }
+                    { path: 'profilefilling', component: ProfileFillingModule },
+                    { path: 'advertresourses', component: AdvertisingResourcesModule }
                 ]
             },
         ]),
@@ -37,7 +39,8 @@ import { ProfileFillingModule } from './ProfileFillingModule/profilefilling.modu
         FormsModule,
         TaskManagerModule,
         PostModule,
-        ProfileFillingModule
+        ProfileFillingModule,
+        AdvertisingResourcesModule
     ],
     exports: [RouterModule],
     declarations: [

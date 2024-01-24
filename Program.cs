@@ -13,6 +13,8 @@ using BASAccountManager.DB.Models;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Hangfire.Dashboard.BasicAuthorization;
+using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
+using BASAccountManager.DBServices.AdvertDBServices;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureLogging(opt =>
@@ -38,6 +40,14 @@ builder.Services.AddTransient<IPostLikeDBService, PostLikeDBService>();
 builder.Services.AddTransient<IFollowDBService, FollowDBService>();
 builder.Services.AddTransient<ICommentDBService, CommentDBService>();
 builder.Services.AddTransient<IFillingDataDBService, FillingDataDBService>();
+
+builder.Services.AddTransient<IAdvertAccountDBService, AdvertAccountDBService>();
+builder.Services.AddTransient<IAdvertAccountGroupDBService, AdvertAccountGroupDBService>();
+builder.Services.AddTransient<IAdvertPostGroupDBService, AdvertPostGroupDBService>();
+builder.Services.AddTransient<IAdvertPostDBService, AdvertPostDBService>();
+
+
+
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();

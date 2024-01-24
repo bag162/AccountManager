@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using BASAccountManager.BackgroundTask.DTO;
+using BASAccountManager.Controllers.Advert.Account.DTO;
+using BASAccountManager.Controllers.Advert.Post.DTO;
 using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.Controllers.Email.DTO;
 using BASAccountManager.Controllers.Instagram.DTO;
@@ -12,6 +14,7 @@ using BASAccountManager.Controllers.Proxy.DTO;
 using BASAccountManager.Controllers.SMS_Services.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
+using BASAccountManager.DB.Models.AdvertResourses;
 using BASAccountManager.DB.Models.Post;
 
 namespace BASAccountManager
@@ -81,6 +84,16 @@ namespace BASAccountManager
                 .ForMember(dest => dest.FollowId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.FollowURI, opt => opt.MapFrom(src => src.RecipientAccount.ProfileLink))
                 .ReverseMap();
+
+            CreateMap<DBAdvertAccount, AdvertAccountDTO>()
+                .ForMember(dest => dest.AdvertAccountGroupName, opt => opt.MapFrom(src => src.AdvertAccountGroup.Name));
+            CreateMap<DBAdvertAccountGroup, AdvertAccountGroupDTO>()
+                .ForMember(dest => dest.CountPinnedAccounts, opt => opt.MapFrom(src => src.ListAdvertAccount.Count()));
+
+            CreateMap<DBAdvertPost, AdvertPostDTO>()
+                .ForMember(dest => dest.AdvertPostGroupName, opt => opt.MapFrom(src => src.AdvertPostGroup.Name));
+            CreateMap<DBAdvertPostGroup, AdvertPostGroupDTO>()
+                .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.ListAdvertPost.Count()));
 
             /*** BAS task Mapping ***/
 

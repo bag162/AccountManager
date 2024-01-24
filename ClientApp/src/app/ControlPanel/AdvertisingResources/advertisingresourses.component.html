@@ -1,0 +1,21 @@
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="list-group">
+                <li routerLinkActive="active" class="list-group-item list-group-item-primary"><a class="nav-link"
+                        routerLink="account/group">Account Groups</a></li>
+                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
+                        routerLink="account/manager">Account Manager</a></li>
+            </div>
+            <div class="list-group mt-3">
+                <li routerLinkActive="active" class="list-group-item list-group-item-primary"><a class="nav-link"
+                        routerLink="post/group">Post Groups</a></li>
+                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
+                        routerLink="post/manager">Post Manager</a></li>
+            </div>
+        </div>
+        <div class="col-9">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</div>

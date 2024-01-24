@@ -1,0 +1,27 @@
+<form id="addAdvertPostForm" style="margin-bottom: 3%;">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+                <label>Advert post group</label>
+                <select class="form-control" id="selectAdvertGroup">
+                    <option *ngFor="let group of groupNames">{{group}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1">Post URLs</label>
+                <textarea [(ngModel)]="postData" class="form-control" id="exampleFormControlTextarea1"
+                    rows="3"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg" (click)="AddPost()">Add</button>
+</form>
+
+
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="advertPostData"></table>

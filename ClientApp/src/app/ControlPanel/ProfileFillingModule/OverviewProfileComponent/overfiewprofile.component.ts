@@ -17,8 +17,8 @@ export class OverfiewProfileFillingComponent implements OnInit {
     changeEditNameOrSurname: boolean = false;
     changeEditUsername: boolean = false;
 
-    changeUsernameData: string = "{<ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit><AnyDigit><AnyDigit>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><AnyDigit><AnyDigit><AnyDigit><AnyDigit>}";
-    changeNameOrUsernameData: string = "{<RMaleName>:<RSurname>|<EMaleName>:<ESurname>}";
+    changeUsernameData: string = "";
+    changeNameOrUsernameData: string = "";
 
     constructor(activateRoute: ActivatedRoute, profileFillingService: ProfileFillingService) {
         this.profileFillingDataId = activateRoute.snapshot.params["fillingDataId"];
@@ -33,15 +33,29 @@ export class OverfiewProfileFillingComponent implements OnInit {
 
         if (this.profileFillingDataId == undefined) {
             $('#uploadedImage').hide();
+            this.changeUsernameData = "{<ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit><AnyDigit><AnyDigit>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><AnyDigit><AnyDigit><AnyDigit><AnyDigit>}";
+            this.changeNameOrUsernameData = "{<RMaleName>:<RSurname>|<EMaleName>:<ESurname>}";
         }
         else {
             $('#loadImageEl').hide();
             $('#addFillingDataBtn').hide();
             $("#inputProfileName").prop("disabled", true);
-
+            
             (await this.profileFillingService.GetProfileFillingData(this.profileFillingDataId)).subscribe({
                 next: (data: ProfileFillingDataDTO) => {
                     this.profileData = data;
+                    if (this.profileData.UsernameGenString != null) {
+                        $('#changeUsernameForm').show();
+                        $("#inputGenDataUsername").prop("disabled", true);
+                        this.changeEditUsername = true;
+                        this.changeUsernameData = this.profileData.UsernameGenString;
+                    }
+                    if (this.profileData.NameOrSurnameGenString != null) {
+                        $('#changeNameOrSurnameform').show();
+                        $("#inputGenDataNameOrSurname").prop("disabled", true);
+                        this.changeEditNameOrSurname = true;
+                        this.changeNameOrUsernameData = this.profileData.NameOrSurnameGenString;
+                    }
                 }
             })
         }

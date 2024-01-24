@@ -1,0 +1,18 @@
+<form id="accountGroupForm" style="margin-bottom: 3%;">
+    <div class="form-group">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <label for="serviceName" class="form-label">Group Name</label>
+                    <input [(ngModel)]="newGroup" type="text" class="form-control" id="serviceName"
+                        placeholder="ru-moscow">
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg" (click)="AddGroup()">Add</button>
+</form>
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="advertAccountGroupData"></table>

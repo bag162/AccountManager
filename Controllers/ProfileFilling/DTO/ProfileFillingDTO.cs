@@ -18,6 +18,8 @@ namespace BASAccountManager.Controllers.ProfileFilling.DTO
         public bool ClosedAccount { get; set; }
         public string? AvatarPath { get; set; }
         public string? AboutMe { get; set; }
+        public string? NameOrSurnameGenString { get; set; }
+        public string? UsernameGenString { get; set; }
     }
 
     public class AddFillingDataDTO

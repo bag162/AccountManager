@@ -431,10 +431,11 @@ namespace BASAccountManager.BackgroundTask
                 .Where(x => x.SenderAccountId == null)
                 .OrderBy(x => Guid.NewGuid().ToString())
                 .ToList();
-            
+
+            bool noProxy = false;
             foreach (var accountToTask in accounts)
             {
-                var commentsToTask = new List<DBPostComment>(); 
+                var commentsToTask = new List<DBPostComment>();
 
                 // Если аккаунт который будет публиковать комментарий не является владельцем поста, то добавляем его в задачу
                 foreach (var newComment in allFilteredComments)
@@ -468,6 +469,12 @@ namespace BASAccountManager.BackgroundTask
                 {
                     allFilteredComments.Remove(newComment);
                 }
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    noProxy = true;
+                    break;
+                }
                 // Прикрепляем к комментарию аккаунт
                 foreach (var updatedComment in commentsToTask)
                 {
@@ -475,11 +482,6 @@ namespace BASAccountManager.BackgroundTask
                 }
                 await this.postCommentDBService.UpdatePostCommentAsync(commentsToTask);
 
-                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
-                if (proxy == null)
-                {
-                    break;
-                }
                 var commentsList = this.mapper.Map<List<CommentUsefulDataDTO>>(commentsToTask);
                 var newTask = new DBWorkerTask()
                 {
@@ -493,7 +495,7 @@ namespace BASAccountManager.BackgroundTask
                 
                 workerTaskList.Add(newTask);
             }
-            if (workerTaskList.Count() == accounts.Count())
+            if (noProxy == false)
             {
                 task.Status = StatusTask.Performed;
                 await this.taskDbService.UpdateTaskAsync(task);
