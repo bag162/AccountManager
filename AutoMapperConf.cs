@@ -122,6 +122,10 @@ namespace BASAccountManager
                 .ForMember(dest => dest.ProfileFillingData, opt => opt.Ignore())
                 .ReverseMap();
 
+            CreateMap<DBWorkerTask, GetAdvertFollowingTaskDTO>();
+            CreateMap<DBWorkerTask, GetAdvertLikingTaskDTO>();
+            CreateMap<DBWorkerTask, GetAdvertCommentingTaskDTO>();
+
             // End task Mapping
             CreateMap<DBInstagramAccount, EndRegistrationTaskDTO>().ReverseMap();
 

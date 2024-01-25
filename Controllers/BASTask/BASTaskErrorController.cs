@@ -2,6 +2,7 @@
 using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.TaskManagers.InstManager;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace BASAccountManager.Controllers.BASTask
 {
@@ -84,6 +85,42 @@ namespace BASAccountManager.Controllers.BASTask
         public async Task<string> FillingProfileError([FromBody] ProfileFillingErrorDTO error)
         {
             return await this.InstTaskManager.ErrorProfileFillingTaskAsync(error.ProfileFillingTaskErrorType, error.workerId);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertFollowingIntermediateError([FromBody] AdvertFollowingIntermediateErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorIntermediateAdvertFollowingAsync(error.WorkerId, error.AdvertAccountId, error.ErrorMessage);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertFollowingError([FromBody] AdvertFollowingErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorAdvertFollowingAsync(error.AdvertFollowingErrorType, error.WorkerId);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertLikingIntermediateError([FromBody] AdvertLikingIntermediateErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorIntermediateAdvertLikingAsync(error.WorkerId, error.AdvertPostId, error.ErrorMessage);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertLikingError([FromBody] AdvertLikingErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorAdvertLikingAsync(error.AdvertFollowingErrorType, error.WorkerId);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertCommentingIntermediateError([FromBody] AdvertCommentingIntermediateErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorIntermediateAdvertCommentingAsync(error.WorkerId, error.AdvertPostId, error.ErrorMessage);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertCommentingError([FromBody] AdvertCommentingErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorAdvertCommentingAsync(error.AdvertFollowingErrorType, error.WorkerId);
         }
 
         [HttpPost]

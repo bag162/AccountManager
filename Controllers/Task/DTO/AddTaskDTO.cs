@@ -65,4 +65,33 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string AccountGroup { get; set; }
         public string FillingProfileName { get; set; }
     }
+
+    public class AdvertCommentingTaskDTO
+    {
+        public string TaskName { get; set; }
+        public string AccountGroup { get; set; }
+        public string ProxyGroup { get; set; }
+        public string AdvertPostGroup { get; set; }
+        public int CommentsPerAccount { get; set; }
+        public bool CommentIfPostLikedPreviously { get; set; }
+    }
+
+    public class AdvertLikingTaskDTO
+    {
+        public string TaskName { get; set; }
+        public string AccountGroup { get; set; }
+        public string ProxyGroup { get; set; }
+        public string AdvertPostGroup { get; set; }
+        public int LikesPerAccount { get; set; }
+        public bool LikeIfPostCommentedPreviously { get; set; }
+    }
+
+    public class AdvertFollowingTaskDTO
+    {
+        public string TaskName { get; set; }
+        public string AccountGroup { get; set; }
+        public string ProxyGroup { get; set; }
+        public string AdvertAccountGroup { get; set; }
+        public int FollowsPerAccount { get; set; }
+    }
 }

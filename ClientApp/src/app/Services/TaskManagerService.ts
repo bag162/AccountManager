@@ -8,6 +8,9 @@ import { AddCommentingTaskDTO } from '../ControlPanel/TaskManagerModule/Commenti
 import { AddLikingTaskDTO } from '../ControlPanel/TaskManagerModule/LikingTaskComponent/likingtask.component';
 import { AddFollowingTaskDTO } from '../ControlPanel/TaskManagerModule/FolowingTaskComponent/followingtask.component';
 import { AddFillingProfileTaskDTO } from '../ControlPanel/TaskManagerModule/ProfileFillingTaskComponent/profilefillingtask.component';
+import { AddAdvertLikingTaskDTO } from '../ControlPanel/TaskManagerModule/AdvertLikingTaskComponent/advertlikingtask.component';
+import { AddAdvertFollowingTaskDTO } from '../ControlPanel/TaskManagerModule/AdvertFollowingTaskComponent/advertfollowingtask.component';
+import { AddAdvertCommentingTaskDTO } from '../ControlPanel/TaskManagerModule/AdvertCommentingTaskComponent/advertcommentingtask.component';
 
 @Injectable({ providedIn: 'root' })
 export class TaskManagerService {
@@ -50,5 +53,20 @@ export class TaskManagerService {
     public async AddFillingProfileTask(data: AddFillingProfileTaskDTO)
     {
         return this.httpClient.post(this.address + "FillingProfileTask", data);
+    }
+
+    public async AddAdvertLikingTask(data: AddAdvertLikingTaskDTO)
+    {
+        return this.httpClient.post(this.address + "AdvertLiking", data);
+    }
+
+    public async AddAdvertCommentingTask(data: AddAdvertCommentingTaskDTO)
+    {
+        return this.httpClient.post(this.address + "AdvertCommenting", data);
+    }
+
+    public async AddAdvertFollowingTask(data: AddAdvertFollowingTaskDTO)
+    {
+        return this.httpClient.post(this.address + "AdvertFollowing", data);
     }
 }

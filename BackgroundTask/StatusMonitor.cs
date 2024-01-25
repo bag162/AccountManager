@@ -1,6 +1,8 @@
 ﻿using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
+using BASAccountManager.DB.Models.AdvertResourses;
 using BASAccountManager.DB.Models.Post;
+using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Microsoft.AspNetCore.Server.IIS.Core;
@@ -17,6 +19,9 @@ namespace BASAccountManager.BackgroundTask
         private IPostCommentDBService postCommentDBService { get; set; }
         private IPostLikeDBService postLikeDBService { get; set; }
         private IFollowDBService followDBService { get; set; }
+        private IAdvertAccountDBService advertAccountDBService { get; set; }
+        private IAdvertPostDBService advertPostDBService { get; set; }
+
 
         public StatusMonitor(ITaskDBService taskDbService, 
             IWorkerTaskDBService workerTaskDbService, 
@@ -24,7 +29,9 @@ namespace BASAccountManager.BackgroundTask
             ISMSServiceDB SMSServiceDB,
             IPostCommentDBService postCommentDBService,
             IPostLikeDBService postLikeDBService,
-            IFollowDBService followDBService)
+            IFollowDBService followDBService,
+            IAdvertAccountDBService advertAccountDBService,
+            IAdvertPostDBService advertPostDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -33,6 +40,8 @@ namespace BASAccountManager.BackgroundTask
             this.postCommentDBService = postCommentDBService;
             this.postLikeDBService = postLikeDBService;
             this.followDBService = followDBService;
+            this.advertPostDBService = advertPostDBService;
+            this.advertAccountDBService = advertAccountDBService;
         }
 
         public async Task CheckTaskWorkerStatusAsync()
@@ -104,7 +113,7 @@ namespace BASAccountManager.BackgroundTask
             var allWorkerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
             allWorkerTasks = allWorkerTasks
                 .Where(x => x.TaskType == DB.Models.TaskType.Commenting)
-                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken)
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken || x.Status == DB.Models.TaskStatus.AtWork)
                 .ToList();
 
             var activeCommentsId = new List<int>();
@@ -142,7 +151,7 @@ namespace BASAccountManager.BackgroundTask
             var allWorkerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
             allWorkerTasks = allWorkerTasks
                 .Where(x => x.TaskType == DB.Models.TaskType.Liking)
-                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken)
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken || x.Status == DB.Models.TaskStatus.AtWork)
                 .ToList();
 
             var activeLikesId = new List<int>();
@@ -177,7 +186,7 @@ namespace BASAccountManager.BackgroundTask
 
             var activeAccounts = allWorkerTasks
                 .Where(x => x.TaskType == DB.Models.TaskType.Following)
-                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken)
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken || x.Status == DB.Models.TaskStatus.AtWork)
                 .Select(x => x.Account)
                 .ToList();
 
@@ -203,6 +212,100 @@ namespace BASAccountManager.BackgroundTask
 
             var errorFollows = follows.Where(x => x.FollowStatus == DB.Models.FollowStatus.ErrorFollow).ToList();
             await this.followDBService.RemoveFollows(errorFollows);
+        }
+
+        public async Task CheckAdvertUntakenFollows()
+        {
+            // Получаем аккаунты в процессе выполнения
+            var advertAccounts = this.advertAccountDBService.GetAdvertAccounts()
+                .Where(x => x.AdvertAccountStatus == AdvertAccountStatus.ProcessTreatment)
+                .ToList();
+
+            // Получаем невзятые задачи или задачи в процессе выполнения
+            var taskWorkers = await this.workerTaskDbService.GetWorkerTasksAsync();
+            taskWorkers = taskWorkers
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken || x.Status == DB.Models.TaskStatus.AtWork)
+                .Where(x => x.TaskType == DB.Models.TaskType.AdvertFollowing)
+                .ToList();
+
+            foreach (var worker in taskWorkers)
+            {
+                // Вытягиваем из воркера аккаунты
+                var advertAccs = JsonConvert.DeserializeObject<List<DBAdvertAccount>>(worker.UsefulData);
+                foreach (var advertAccount in advertAccs)
+                {
+                    // Если в списке рекламных аккаунтов есть аккаунт, который находится в воркере, то удаляем его
+                    if (advertAccounts.Where(x => x.Id == advertAccount.Id).Count() != 0)
+                    {
+                        advertAccounts.Remove(advertAccounts.Where(x => x.Id == advertAccount.Id).First());
+                    }
+                }
+            }
+            // Обновляем рекламные аккаунты, которых нет в невзятых или находящихся в процессе выполнения воркеров
+            foreach (var advertAccount in advertAccounts)
+            {
+                advertAccount.AdvertAccountStatus = AdvertAccountStatus.NotProcessed;
+            }
+            await this.advertAccountDBService.UpdateAvertAccountsAsync(advertAccounts);
+        }
+
+        public async Task CheckAdvertUntakenLikesAndComments()
+        {
+            var advertPosts = this.advertPostDBService.GetAdvertPosts()
+                .Where(x => x.AdvertPostLikeStatus == AdvertPostActionStatus.ProcessTreatment || x.AdvertPostCommentStatus == AdvertPostActionStatus.ProcessTreatment)
+                .ToList();
+
+            var taskWorkers = await this.workerTaskDbService.GetWorkerTasksAsync();
+            taskWorkers = taskWorkers
+                .Where(x => x.Status == DB.Models.TaskStatus.NotTaken || x.Status == DB.Models.TaskStatus.AtWork)
+                .Where(x => x.TaskType == DB.Models.TaskType.AdvertCommenting || x.TaskType == DB.Models.TaskType.AdvertLiking)
+                .ToList();
+
+            // liking check
+            var likingPosts = advertPosts.Where(x => x.AdvertPostLikeStatus == AdvertPostActionStatus.ProcessTreatment).ToList();
+            var likingWorkers = taskWorkers.Where(x => x.TaskType == DB.Models.TaskType.AdvertLiking).ToList();
+
+            foreach (var worker in likingWorkers)
+            {
+                var advertLikePosts = JsonConvert.DeserializeObject<List<DBAdvertPost>>(worker.UsefulData);
+                foreach (var advertLikePost in advertLikePosts)
+                {
+                    if (likingPosts.Where(x => x.Id == advertLikePost.Id).Count() != 0)
+                    {
+                        likingPosts.Remove(likingPosts.Where(x => x.Id == advertLikePost.Id).First());
+                    }
+                }
+            }
+
+            foreach (var updatedLikePost in likingPosts)
+            {
+                updatedLikePost.AdvertPostLikeStatus = AdvertPostActionStatus.NotProcessed;
+            }
+            await this.advertPostDBService.UpdateAdvertPostAsync(likingPosts);
+
+            // commenting check
+
+            var commentingPosts = advertPosts.Where(x => x.AdvertPostCommentStatus == AdvertPostActionStatus.ProcessTreatment).ToList();
+            var commentingWorkers = taskWorkers.Where(x => x.TaskType == DB.Models.TaskType.AdvertCommenting).ToList();
+
+            foreach (var worker in commentingWorkers)
+            {
+                var advertCommentingPosts = JsonConvert.DeserializeObject<List<DBAdvertPost>>(worker.UsefulData);
+                foreach (var advertCommentPost in advertCommentingPosts)
+                {
+                    if (commentingPosts.Where(x => x.Id == advertCommentPost.Id).Count() != 0)
+                    {
+                        commentingPosts.Remove(commentingPosts.Where(x => x.Id == advertCommentPost.Id).First());
+                    }
+                }
+            }
+
+            foreach (var updatedCommentPost in commentingPosts)
+            {
+                updatedCommentPost.AdvertPostCommentStatus = AdvertPostActionStatus.NotProcessed;
+            }
+
+            await this.advertPostDBService.UpdateAdvertPostAsync(commentingPosts);
         }
     }
 }

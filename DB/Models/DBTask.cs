@@ -36,6 +36,9 @@ namespace BASAccountManager.DB.Models
         Commenting,
         Liking,
         Following,
-        FillingProfile
+        FillingProfile,
+        AdvertLiking,
+        AdvertCommenting,
+        AdvertFollowing
     }
 }

@@ -1,28 +1,37 @@
 <div class="container">
-    <div class="row">
-        <div class="col-3">
-            <div class="list-group">
-                <li routerLinkActive="active" class="list-group-item list-group-item-primary"><a class="nav-link"
-                        routerLink="taskdata">Task Data</a></li>
-                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
-                        routerLink="registration">Registration accounts</a></li>
-                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
-                        routerLink="authorization">Authorization accounts</a></li>
-                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
-                        routerLink="posting">Posting</a></li>
-                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
-                        routerLink="commenting">Commenting</a></li>
-                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
-                        routerLink="liking">Liking</a></li>
-                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
-                        routerLink="folowing">Folowing</a></li>
-                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a class="nav-link"
-                        routerLink="profilefilling">Profile filling</a></li>
-                        
-            </div>
+        <div class="row">
+                <div class="col-3">
+                        <div class="list-group">
+                                <li routerLinkActive="active" class="list-group-item list-group-item-primary"><a
+                                                class="nav-link" routerLink="taskdata">Task Data</a></li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="registration">Registration accounts</a>
+                                </li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="authorization">Authorization accounts</a>
+                                </li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="posting">Posting</a></li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="commenting">Commenting</a></li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="liking">Liking</a></li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="folowing">Folowing</a></li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="profilefilling">Profile filling</a></li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="advertliking">Advert liking</a></li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="advertcommenting">Advert commenting</a>
+                                </li>
+                                <li routerLinkActive="active" class="list-group-item list-group-item-action"><a
+                                                class="nav-link" routerLink="advertfollowing">Advert following</a></li>
+
+                        </div>
+                </div>
+                <div class="col-9">
+                        <router-outlet></router-outlet>
+                </div>
         </div>
-        <div class="col-9">
-            <router-outlet></router-outlet>
-        </div>
-    </div>
 </div>

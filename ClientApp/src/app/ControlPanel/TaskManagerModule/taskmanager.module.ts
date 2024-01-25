@@ -19,7 +19,9 @@ import { FollowingTaskComponent } from './FolowingTaskComponent/followingtask.co
 import { ControlPanelComponent } from '../controlpanel.component';
 import { GuardService } from 'src/app/Services/GuardService';
 import { ProfileFillingTaskComponent } from './ProfileFillingTaskComponent/profilefillingtask.component'
-
+import { AdvertFollowingTaskComponent } from './AdvertFollowingTaskComponent/advertfollowingtask.component'
+import { AdvertLikingTaskComponent } from './AdvertLikingTaskComponent/advertlikingtask.component'
+import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//advertcommentingtask.component'
 
 @NgModule({
     imports: [
@@ -36,6 +38,9 @@ import { ProfileFillingTaskComponent } from './ProfileFillingTaskComponent/profi
                             { path: "liking", component: LikingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "folowing", component: FollowingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "profilefilling", component: ProfileFillingTaskComponent },
+                            { path: "advertliking", component: AdvertLikingTaskComponent },
+                            { path: "advertfollowing", component: AdvertFollowingTaskComponent },
+                            { path: "advertcommenting", component: AdvertCommentingTaskComponent },
                             { path: "workertaskdata/:id", component: WorkerTaskDataComponent, canActivate: [GuardService.CanAccess] }
                         ]
                     }
@@ -61,7 +66,10 @@ import { ProfileFillingTaskComponent } from './ProfileFillingTaskComponent/profi
         CommentingTaskComponent,
         LikingTaskComponent,
         FollowingTaskComponent,
-        ProfileFillingTaskComponent
+        ProfileFillingTaskComponent,
+        AdvertFollowingTaskComponent,
+        AdvertLikingTaskComponent,
+        AdvertCommentingTaskComponent
     ],
     providers: [],
     bootstrap: [TaskManagerComponent]

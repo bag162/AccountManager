@@ -92,5 +92,41 @@ namespace BASAccountManager.Controllers
         {
             return await this.InstTaskManager.EndProfileFillingTaskAsync(data);
         }
+
+        [HttpPost]
+        public async Task<string> IntermediateEndAdvertFollowingTask(EndIntermediateAdvertFollowingTaskDTO data)
+        {
+            return await this.InstTaskManager.IntermediateEndAdvertFollowingTask(data);
+        }
+
+        [HttpPost]
+        public async Task<string> EndAdvertFollowingTask(EndAdvertFollowingTaskDTO data)
+        {
+            return await this.InstTaskManager.EndAdvertFollowingTask(data);
+        }
+
+        [HttpPost]
+        public async Task<string> IntermediateEndAdvertLikingTask(EndIntermediateAdvertLikingTaskDTO data)
+        {
+            return await this.InstTaskManager.IntermediateEndAdvertLikingTask(data);
+        }
+
+        [HttpPost]
+        public async Task<string> EndAdvertLikingTask(EndAdvertLikingTaskDTO data)
+        {
+            return await this.InstTaskManager.EndAdvertLikingTask(data);
+        }
+
+        [HttpPost]
+        public async Task<string> IntermediateEndAdvertCommentingTask(EndIntermediateAdvertCommentingTaskDTO data)
+        {
+            return await this.InstTaskManager.IntermediateEndAdvertCommentingTask(data);
+        }
+
+        [HttpPost]
+        public async Task<string> EndAdvertCommentingTask(EndAdvertCommentingTaskDTO data)
+        {
+            return await this.InstTaskManager.EndAdvertCommentingTask(data);
+        }
     }
 }

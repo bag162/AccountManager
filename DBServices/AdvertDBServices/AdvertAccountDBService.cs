@@ -5,6 +5,7 @@ using BASAccountManager.DB;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.AdvertResourses;
 using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore;
 
 namespace BASAccountManager.DBServices.AdvertDBServices
@@ -169,6 +170,30 @@ namespace BASAccountManager.DBServices.AdvertDBServices
                 }
             }
             return data;
+        }
+
+        public DBAdvertAccount GetAdvertAccountById(int id)
+        {
+            return this.dbcontext.AdvertAccount.Find(id);
+        }
+
+        public List<DBAdvertAccount> GetAdvertAccounts()
+        {
+            return this.dbcontext.AdvertAccount.ToList();
+        }
+
+        public async Task<List<DBAdvertAccount>> GetAdvertAccountsByGroupAsync(string groupName)
+        {
+            var groupId = await this.dbcontext.AdvertAccountGroup.Where(x => x.Name == groupName).Select(x => x.Id).FirstAsync();
+
+            return this.dbcontext.AdvertAccount.Where(x => x.AdvertAccountGroupId == groupId).ToList();
+        }
+
+        public async Task UpdateAvertAccountsAsync(List<DBAdvertAccount> accounts)
+        {
+            this.dbcontext.AdvertAccount.UpdateRange(accounts);
+            await this.dbcontext.SaveChangesAsync();
+            return;
         }
     }
 }

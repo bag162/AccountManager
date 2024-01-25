@@ -40,6 +40,8 @@ namespace BASAccountManager
             await this.StatusMonitor.CheckUntakenComments();
             await this.StatusMonitor.CheckUntakenLikes();
             await this.StatusMonitor.CheckUntakenFollows();
+            await this.StatusMonitor.CheckAdvertUntakenLikesAndComments();
+            await this.StatusMonitor.CheckAdvertUntakenFollows();
         }
     }
 }

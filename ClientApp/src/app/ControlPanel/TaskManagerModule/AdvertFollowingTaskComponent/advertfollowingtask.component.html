@@ -1,0 +1,33 @@
+<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <label>Account Group</label>
+            <select-account-group></select-account-group>
+        </div>
+        <div class="col">
+            <label>Proxy Group</label>
+            <select-proxy-group></select-proxy-group>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label>Count follows per 1 account</label>
+            <input type="number" class="form-control" [(ngModel)]="followsPerAccount">
+        </div>
+        <div class="col">
+            <label>Advert account group</label>
+            <select id="selectAdvertAccountGroup" class="form-control">
+                <option *ngFor="let group of advertAccountGroupNames">{{group}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label>Task name</label>
+            <input type="text" class="form-control" [(ngModel)]="taskName">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mb-3" (click)="AddTask()">Submit</button>
+    <div id="successNot" class="alert alert-success" role="alert">Success</div>
+    <div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+</div>

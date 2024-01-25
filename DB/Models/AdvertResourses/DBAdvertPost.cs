@@ -8,6 +8,9 @@ namespace BASAccountManager.DB.Models.AdvertResourses
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        public string? LikingErrorMessage { get; set; }
+        public string? CommentingErrorMessage { get; set; }
+
         public string PostURL { get; set; }
         public AdvertPostActionStatus AdvertPostLikeStatus { get; set; }
         public AdvertPostActionStatus AdvertPostCommentStatus { get; set; }
@@ -20,6 +23,8 @@ namespace BASAccountManager.DB.Models.AdvertResourses
     public enum AdvertPostActionStatus
     {
         NotProcessed,
-        Processed
+        Processed,
+        ProcessTreatment,
+        Error
     }
 }

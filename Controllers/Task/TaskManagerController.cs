@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
 
 namespace BASAccountManager.Controllers.Task
 {
@@ -146,6 +147,62 @@ namespace BASAccountManager.Controllers.Task
             task.ClientTaskName = newTask.ClientTaskName;
             task.TaskType = TaskType.FillingProfile;
             task.UsefulData = JsonConvert.SerializeObject(new FillingProfileTaskWorkerUsefulDataDTO() { FillingProfileName = newTask.FillingProfileName });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertLiking([FromBody] AdvertLikingTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.TaskName;
+            task.TaskType = TaskType.AdvertLiking;
+            task.UsefulData = JsonConvert.SerializeObject(new AdvertLikingTaskWorkerUsefulDatadTO() 
+            { 
+                AdvertPostGroup = newTask.AdvertPostGroup, 
+                LikeIfPostCommentedPreviously = newTask.LikeIfPostCommentedPreviously, 
+                LikesPerAccount = newTask.LikesPerAccount  
+            });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertCommenting([FromBody] AdvertCommentingTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.TaskName;
+            task.TaskType = TaskType.AdvertCommenting;
+            task.UsefulData = JsonConvert.SerializeObject(new AdvertCommentingTaskWorkerUsefulDatadTO()
+            {
+                AdvertPostGroup = newTask.AdvertPostGroup,
+                CommentIfPostLikedPreviously = newTask.CommentIfPostLikedPreviously,
+                CommentsPerAccount = newTask.CommentsPerAccount
+            });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        [HttpPost]
+        public async Task<string> AdvertFollowing([FromBody] AdvertFollowingTaskDTO newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.TaskName;
+            task.TaskType = TaskType.AdvertFollowing;
+            task.UsefulData = JsonConvert.SerializeObject(new AdvertFollowingTaskWorkerUsefulDatadTO()
+            {
+                AdvertAccountGroup = newTask.AdvertAccountGroup,
+                FollowsPerAccount = newTask.FollowsPerAccount
+            });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
         }

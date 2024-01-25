@@ -134,6 +134,67 @@
         DeauthorizedError
     }
 
+    public class AdvertFollowingIntermediateErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int AdvertAccountId { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public class AdvertFollowingErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public AdvertFollowingErrorType AdvertFollowingErrorType { get; set; }
+    }
+
+    public enum AdvertFollowingErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError
+    }
+
+    public class AdvertLikingIntermediateErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int AdvertPostId { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public class AdvertLikingErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public AdvertLikingErrorType AdvertFollowingErrorType { get; set; }
+    }
+
+    public enum AdvertLikingErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError
+    }
+
+    public class AdvertCommentingIntermediateErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int AdvertPostId { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public class AdvertCommentingErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public AdvertCommentingErrorType AdvertFollowingErrorType { get; set; }
+    }
+
+    public enum AdvertCommentingErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError
+    }
+
+
     // Global Error
     public class GlobalErrorDTO
     {

@@ -7,7 +7,7 @@ namespace BASAccountManager.DB.Models.AdvertResourses
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
+        public string? ErrorMessage { get; set; }
         public string AccountURL { get; set; }
         public AdvertAccountStatus AdvertAccountStatus { get; set; }
 
@@ -19,6 +19,8 @@ namespace BASAccountManager.DB.Models.AdvertResourses
     public enum AdvertAccountStatus
     {
         NotProcessed,
-        Processed
+        Processed,
+        ProcessTreatment,
+        Error
     }
 }

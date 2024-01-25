@@ -3,7 +3,9 @@ using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.BASTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
+using BASAccountManager.DB.Models.AdvertResourses;
 using BASAccountManager.DB.Models.Post;
+using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using BASAccountManager.TaskManagers.InstManager.DTO;
@@ -27,6 +29,9 @@ namespace BASAccountManager.TaskManagers.InstManager
         private IPostLikeDBService postLikeDBService { get; set; }
         private IFollowDBService followDBService { get; set; }
         private IProxyDBService proxyDBService { get; set; }
+        private IAdvertPostDBService advertPostDBService { get; set; }
+        private IAdvertAccountDBService advertAccountDBService { get; set; }
+
 
         public InstTaskManager(ILogger<InstTaskManager> logger,
             IMapper mapper,
@@ -38,7 +43,9 @@ namespace BASAccountManager.TaskManagers.InstManager
             IPostCommentDBService postCommentDBService,
             IPostLikeDBService postLikeDBService,
             IFollowDBService followDBService,
-            IProxyDBService proxyDBService)
+            IProxyDBService proxyDBService,
+            IAdvertAccountDBService advertAccountDBService,
+            IAdvertPostDBService advertPostDBService)
         {
             this.Logger = logger;
             this.mapper = mapper;
@@ -51,6 +58,8 @@ namespace BASAccountManager.TaskManagers.InstManager
             this.postLikeDBService = postLikeDBService;
             this.followDBService = followDBService;
             this.proxyDBService = proxyDBService;
+            this.advertAccountDBService = advertAccountDBService;
+            this.advertPostDBService = advertPostDBService;
         }
 
         public async Task<string> GetTaskAsync(GetTaskDTO getTaskData)
@@ -92,6 +101,12 @@ namespace BASAccountManager.TaskManagers.InstManager
                     return await FollowingTaskImplAsync(returnedTask, getTaskData);
                 case TaskType.FillingProfile:
                     return await ProfileFillingTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.AdvertFollowing:
+                    return await AdvertFollowingTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.AdvertCommenting:
+                    return await AdvertCommentingTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.AdvertLiking:
+                    return await AdvertLikingTaskImplAsync(returnedTask, getTaskData);
 
             }
             this.Logger.LogWarning("Skip switch on InstTaskManager");
@@ -237,6 +252,56 @@ namespace BASAccountManager.TaskManagers.InstManager
             return JsonConvert.SerializeObject(true);
         }
 
+        public async Task<string> IntermediateEndAdvertFollowingTask(EndIntermediateAdvertFollowingTaskDTO endData)
+        {
+            var advertAccount = this.advertAccountDBService.GetAdvertAccountById(endData.AdvertAccountId);
+            advertAccount.AdvertAccountStatus = AdvertAccountStatus.Processed;
+            await this.advertAccountDBService.UpdateAvertAccountsAsync(new List<DBAdvertAccount>() { advertAccount });
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> EndAdvertFollowingTask(EndAdvertFollowingTaskDTO endData)
+        {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> IntermediateEndAdvertLikingTask(EndIntermediateAdvertLikingTaskDTO endData)
+        {
+            var advertPost = this.advertPostDBService.GetAdvertPostById(endData.AdvertPostId);
+            advertPost.AdvertPostLikeStatus = AdvertPostActionStatus.Processed;
+            await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> EndAdvertLikingTask(EndAdvertLikingTaskDTO endData)
+        {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> IntermediateEndAdvertCommentingTask(EndIntermediateAdvertCommentingTaskDTO endData)
+        {
+            var advertPost = this.advertPostDBService.GetAdvertPostById(endData.AdvertPostId);
+            advertPost.AdvertPostCommentStatus = AdvertPostActionStatus.Processed;
+            await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> EndAdvertCommentingTask(EndAdvertCommentingTaskDTO endData)
+        {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
 
 
         public async Task<string> ErrorRegistrationTaskAsync(RegistrationTaskErrorType error, int workerId)
@@ -421,6 +486,96 @@ namespace BASAccountManager.TaskManagers.InstManager
                     workerTask.Account.AccountStatus = AccountStatus.Banned;
                     break;
                 case ProfileFillingTaskErrorType.DeauthorizedError:
+                    workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    break;
+            }
+
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorIntermediateAdvertFollowingAsync(int WorkerId, int advertAccountId, string ErrorMessage)
+        {
+            var advertAccount = this.advertAccountDBService.GetAdvertAccountById(advertAccountId);
+            advertAccount.AdvertAccountStatus = AdvertAccountStatus.Error;
+            advertAccount.ErrorMessage = ErrorMessage;
+            await this.advertAccountDBService.UpdateAvertAccountsAsync(new List<DBAdvertAccount>() { advertAccount });
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorAdvertFollowingAsync(AdvertFollowingErrorType error, int workerId)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+
+            switch (error)
+            {
+                case AdvertFollowingErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+                case AdvertFollowingErrorType.DeauthorizedError:
+                    workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    break;
+            }
+
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorIntermediateAdvertLikingAsync(int WorkerId, int advertPostId, string ErrorMessage)
+        {
+            var advertPost = this.advertPostDBService.GetAdvertPostById(advertPostId);
+            advertPost.AdvertPostLikeStatus = AdvertPostActionStatus.Error;
+            advertPost.LikingErrorMessage = ErrorMessage;
+            await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorAdvertLikingAsync(AdvertLikingErrorType error, int workerId)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+
+            switch (error)
+            {
+                case AdvertLikingErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+                case AdvertLikingErrorType.DeauthorizedError:
+                    workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    break;
+            }
+
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorIntermediateAdvertCommentingAsync(int WorkerId, int advertPostId, string ErrorMessage)
+        {
+            var advertPost = this.advertPostDBService.GetAdvertPostById(advertPostId);
+            advertPost.AdvertPostCommentStatus = AdvertPostActionStatus.Error;
+            advertPost.CommentingErrorMessage = ErrorMessage;
+            await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> ErrorAdvertCommentingAsync(AdvertCommentingErrorType error, int workerId)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+
+            switch (error)
+            {
+                case AdvertCommentingErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+                case AdvertCommentingErrorType.DeauthorizedError:
                     workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
                     break;
             }
@@ -620,6 +775,48 @@ namespace BASAccountManager.TaskManagers.InstManager
             var task = this.mapper.Map<GetProfileFillingTask>(returnedTask);
             task.ProfileFillingData = JsonConvert.DeserializeObject<ProfileFillingUsefulDataDTO>(returnedTask.UsefulData);
 
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> AdvertLikingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+
+            List<DBAdvertPost> listPosts = JsonConvert.DeserializeObject<List<DBAdvertPost>>(returnedTask.UsefulData);
+            var task = this.mapper.Map<GetAdvertLikingTaskDTO>(returnedTask);
+            task.AdvertPosts = listPosts;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> AdvertCommentingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+
+            List<DBAdvertPost> listPosts = JsonConvert.DeserializeObject<List<DBAdvertPost>>(returnedTask.UsefulData);
+            var task = this.mapper.Map<GetAdvertCommentingTaskDTO>(returnedTask);
+            task.AdvertPosts = listPosts;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> AdvertFollowingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+
+            List<DBAdvertAccount> listAccounts = JsonConvert.DeserializeObject<List<DBAdvertAccount>>(returnedTask.UsefulData);
+            var task = this.mapper.Map<GetAdvertFollowingTaskDTO>(returnedTask);
+            task.AdvertAccounts = listAccounts;
             await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
             return JsonConvert.SerializeObject(task);
         }

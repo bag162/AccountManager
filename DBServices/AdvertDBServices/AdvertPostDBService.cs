@@ -135,5 +135,28 @@ namespace BASAccountManager.DBServices.AdvertDBServices
             }
             return data;
         }
+
+        public async Task<List<DBAdvertPost>> GetAdvertPostByGroupAsync(string groupName)
+        {
+            var groupId = await this.dbcontext.AdvertPostGroup.Where(x => x.Name == groupName).Select(x => x.Id).FirstAsync();
+            return await this.dbcontext.AdvertPost.Where(x => x.AdvertPostGroupId == groupId).ToListAsync();
+        }
+
+        public DBAdvertPost GetAdvertPostById(int id)
+        {
+            return this.dbcontext.AdvertPost.Find(id);
+        }
+
+        public List<DBAdvertPost> GetAdvertPosts()
+        {
+            return this.dbcontext.AdvertPost.ToList();
+        }
+
+        public async Task UpdateAdvertPostAsync(List<DBAdvertPost> posts)
+        {
+            this.dbcontext.AdvertPost.UpdateRange(posts);
+            await this.dbcontext.SaveChangesAsync();
+            return;
+        }
     }
 }
