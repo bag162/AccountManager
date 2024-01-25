@@ -127,5 +127,10 @@ namespace BASAccountManager.DBServices.PostDBServices
             await this.dbcontext.SaveChangesAsync();
             return;
         }
+
+        public List<DBComment> GetCommentsByGroup(string group)
+        {
+            return this.dbcontext.Comment.Include(x => x.PostCommentGroup).AsQueryable().Where(x => x.PostCommentGroup.Name == group).ToList();
+        }
     }
 }

@@ -26,6 +26,12 @@
             <label>Task name</label>
             <input type="text" class="form-control" [(ngModel)]="taskName">
         </div>
+        <div class="col">
+            <label>Comment group</label>
+            <select class="form-control" id="selectCommentGroup">
+                <option *ngFor="let group of CommentsPostGroupNames">{{group}}</option>
+            </select>
+        </div>
     </div>
     <div class="row mb-3">
         <div class="col">

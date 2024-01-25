@@ -164,7 +164,7 @@
     public class AdvertLikingErrorDTO
     {
         public int WorkerId { get; set; }
-        public AdvertLikingErrorType AdvertFollowingErrorType { get; set; }
+        public AdvertLikingErrorType AdvertLikingErrorType { get; set; }
     }
 
     public enum AdvertLikingErrorType
@@ -184,7 +184,7 @@
     public class AdvertCommentingErrorDTO
     {
         public int WorkerId { get; set; }
-        public AdvertCommentingErrorType AdvertFollowingErrorType { get; set; }
+        public AdvertCommentingErrorType AdvertCommentingErrorType { get; set; }
     }
 
     public enum AdvertCommentingErrorType

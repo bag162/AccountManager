@@ -62,6 +62,7 @@ namespace BASAccountManager.Controllers.Task.DTO
     public class AdvertCommentingTaskWorkerUsefulDatadTO
     {
         public string AdvertPostGroup { get; set; }
+        public string CommentsGroup { get; set; }
         public int CommentsPerAccount { get; set; }
         public bool CommentIfPostLikedPreviously { get; set; }
     }

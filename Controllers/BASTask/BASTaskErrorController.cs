@@ -108,7 +108,7 @@ namespace BASAccountManager.Controllers.BASTask
         [HttpPost]
         public async Task<string> AdvertLikingError([FromBody] AdvertLikingErrorDTO error)
         {
-            return await this.InstTaskManager.ErrorAdvertLikingAsync(error.AdvertFollowingErrorType, error.WorkerId);
+            return await this.InstTaskManager.ErrorAdvertLikingAsync(error.AdvertLikingErrorType, error.WorkerId);
         }
 
         [HttpPost]
@@ -120,7 +120,7 @@ namespace BASAccountManager.Controllers.BASTask
         [HttpPost]
         public async Task<string> AdvertCommentingError([FromBody] AdvertCommentingErrorDTO error)
         {
-            return await this.InstTaskManager.ErrorAdvertCommentingAsync(error.AdvertFollowingErrorType, error.WorkerId);
+            return await this.InstTaskManager.ErrorAdvertCommentingAsync(error.AdvertCommentingErrorType, error.WorkerId);
         }
 
         [HttpPost]

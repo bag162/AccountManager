@@ -72,6 +72,7 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string AccountGroup { get; set; }
         public string ProxyGroup { get; set; }
         public string AdvertPostGroup { get; set; }
+        public string CommentsGroup { get; set; }
         public int CommentsPerAccount { get; set; }
         public bool CommentIfPostLikedPreviously { get; set; }
     }

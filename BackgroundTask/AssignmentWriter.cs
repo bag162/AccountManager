@@ -33,6 +33,7 @@ namespace BASAccountManager.BackgroundTask
         private IFillingDataDBService fillingDataDBService { get; set; }
         private IAdvertPostDBService advertPostDBService { get; set; }
         private IAdvertAccountDBService advertAccountDBService { get; set; }
+        private ICommentDBService commentDBService { get; set; }
 
         public AssignmentWriter(ITaskDBService taskDbService,
             IWorkerTaskDBService workerTaskDbService,
@@ -50,7 +51,8 @@ namespace BASAccountManager.BackgroundTask
             IFollowDBService followDBService,
             IFillingDataDBService fillingDataDBService,
             IAdvertPostDBService advertPostDBService,
-            IAdvertAccountDBService advertAccountDBService)
+            IAdvertAccountDBService advertAccountDBService,
+            ICommentDBService commentDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -69,6 +71,7 @@ namespace BASAccountManager.BackgroundTask
             this.fillingDataDBService = fillingDataDBService;
             this.advertAccountDBService = advertAccountDBService;
             this.advertPostDBService = advertPostDBService;
+            this.commentDBService = commentDBService;
         }
 
         // Парсит посты на наличие новых комментариев и добаляет их в базу задач
@@ -940,7 +943,7 @@ namespace BASAccountManager.BackgroundTask
             {
                 postsToWork = postsToWork.Where(x => x.AdvertPostLikeStatus == DB.Models.AdvertResourses.AdvertPostActionStatus.NotProcessed).ToList();
             }
-
+            var commentsToWork = this.commentDBService.GetCommentsByGroup(usefulData.CommentsGroup);
             foreach (var account in accounts)
             {
                 var postToCommenting = postsToWork.Take(usefulData.CommentsPerAccount).ToList();
@@ -952,7 +955,7 @@ namespace BASAccountManager.BackgroundTask
                 {
                     postsToWork.Remove(item);
                     item.AdvertPostCommentStatus = DB.Models.AdvertResourses.AdvertPostActionStatus.ProcessTreatment;
-
+                    item.CommentMessage = commentsToWork.OrderBy(x => Guid.NewGuid()).First().Message;
                 }
 
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);

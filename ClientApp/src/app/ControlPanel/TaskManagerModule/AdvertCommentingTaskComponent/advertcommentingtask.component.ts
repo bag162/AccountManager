@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AdvertPostService } from 'src/app/Services/AdvertPostService';
 import { DataService } from 'src/app/Services/DataService';
+import { PostCommentGroupService } from 'src/app/Services/PostCommentGroupService';
 import { TaskManagerService } from 'src/app/Services/TaskManagerService';
 
 @Component({
@@ -12,20 +13,24 @@ export class AdvertCommentingTaskComponent implements OnInit {
     taskName: string;
     commentsPerAccount: number;
     advertPostGroupNames: string[];
+    CommentsPostGroupNames: string[];
     commentIfPostLikedPreviously: boolean = false;
     accountGroup: string;
     proxyGroup: string;
 
     advertPostService: AdvertPostService;
     taskManagerService: TaskManagerService;
+    postCommentGroupService: PostCommentGroupService;
     dataService: DataService;
 
     constructor(advertPostService: AdvertPostService,
         taskManagerService: TaskManagerService,
-        dataService: DataService) {
+        dataService: DataService,
+        postCommentGroupService: PostCommentGroupService) {
         this.advertPostService = advertPostService;
         this.taskManagerService = taskManagerService;
         this.dataService = dataService;
+        this.postCommentGroupService = postCommentGroupService;
     }
 
     async ngOnInit() {
@@ -36,8 +41,12 @@ export class AdvertCommentingTaskComponent implements OnInit {
             next: (data: string[]) => {
                 this.advertPostGroupNames = data;
             }
+        });
+        (await this.postCommentGroupService.GetGroupNames()).subscribe({
+            next: (data: string[]) => {
+                this.CommentsPostGroupNames = data;
+            }
         })
-
         this.dataService.subscriberAccountGroup$.subscribe((data) => {
             this.accountGroup = <string>data;
         })
@@ -54,7 +63,7 @@ export class AdvertCommentingTaskComponent implements OnInit {
         newTask.CommentsPerAccount = this.commentsPerAccount;
         newTask.CommentIfPostLikedPreviously = this.commentIfPostLikedPreviously;
         newTask.AdvertPostGroup = <string>$('#selectAdvertPostGroup option:selected').val();
-
+        newTask.CommentsGroup = <string>$('#selectCommentGroup option:selected').val();
         (await this.taskManagerService.AddAdvertCommentingTask(newTask)).subscribe(
             {
                 next: (data: boolean) => {
@@ -81,6 +90,7 @@ export class AddAdvertCommentingTaskDTO {
     AccountGroup: string;
     ProxyGroup: string;
     AdvertPostGroup: string;
+    CommentsGroup: string;
     CommentsPerAccount: number;
     CommentIfPostLikedPreviously: boolean;
 }

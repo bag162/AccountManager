@@ -183,7 +183,8 @@ namespace BASAccountManager.Controllers.Task
             {
                 AdvertPostGroup = newTask.AdvertPostGroup,
                 CommentIfPostLikedPreviously = newTask.CommentIfPostLikedPreviously,
-                CommentsPerAccount = newTask.CommentsPerAccount
+                CommentsPerAccount = newTask.CommentsPerAccount,
+                CommentsGroup = newTask.CommentsGroup
             });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
