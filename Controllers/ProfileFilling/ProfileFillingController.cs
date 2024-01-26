@@ -5,6 +5,7 @@ using BASAccountManager.Controllers.Email.DTO;
 using BASAccountManager.Controllers.ProfileFilling.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -34,12 +35,14 @@ namespace BASAccountManager.Controllers.ProfileFilling
 
         [Route("{fillingDataId:int}")]
         [HttpGet]
+        [Authorize(Roles = "/profilefilling/view,admin")]
         public async Task<string> Get(int fillingDataId)
         {
             return JsonConvert.SerializeObject(this.mapper.Map<GetProfileFillingDTO>(this.fillingDataDBService.GetById(fillingDataId)));
         }
-
+        
         [HttpGet]
+        [Authorize(Roles = "/profilefilling,admin")]
         public string Get(int start, int length, int draw)
         {
             StringValues searchData;
@@ -50,6 +53,7 @@ namespace BASAccountManager.Controllers.ProfileFilling
         }
 
         [HttpPost]
+        [Authorize(Roles = "/profilefilling/add,admin")]
         public async Task<string> Post([FromBody] AddFillingDataDTO data)
         {
             await this.fillingDataDBService.AddFillingDataAsync(data);
@@ -57,6 +61,7 @@ namespace BASAccountManager.Controllers.ProfileFilling
         }
 
         [HttpDelete]
+        [Authorize(Roles = "/profilefilling/add,admin")]
         public async Task<string> Delete(ProfileFillingTableDTO[] data)
         {
             await this.fillingDataDBService.DeleteAsync(mapper.Map<List<DBFillingData>>(data.ToList()));

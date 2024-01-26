@@ -29,7 +29,7 @@ import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//
             {
                 path: '', component: ControlPanelComponent, children: [
                     {
-                        path: 'taskmanager', component: TaskManagerComponent, children: [
+                        path: 'taskmanager', component: TaskManagerComponent, canActivate: [GuardService.CanAccess],  children: [
                             { path: "taskdata", component: TaskDataComponent, canActivate: [GuardService.CanAccess] },
                             { path: "registration", component: RegistrationTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "authorization", component: AuthorizatioonTaskComponent, canActivate: [GuardService.CanAccess] },
@@ -37,10 +37,10 @@ import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//
                             { path: "commenting", component: CommentingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "liking", component: LikingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "folowing", component: FollowingTaskComponent, canActivate: [GuardService.CanAccess] },
-                            { path: "profilefilling", component: ProfileFillingTaskComponent },
-                            { path: "advertliking", component: AdvertLikingTaskComponent },
-                            { path: "advertfollowing", component: AdvertFollowingTaskComponent },
-                            { path: "advertcommenting", component: AdvertCommentingTaskComponent },
+                            { path: "profilefilling", component: ProfileFillingTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "advertliking", component: AdvertLikingTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "advertfollowing", component: AdvertFollowingTaskComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "advertcommenting", component: AdvertCommentingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "workertaskdata/:id", component: WorkerTaskDataComponent, canActivate: [GuardService.CanAccess] }
                         ]
                     }

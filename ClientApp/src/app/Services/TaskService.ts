@@ -16,15 +16,15 @@ export class TaskService {
         return TaskService.httpClient.post(TaskService.address + "post", Task);
     }
 
-    public static async DeleteTask(Task: TaskDTO) {
+    public static async DeleteTask(Task: TaskDTO[]) {
         return TaskService.httpClient.delete(TaskService.address + "delete", { body: Task });
     }
 
-    public static async StopTask(Task: TaskDTO) {
+    public static async StopTask(Task: TaskDTO[]) {
         return TaskService.httpClient.put(TaskService.address + "stop", Task);
     }
 
-    public static async StartTask(Task: TaskDTO) {
+    public static async StartTask(Task: TaskDTO[]) {
         return TaskService.httpClient.put(TaskService.address + "start", Task);
     }
 }

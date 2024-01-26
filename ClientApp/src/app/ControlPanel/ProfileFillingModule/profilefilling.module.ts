@@ -7,15 +7,16 @@ import { ControlPanelComponent } from '../controlpanel.component';
 import { DataTablesModule } from 'angular-datatables';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
+import { GuardService } from 'src/app/Services/GuardService';
 
 @NgModule({
     imports: [
         RouterModule.forChild([
             {
                 path: '', component: ControlPanelComponent, children: [
-                    { path: 'profilefilling', component: ProfileFillingComponent },
-                    { path: "profilefilling/add", component: OverfiewProfileFillingComponent },
-                    { path: "profilefilling/view/:fillingDataId", component: OverfiewProfileFillingComponent }
+                    { path: 'profilefilling', component: ProfileFillingComponent, canActivate: [GuardService.CanAccess]  },
+                    { path: "profilefilling/add", component: OverfiewProfileFillingComponent, canActivate: [GuardService.CanAccess]  },
+                    { path: "profilefilling/view/:fillingDataId", component: OverfiewProfileFillingComponent, canActivate: [GuardService.CanAccess]  }
                 ]
             }
         ]),

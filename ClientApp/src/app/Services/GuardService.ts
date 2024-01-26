@@ -32,6 +32,10 @@ export class GuardService {
                         break;
                 }
             }
+            if(splitedEl[2] == "view" && splitedEl[1] == "profilefilling")
+            {
+                checlUrl =  '/' + splitedEl[1] + '/' + splitedEl[2];
+            }
             if (splitedEl[3] == 'manager' && splitedEl[2] == 'comment' && splitedEl[1] == 'post') {
                 checlUrl =  '/' + splitedEl[1] + '/' + splitedEl[2] + '/' + splitedEl[3];
             }

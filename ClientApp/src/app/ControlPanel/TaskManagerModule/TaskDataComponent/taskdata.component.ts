@@ -64,17 +64,17 @@ export class TaskDataComponent implements OnInit {
                 {
                     text: 'Stop selected',
                     action: function (e, dt, node, config) {
-                        StopTask(dt.rows({ selected: true }).data()[0], dt);
+                        StopTask(dt.rows({ selected: true }).data(), dt);
                     }
                 }, {
                     text: 'Start selected',
                     action: function (e, dt, node, config) {
-                        StartTask(dt.rows({ selected: true }).data()[0], dt);
+                        StartTask(dt.rows({ selected: true }).data(), dt);
                     }
                 }, {
                     text: 'Delete selected',
                     action: function (e, dt, node, config) {
-                        Delete(dt.rows({ selected: true }).data()[0], dt);
+                        Delete(dt.rows({ selected: true }).data(), dt);
                     }
                 }, {
                     text: 'View WorkerTasks selected Task',
@@ -89,90 +89,94 @@ export class TaskDataComponent implements OnInit {
                 }
             ]
         };
-        async function Delete(data: string, dt: any) {
-            let deletedData: TaskDTO = JSON.parse(JSON.stringify(data));
-            if (deletedData.Status == "Completed" || deletedData.Status == "Canceled") {
-                (await TaskService.DeleteTask(deletedData)).subscribe(
-                    {
-                        next: (data: boolean) => {
-                            if (data) {
-                                $("#successNot").show(200);
-                                $("#successNot").delay(400).hide(200);
-                                dt.ajax.reload();
-                            }
-                            else {
-                                $("#errorNot").show(200);
-                                $("#errorNot").delay(400).hide(200);
-                            }
-                        },
-                        error: (data: string) => {
+        async function Delete(datas: string[], dt: any) {
+            var tasksToDelete = new Array<TaskDTO>();
+            for (let index = 0; index < datas.length; index++) {
+                const element = datas[index];
+                let deletedData: TaskDTO = JSON.parse(JSON.stringify(element));
+                if (deletedData.Status == "Completed" || deletedData.Status == "Canceled"){
+                    tasksToDelete.push(deletedData);
+                }
+            }
+            (await TaskService.DeleteTask(tasksToDelete)).subscribe(
+                {
+                    next: (data: boolean) => {
+                        if (data) {
+                            $("#successNot").show(200);
+                            $("#successNot").delay(400).hide(200);
+                            dt.ajax.reload();
+                        }
+                        else {
                             $("#errorNot").show(200);
                             $("#errorNot").delay(400).hide(200);
                         }
+                    },
+                    error: (data: string) => {
+                        $("#errorNot").show(200);
+                        $("#errorNot").delay(400).hide(200);
                     }
-                )
-            }
-            else {
-                $("#errorNot").show(200);
-                $("#errorNot").delay(400).hide(200);
-            }
+                }
+            )
         }
 
-        async function StartTask(data: string, dt: any) {
-            let startTask: TaskDTO = JSON.parse(JSON.stringify(data));
-            if (startTask.Status == "Completed" || startTask.Status == "Canceled") {
-                (await TaskService.StartTask(startTask)).subscribe(
-                    {
-                        next: (data: boolean) => {
-                            if (data) {
-                                $("#successNot").show(200);
-                                $("#successNot").delay(400).hide(200);
-                                dt.ajax.reload();
-                            }
-                            else {
-                                $("#errorNot").show(200);
-                                $("#errorNot").delay(400).hide(200);
-                            }
-                        },
-                        error: (data: string) => {
+        async function StartTask(datas: string[], dt: any) {
+            var taskToStart = new Array<TaskDTO>();
+            for (let index = 0; index < datas.length; index++) {
+                const element = datas[index];
+                let startTask: TaskDTO = JSON.parse(JSON.stringify(element));
+                if (startTask.Status == "Completed" || startTask.Status == "Canceled"){
+                    taskToStart.push(startTask);
+                }
+            }
+            (await TaskService.StartTask(taskToStart)).subscribe(
+                {
+                    next: (data: boolean) => {
+                        if (data) {
+                            $("#successNot").show(200);
+                            $("#successNot").delay(400).hide(200);
+                            dt.ajax.reload();
+                        }
+                        else {
                             $("#errorNot").show(200);
                             $("#errorNot").delay(400).hide(200);
                         }
+                    },
+                    error: (data: string) => {
+                        $("#errorNot").show(200);
+                        $("#errorNot").delay(400).hide(200);
                     }
-                )
-            }
-            else {
-                $("#errorNot").show(200);
-                $("#errorNot").delay(400).hide(200);
-            }
+                }
+            )
         }
-        async function StopTask(data: string, dt: any) {
-            let stopTask: TaskDTO = JSON.parse(JSON.stringify(data));
-            if (stopTask.Status != "Completed" && stopTask.Status != "Canceled") {
-                (await TaskService.StopTask(stopTask)).subscribe(
-                    {
-                        next: (data: boolean) => {
-                            if (data) {
-                                $("#successNot").show(200);
-                                $("#successNot").delay(400).hide(200);
-                                dt.ajax.reload();
-                            }
-                            else {
-                                $("#errorNot").show(200);
-                                $("#errorNot").delay(400).hide(200);
-                            }
-                        },
-                        error: (data: string) => {
+        async function StopTask(datas: string[], dt: any) {
+            var taskToStop = new Array<TaskDTO>();
+            for (let index = 0; index < datas.length; index++) {
+                const element = datas[index];
+                let stopTask: TaskDTO = JSON.parse(JSON.stringify(element));
+                if (stopTask.Status != "Completed" && stopTask.Status != "Canceled"){
+                    taskToStop.push(stopTask);
+                }
+            }
+
+            (await TaskService.StopTask(taskToStop)).subscribe(
+                {
+                    next: (data: boolean) => {
+                        if (data) {
+                            $("#successNot").show(200);
+                            $("#successNot").delay(400).hide(200);
+                            dt.ajax.reload();
+                        }
+                        else {
                             $("#errorNot").show(200);
                             $("#errorNot").delay(400).hide(200);
                         }
+                    },
+                    error: (data: string) => {
+                        $("#errorNot").show(200);
+                        $("#errorNot").delay(400).hide(200);
                     }
-                )
-            }
-            else {
-                $("#errorNot").show(200);
-                $("#errorNot").delay(400).hide(200);
-            }
+                }
+            )
         }
 
         async function RouteToWorkerData(data: string, dt: any) {

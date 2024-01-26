@@ -29,8 +29,8 @@ import { AdvertisingResourcesModule } from './AdvertisingResources/advertisingre
                     { path: 'taskmanager', component: TaskManagerModule, canActivate: [GuardService.CanAccess] },
                     { path: 'postgroup', component: PostModule, canActivate: [GuardService.CanAccess] },
                     { path: 'email', component: EmailComponent, canActivate: [GuardService.CanAccess] },
-                    { path: 'profilefilling', component: ProfileFillingModule },
-                    { path: 'advertresourses', component: AdvertisingResourcesModule }
+                    { path: 'profilefilling', component: ProfileFillingModule, canActivate: [GuardService.CanAccess]  },
+                    { path: 'advertresourses', component: AdvertisingResourcesModule, canActivate: [GuardService.CanAccess]  }
                 ]
             },
         ]),

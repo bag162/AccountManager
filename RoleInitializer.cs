@@ -2,6 +2,7 @@
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Hosting;
 using System.Net;
 using System.Security.Principal;
@@ -34,6 +35,10 @@ namespace BASAccountManager
             {
                 await roleManager.CreateAsync(new IdentityRole("/email"));
             }
+            if (await roleManager.FindByNameAsync("/taskmanager") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager"));
+            }
             if (await roleManager.FindByNameAsync("/taskmanager/taskdata") == null)
             {
                 await roleManager.CreateAsync(new IdentityRole("/taskmanager/taskdata"));
@@ -62,6 +67,54 @@ namespace BASAccountManager
             {
                 await roleManager.CreateAsync(new IdentityRole("/taskmanager/folowing"));
             }
+            if (await roleManager.FindByNameAsync("/taskmanager/profilefilling") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/profilefilling"));
+            }
+            if (await roleManager.FindByNameAsync("/taskmanager/advertliking") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/advertliking"));
+            }
+            if (await roleManager.FindByNameAsync("/taskmanager/advertfollowing") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/advertfollowing"));
+            }
+            if (await roleManager.FindByNameAsync("/taskmanager/advertcommenting") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskmanager/advertcommenting"));
+            }
+            if (await roleManager.FindByNameAsync("/profilefilling") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/profilefilling"));
+            }
+            if (await roleManager.FindByNameAsync("/profilefilling/add") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/profilefilling/add"));
+            }
+            if (await roleManager.FindByNameAsync("/profilefilling/view") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/profilefilling/view"));
+            }
+            if (await roleManager.FindByNameAsync("/advertresourses") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/advertresourses"));
+            }
+            if (await roleManager.FindByNameAsync("/advertresourses/account/group") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/advertresourses/account/group"));
+            }
+            if (await roleManager.FindByNameAsync("/advertresourses/account/manager") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/advertresourses/account/manager"));
+            }
+            if (await roleManager.FindByNameAsync("/advertresourses/post/group") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/advertresourses/post/group"));
+            }
+            if (await roleManager.FindByNameAsync("/advertresourses/post/manager") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/advertresourses/post/manager"));
+            }
             if (await roleManager.FindByNameAsync("/post/group") == null)
             {
                 await roleManager.CreateAsync(new IdentityRole("/post/group"));
@@ -81,6 +134,10 @@ namespace BASAccountManager
             if (await roleManager.FindByNameAsync("/taskmanager/workertaskdata") == null)
             {
                 await roleManager.CreateAsync(new IdentityRole("/taskmanager/workertaskdata"));
+            }
+            if (await roleManager.FindByNameAsync("/post") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/post"));
             }
             if (await roleManager.FindByNameAsync("/post/manager/add") == null)
             {

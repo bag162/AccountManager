@@ -2,6 +2,7 @@
 using BASAccountManager.Controllers.Advert.Post.DTO;
 using BASAccountManager.Controllers.DTO;
 using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -10,6 +11,7 @@ namespace BASAccountManager.Controllers.Advert.Post
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "/advertresourses/post/group,admin")]
     public class AdvertPostGroupController : ControllerBase
     {
         private IAdvertPostGroupDBService advertPostGroupDBService { get; set; }

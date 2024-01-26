@@ -138,6 +138,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
+        [Authorize(Roles = "/taskmanager/profilefilling,admin")]
         public async Task<string> FillingProfileTask([FromBody] FillingProfileTaskDTO newTask)
         {
             var task = new DBTask();
@@ -152,6 +153,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
+        [Authorize(Roles = "/taskmanager/advertliking,admin")]
         public async Task<string> AdvertLiking([FromBody] AdvertLikingTaskDTO newTask)
         {
             var task = new DBTask();
@@ -171,6 +173,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
+        [Authorize(Roles = "/taskmanager/advertcommenting,admin")]
         public async Task<string> AdvertCommenting([FromBody] AdvertCommentingTaskDTO newTask)
         {
             var task = new DBTask();
@@ -191,6 +194,7 @@ namespace BASAccountManager.Controllers.Task
         }
 
         [HttpPost]
+        [Authorize(Roles = "/taskmanager/advertfollowing,admin")]
         public async Task<string> AdvertFollowing([FromBody] AdvertFollowingTaskDTO newTask)
         {
             var task = new DBTask();

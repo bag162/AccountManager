@@ -9,6 +9,7 @@ import { AdvertAccountGroupComponent } from './AdvertAccount/AdvertAccountGroup/
 import { AdvertAccountComponent } from './AdvertAccount/advertaccount.component';
 import { AdvertPostGroupComponent } from './AdvertPost/AdvertPostGroup/advertpostgroup.component';
 import { AdvertPostComponent } from './AdvertPost/advertpost.component';
+import { GuardService } from 'src/app/Services/GuardService';
 
 @NgModule({
     imports: [
@@ -16,13 +17,13 @@ import { AdvertPostComponent } from './AdvertPost/advertpost.component';
             {
                 path: '', component: ControlPanelComponent, children: [
                     {
-                        path: 'advertresourses', component: AdvertisingResoursesComponent, children: [
-                            { path: 'account/group', component: AdvertAccountGroupComponent },
-                            { path: 'account/manager', component: AdvertAccountComponent },
-                            { path: 'account/manager/:groupId', component: AdvertAccountComponent },
-                            { path: 'post/group', component: AdvertPostGroupComponent },
-                            { path: 'post/manager', component: AdvertPostComponent },
-                            { path: 'post/manager/:groupId', component: AdvertPostComponent },
+                        path: 'advertresourses', component: AdvertisingResoursesComponent, canActivate: [GuardService.CanAccess],  children: [
+                            { path: 'account/group', component: AdvertAccountGroupComponent, canActivate: [GuardService.CanAccess]  },
+                            { path: 'account/manager', component: AdvertAccountComponent, canActivate: [GuardService.CanAccess]  },
+                            { path: 'account/manager/:groupId', component: AdvertAccountComponent, canActivate: [GuardService.CanAccess]  },
+                            { path: 'post/group', component: AdvertPostGroupComponent, canActivate: [GuardService.CanAccess]  },
+                            { path: 'post/manager', component: AdvertPostComponent, canActivate: [GuardService.CanAccess]  },
+                            { path: 'post/manager/:groupId', component: AdvertPostComponent, canActivate: [GuardService.CanAccess]  },
                         ]
                     }
                 ]

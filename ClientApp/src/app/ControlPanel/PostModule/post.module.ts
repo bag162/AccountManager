@@ -18,7 +18,7 @@ import { GuardService } from 'src/app/Services/GuardService';
             {
                 path: '', component: ControlPanelComponent, children: [
                     {
-                        path: 'post', component: PostComponent, children: [
+                        path: 'post', component: PostComponent, canActivate: [GuardService.CanAccess], children: [
                             { path: "group", component: PostGroupComponent, canActivate: [GuardService.CanAccess]  },
                             { path: "manager", component: PostManagerComponent, canActivate: [GuardService.CanAccess]  },
                             { path: "manager/add", component: OverviewPostComponent, canActivate: [GuardService.CanAccess]  },

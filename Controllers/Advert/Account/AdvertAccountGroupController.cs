@@ -1,6 +1,7 @@
 ﻿using BASAccountManager.Controllers.Advert.Account.DTO;
 using BASAccountManager.Controllers.DTO;
 using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ namespace BASAccountManager.Controllers.Advert.Account
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "/advertresourses/account/group,admin")]
     public class AdvertAccountGroupController : ControllerBase
     {
         private IAdvertAccountGroupDBService advertAccountGroupDBService { get; set; }
