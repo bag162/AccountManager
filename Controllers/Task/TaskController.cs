@@ -60,7 +60,7 @@ namespace BASAccountManager.Controllers.InstTask
                     // Получаем лист дочерних воркеров. 
                     var taskWorkers = await this.WorkerTaskDBService.GetWorkerTaskByDBTaskIdAsync(stoppedTask.Id);
                     // Вытягиваем прокси которые забронированы для работы. Прокси в работе по завершению сами установят себе свободный статус. Устанавилваем прокси свободный статус
-                    var updatedProxy = taskWorkers.Where(x => x.Proxy.ProxyStatus == ProxyStatus.BookedForWork).Select(x => x.Proxy).ToList();
+                    var updatedProxy = taskWorkers.Where(x => x.Status == DB.Models.TaskStatus.NotTaken).Select(x => x.Proxy).ToList();
                     foreach (var proxy in updatedProxy)
                     {
                         await this.ProxyDBService.SetProxyFreeStatusAsync(proxy.Id);

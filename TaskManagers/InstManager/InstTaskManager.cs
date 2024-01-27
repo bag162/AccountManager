@@ -72,7 +72,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             var returnedTask = new DBWorkerTask();
 
             // Фильтруем задачи, что бы 1 аккаунт не выполнял одновременно 2-е задачи
-            foreach (var task in allTasks.Where(x => x.Status == DB.Models.TaskStatus.NotTaken))
+            foreach (var task in allTasks.Where(x => x.Status == DB.Models.TaskStatus.NotTaken).OrderBy(x => Guid.NewGuid()))
             {
                 if (allTasks.Where(x => x.AccountId == task.AccountId).Where(x => x.Status == DB.Models.TaskStatus.AtWork).Count() == 0)
                 {

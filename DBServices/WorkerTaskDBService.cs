@@ -103,6 +103,9 @@ namespace BASAccountManager.DBServices
 
 
                 data.recordsFiltered = filteredData.Count();
+                var listData = filteredData.ToList();
+                listData.Reverse();
+                filteredData = listData.ToArray();
                 data.data = mapper.Map<List<WorkerTaskDTO>>(filteredData);
             }
             else
@@ -110,11 +113,15 @@ namespace BASAccountManager.DBServices
                 data.recordsFiltered = data.recordsTotal;
                 if (lenght == -1)
                 {
-                    data.data = mapper.Map<List<WorkerTaskDTO>>(this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.Account).Include(x => x.Proxy).AsQueryable().Where(x => x.TaskId == taskId).Skip(start).Take(data.recordsTotal).ToArray());
+                    var listData = this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.Account).Include(x => x.Proxy).AsQueryable().Where(x => x.TaskId == taskId).Skip(start).Take(data.recordsTotal).ToList();
+                    listData.Reverse();
+                    data.data = mapper.Map<List<WorkerTaskDTO>>(listData.ToArray());
                 }
                 else
                 {
-                    data.data = mapper.Map<List<WorkerTaskDTO>>(this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.Account).Include(x => x.Proxy).AsQueryable().Where(x => x.TaskId == taskId).Skip(start).Take(lenght).ToArray());
+                    var listData = this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.Account).Include(x => x.Proxy).AsQueryable().Where(x => x.TaskId == taskId).Skip(start).Take(lenght).ToList();
+                    listData.Reverse();
+                    data.data = mapper.Map<List<WorkerTaskDTO>>(listData.ToArray());
                 }
             }
             return data;

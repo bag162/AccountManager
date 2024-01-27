@@ -782,16 +782,13 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем аккаунты, которые будем заполнять
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-            accounts = accounts.Where(x => x.FillingDataId != profileFilling.Id).ToList();
+            accounts = accounts.Where(x => x.FillingDataId != profileFilling.Id).Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
 
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
             foreach (var taskAccount in addedTasks.Select(x => x.Account).ToList())
             {
                 // Не заполняем аккаунты если он содержится в workerList
                 if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
-                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
-                // Не заполняем аккаунты если у них статус не равнен Authorized
-                if (taskAccount.AccountStatus != AccountStatus.Authorized)
                     accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
             }
 
@@ -841,15 +838,13 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем аккаунты
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
 
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
             foreach (var taskAccount in addedTasks.Select(x => x.Account).ToList())
             {
                 // Не используем аккаунты если он содержится в workerList
                 if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
-                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
-                // Не используем аккаунты если у них статус не равнен Authorized
-                if (taskAccount.AccountStatus != AccountStatus.Authorized)
                     accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
             }
 
@@ -922,15 +917,12 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем аккаунты
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
             foreach (var taskAccount in addedTasks.Select(x => x.Account).ToList())
             {
                 // Не используем аккаунты если он содержится в workerList
                 if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
-                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
-                // Не используем аккаунты если у них статус не равнен Authorized
-                if (taskAccount.AccountStatus != AccountStatus.Authorized)
                     accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
             }
 
@@ -1003,15 +995,13 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем аккаунты
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
 
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
             foreach (var taskAccount in addedTasks.Select(x => x.Account).ToList())
             {
                 // Не используем аккаунты если он содержится в workerList
                 if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
-                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
-                // Не используем аккаунты если у них статус не равнен Authorized
-                if (taskAccount.AccountStatus != AccountStatus.Authorized)
                     accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
             }
 

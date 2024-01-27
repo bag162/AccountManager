@@ -66,6 +66,7 @@ namespace BASAccountManager.BackgroundTask
             }
         }
 
+        // dont work
         public async Task CheckProxyStatusAsync()
         {
             var allWorkerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
@@ -77,10 +78,7 @@ namespace BASAccountManager.BackgroundTask
                     continue;
                 }
 
-                if(allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.AtWork).Count() != 0)
-                    continue;
-                
-                if (allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.NotTaken).Count() != 0)
+                if(allWorkerTasks.Where(x => x.Proxy.Id == proxy.Id).Where(x => x.Status == DB.Models.TaskStatus.AtWork || x.Status == DB.Models.TaskStatus.NotTaken).Count() != 0)
                     continue;
                 
                 await this.proxyDBService.SetProxyFreeStatusAsync(proxy.Id);

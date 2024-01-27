@@ -34,7 +34,9 @@ namespace BASAccountManager
 
         public async Task MonitorStatus()
         {
-            await this.StatusMonitor.CheckProxyStatusAsync();
+            // Dont work
+            /*await this.StatusMonitor.CheckProxyStatusAsync();*/
+
             await this.StatusMonitor.CheckTaskWorkerStatusAsync();
             await this.StatusMonitor.CheckInactiveTask();
             await this.StatusMonitor.CheckUntakenComments();
