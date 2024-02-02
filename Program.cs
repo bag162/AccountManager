@@ -45,7 +45,7 @@ builder.Services.AddTransient<IAdvertAccountDBService, AdvertAccountDBService>()
 builder.Services.AddTransient<IAdvertAccountGroupDBService, AdvertAccountGroupDBService>();
 builder.Services.AddTransient<IAdvertPostGroupDBService, AdvertPostGroupDBService>();
 builder.Services.AddTransient<IAdvertPostDBService, AdvertPostDBService>();
-
+builder.Services.AddTransient<ISchedulerTaskDBService, SchedulerTaskDBService>();
 
 
 
@@ -53,6 +53,8 @@ builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
 builder.Services.AddTransient<StatusMonitor>();
 builder.Services.AddTransient<InstTaskManager>();
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddHangfireServer(opt =>
@@ -139,13 +141,12 @@ app.UseSpa(spa =>
     }
 });
 
-
 RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), "*/1 * * * * *");
-RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), "*/1 * * * * *");
 RecurringJob.AddOrUpdate<HangFireTaskManager>("LikesParser", (method) => method.LikesParser(), "*/1 * * * * *");
-
+RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), "*/1 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("ParseSchedulerTask", (method) => method.ParseSchedulerTask(), "*/1 * * * * *");
 
 // Init Roles
 using (var scope = app.Services.CreateScope())

@@ -11,11 +11,13 @@ using BASAccountManager.Controllers.Post.Like.DTO;
 using BASAccountManager.Controllers.Post.Post.DTO;
 using BASAccountManager.Controllers.ProfileFilling.DTO;
 using BASAccountManager.Controllers.Proxy.DTO;
+using BASAccountManager.Controllers.SchedulerTask.DTO;
 using BASAccountManager.Controllers.SMS_Services.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.AdvertResourses;
 using BASAccountManager.DB.Models.Post;
+using Newtonsoft.Json;
 
 namespace BASAccountManager
 {
@@ -94,6 +96,8 @@ namespace BASAccountManager
                 .ForMember(dest => dest.AdvertPostGroupName, opt => opt.MapFrom(src => src.AdvertPostGroup.Name));
             CreateMap<DBAdvertPostGroup, AdvertPostGroupDTO>()
                 .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.ListAdvertPost.Count()));
+            CreateMap<DBSchedulerTask, SchedulerTaskDTO>()
+                .ForMember(dest => dest.CountPinnedTasks, opt => opt.MapFrom(src => JsonConvert.DeserializeObject<int[]>(src.TaskIds).Count()));
 
             /*** BAS task Mapping ***/
 

@@ -48,7 +48,7 @@ namespace BASAccountManager.DBServices
         public JqueryDataTable<ProfileFillingTableDTO> GetFillingData(int start, int lenght, string searchdata)
         {
             var data = new JqueryDataTable<ProfileFillingTableDTO>();
-            data.recordsTotal = this.dbcontext.Email.Count();
+            data.recordsTotal = this.dbcontext.FillingData.Count();
             DBFillingData[] filteredData = Array.Empty<DBFillingData>();
 
             if (!string.IsNullOrEmpty(searchdata))
@@ -74,11 +74,15 @@ namespace BASAccountManager.DBServices
                 data.recordsFiltered = data.recordsTotal;
                 if (lenght == -1)
                 {
-                    data.data = mapper.Map<List<ProfileFillingTableDTO>>(this.dbcontext.FillingData.AsQueryable().Include(x => x.ListAccounts).Skip(start).Take(data.recordsTotal).ToArray());
+                    var listData = mapper.Map<List<ProfileFillingTableDTO>>(this.dbcontext.FillingData.AsQueryable().Include(x => x.ListAccounts).Skip(start).Take(data.recordsTotal).ToArray());
+                    data.data = listData;
+                    data.recordsFiltered = listData.Count();
                 }
                 else
                 {
-                    data.data = mapper.Map<List<ProfileFillingTableDTO>>(this.dbcontext.FillingData.AsQueryable().Include(x => x.ListAccounts).Skip(start).Take(lenght).ToArray());
+                    var listData = mapper.Map<List<ProfileFillingTableDTO>>(this.dbcontext.FillingData.AsQueryable().Include(x => x.ListAccounts).Skip(start).Take(lenght).ToArray());
+                    data.data = listData;
+                    data.recordsFiltered = listData.Count();
                 }
             }
             return data;

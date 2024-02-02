@@ -1,0 +1,39 @@
+<div class="container">
+    <div id="successNot" class="alert alert-success" role="alert">Success</div>
+    <div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <label>Startup type</label>
+                <select class="form-control" [(ngModel)]="StartupType" [disabled]="this.schedulerTaskId != undefined">
+                    <option>Repeating</option>
+                </select>
+            </div>
+            <div class="col">
+                <label>Time between launches (Minutes)</label>
+                <input type="number" class="form-control" [(ngModel)]="TimeBetweenLaunchesMinutes">
+            </div>
+            <div class="col">
+                <label>Scheduler task name</label>
+                <input class="form-control" type="text" [(ngModel)]="SchedulerTaskName" [disabled]="this.schedulerTaskId != undefined">
+            </div>
+        </div>
+    </div>
+    <div class="container mt-3">
+        <div class="row">
+            <label>Task data</label>
+            <div class="col border p-2">
+                <table datatable [dtOptions]="dtOptionsTaskData" class="row-border hover" id="TaskTable"></table>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <label>Scheduler data</label>
+            <div class="col border p-2">
+                <table datatable [dtOptions]="dtOptionsSchedulerTask" class="row-border hover" id="SchedulerTable">
+                </table>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3 mb-2" (click)="AddSchedulerTask()" id="addTaskBtn">Submit</button>
+    <button type="submit" class="btn btn-primary mt-3 mb-2" (click)="UpdateSchedulerTask()" id="updateTaskBtn">Update</button>
+</div>

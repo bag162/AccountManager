@@ -34,6 +34,7 @@ namespace BASAccountManager.BackgroundTask
         private IAdvertPostDBService advertPostDBService { get; set; }
         private IAdvertAccountDBService advertAccountDBService { get; set; }
         private ICommentDBService commentDBService { get; set; }
+        private ISchedulerTaskDBService schedulerTaskDBService { get; set; }
 
         public AssignmentWriter(ITaskDBService taskDbService,
             IWorkerTaskDBService workerTaskDbService,
@@ -52,7 +53,8 @@ namespace BASAccountManager.BackgroundTask
             IFillingDataDBService fillingDataDBService,
             IAdvertPostDBService advertPostDBService,
             IAdvertAccountDBService advertAccountDBService,
-            ICommentDBService commentDBService)
+            ICommentDBService commentDBService,
+            ISchedulerTaskDBService schedulerTaskDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -72,6 +74,66 @@ namespace BASAccountManager.BackgroundTask
             this.advertAccountDBService = advertAccountDBService;
             this.advertPostDBService = advertPostDBService;
             this.commentDBService = commentDBService;
+            this.schedulerTaskDBService = schedulerTaskDBService;
+        }
+
+        public async Task ParseSchedulerTask()
+        {
+            var schedulerTasks = this.schedulerTaskDBService.GetSchesulerTask();
+            foreach (var schedulerTask in schedulerTasks)
+            {
+                List<int> schedulerTaskIds = JsonConvert.DeserializeObject<int[]>(schedulerTask.TaskIds).ToList();
+                if (schedulerTask.SchedulerTaskStatus == SchedulerTaskStatus.Stopped)
+                {
+                    continue;
+                }
+                if (schedulerTask.SchedulerTaskStatus == SchedulerTaskStatus.Completed)
+                {
+                    if (DateTime.Now - schedulerTask.LastStart >= TimeSpan.FromMinutes(schedulerTask.TimeBetweenLaunchesMinutes))
+                    {
+                        schedulerTask.SchedulerTaskStatus = SchedulerTaskStatus.Started;
+                        schedulerTask.CurrentTaskPositionIndex = 0;
+                        var startedTask = this.taskDbService.GetTaskById(schedulerTaskIds[(int)schedulerTask.CurrentTaskPositionIndex]);
+                        if (startedTask.Status == StatusTask.Completed || startedTask.Status == StatusTask.Canceled)
+                        {
+                            DBTask[] taskToStart = { startedTask };
+                            await this.taskDbService.StartTaskAsync(taskToStart);
+                        }
+                        await this.schedulerTaskDBService.UpdateAsync(schedulerTask);
+                        continue;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+               
+                var task = this.taskDbService.GetTaskById(schedulerTaskIds[(int)schedulerTask.CurrentTaskPositionIndex]);
+                if (task.Status != StatusTask.Completed && task.Status != StatusTask.Canceled)
+                {
+                    continue;
+                }
+
+                var taskCompleted = task.Status == StatusTask.Completed || task.Status == StatusTask.Canceled;
+                if (schedulerTaskIds.Count() - 1 == schedulerTask.CurrentTaskPositionIndex && taskCompleted)
+                {
+                    schedulerTask.SchedulerTaskStatus = SchedulerTaskStatus.Completed;
+                    schedulerTask.LastStart = DateTime.Now;
+                }
+                else
+                {
+                    schedulerTask.CurrentTaskPositionIndex++;
+                    var newTask = this.taskDbService.GetTaskById(schedulerTaskIds[(int)schedulerTask.CurrentTaskPositionIndex]);
+                    if (newTask.Status == StatusTask.Completed || newTask.Status == StatusTask.Canceled)
+                    {
+                        DBTask[] taskToStart = { newTask };
+                        await this.taskDbService.StartTaskAsync(taskToStart);
+                    }
+                }
+
+                await this.schedulerTaskDBService.UpdateAsync(schedulerTask);
+            }
         }
 
         // Парсит посты на наличие новых комментариев и добаляет их в базу задач
@@ -451,7 +513,7 @@ namespace BASAccountManager.BackgroundTask
                 .OrderBy(x => Guid.NewGuid().ToString())
                 .ToList();
 
-            bool noProxy = false;
+            int commentsWorkerTaskCount = 0;
             foreach (var accountToTask in accounts)
             {
                 var commentsToTask = new List<DBPostComment>();
@@ -481,6 +543,7 @@ namespace BASAccountManager.BackgroundTask
                 }
                 if (commentsToTask.Count == 0)
                 {
+                    commentsWorkerTaskCount++;
                     continue;
                 }
                 // удаляем комментарии из листа на добавление
@@ -488,20 +551,21 @@ namespace BASAccountManager.BackgroundTask
                 {
                     allFilteredComments.Remove(newComment);
                 }
-                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
-                if (proxy == null)
-                {
-                    noProxy = true;
-                    break;
-                }
+                
                 // Прикрепляем к комментарию аккаунт
                 foreach (var updatedComment in commentsToTask)
                 {
+                    updatedComment.CommentTime = DateTime.Now;
                     updatedComment.SenderAccountId = accountToTask.Id;
                 }
                 await this.postCommentDBService.UpdatePostCommentAsync(commentsToTask);
 
                 var commentsList = this.mapper.Map<List<CommentUsefulDataDTO>>(commentsToTask);
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
                 var newTask = new DBWorkerTask()
                 {
                     AccountId = accountToTask.Id,
@@ -514,7 +578,8 @@ namespace BASAccountManager.BackgroundTask
                 
                 workerTaskList.Add(newTask);
             }
-            if (noProxy == false)
+
+            if (workerTaskList.Count() == accounts.Count() - commentsWorkerTaskCount)
             {
                 task.Status = StatusTask.Performed;
                 await this.taskDbService.UpdateTaskAsync(task);
@@ -568,13 +633,9 @@ namespace BASAccountManager.BackgroundTask
                 }
             }
 
+            int likesWorkerListCount = 0;
             foreach (var accToAdd in accounts)
             {
-                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
-                if (proxy == null)
-                {
-                    break;
-                }
                 // Все добавленные лайки
                 var allCurrentLikes = this.postLikeDBService.GetAllLikesAsNoTracking();
 
@@ -588,6 +649,7 @@ namespace BASAccountManager.BackgroundTask
                         // Проверяем, что поста нет в листе задач с этим аккаунтом на глобальном уровен
                         if (allCurrentLikes.Where(x => x.PostId == like.PostId).Where(x => x.SenderAccountId == accToAdd.Id).Count() == 0)
                         {
+                            like.CreatedDate = DateTime.Now;
                             likesWorkerList.Add(like);
                             if (likesWorkerList.Count() >= usefulData.LikesPerAccount)
                             {
@@ -598,6 +660,7 @@ namespace BASAccountManager.BackgroundTask
                 }
                 if (likesWorkerList.Count() == 0)
                 {
+                    likesWorkerListCount++;
                     continue;
                 }
                 foreach (var likeToRem in likesWorkerList)
@@ -613,6 +676,12 @@ namespace BASAccountManager.BackgroundTask
                 await this.postLikeDBService.UpdateLikesAsync(likesWorkerList);
 
                 var likesList = this.mapper.Map<List<LikeUsefulDataDTO>>(likesWorkerList);
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
+
                 var newTask = new DBWorkerTask()
                 {
                     AccountId = accToAdd.Id,
@@ -626,7 +695,7 @@ namespace BASAccountManager.BackgroundTask
                 workerTaskList.Add(newTask);
             }
 
-            if (workerTaskList.Count() == accounts.Count())
+            if (workerTaskList.Count() == accounts.Count() - likesWorkerListCount)
             {
                 task.Status = StatusTask.Performed;
                 await this.taskDbService.UpdateTaskAsync(task);
@@ -724,14 +793,14 @@ namespace BASAccountManager.BackgroundTask
             // Создаем воркеров
             foreach (var accountId in accountIds)
             {
-                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
-                if (proxy == null)
-                {
-                    break;
-                }
+                
 
                 // Получаем follows для аккаунта
                 var followList = listFollows.Where(x => x.SenderAccountId == accountId).Take(usefulData.FollowsPerAccount).ToList();
+                foreach (var item in followList)
+                {
+                    item.Id = 0;
+                }
                 // Добавляем follows в базу
                 await this.followDBService.AddFollowsAsync(followList);
 
@@ -739,8 +808,13 @@ namespace BASAccountManager.BackgroundTask
                 var listToWorker = this.followDBService.GetFollowsBySenderAccountId(accountId)
                     .Where(x => x.FollowStatus == FollowStatus.NotPublished)
                     .Select(x => x.Id)
+                    .Take(usefulData.FollowsPerAccount)
                     .ToList();
-
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
                 var newTask = new DBWorkerTask()
                 {
                     AccountId = accountId,
@@ -760,7 +834,6 @@ namespace BASAccountManager.BackgroundTask
                 await this.taskDbService.UpdateTaskAsync(task);
             }
             await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
-
         }
 
         private async Task ParseFillingProfileTask(DBTask task)
@@ -794,12 +867,13 @@ namespace BASAccountManager.BackgroundTask
 
             foreach (var accountToAdd in accounts)
             {
+                ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(profileFilling);
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
                 if (proxy == null)
                 {
                     break;
                 }
-                ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(profileFilling);
+                
 
                 var newTask = new DBWorkerTask()
                 {
@@ -871,14 +945,14 @@ namespace BASAccountManager.BackgroundTask
                     item.AdvertPostLikeStatus = DB.Models.AdvertResourses.AdvertPostActionStatus.ProcessTreatment;
 
                 }
-
+                await this.advertPostDBService.UpdateAdvertPostAsync(postToLikes);
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
                 if (proxy == null)
                 {
                     break;
                 }
 
-                await this.advertPostDBService.UpdateAdvertPostAsync(postToLikes);
+                
 
                 var newTask = new DBWorkerTask()
                 {
@@ -949,14 +1023,14 @@ namespace BASAccountManager.BackgroundTask
                     item.AdvertPostCommentStatus = DB.Models.AdvertResourses.AdvertPostActionStatus.ProcessTreatment;
                     item.CommentMessage = commentsToWork.OrderBy(x => Guid.NewGuid()).First().Message;
                 }
-
+                await this.advertPostDBService.UpdateAdvertPostAsync(postToCommenting);
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
                 if (proxy == null)
                 {
                     break;
                 }
 
-                await this.advertPostDBService.UpdateAdvertPostAsync(postToCommenting);
+               
 
                 var newTask = new DBWorkerTask()
                 {
@@ -1023,14 +1097,14 @@ namespace BASAccountManager.BackgroundTask
 
                 }
 
+                
+
+                await this.advertAccountDBService.UpdateAvertAccountsAsync(accountsToFollow);
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
                 if (proxy == null)
                 {
                     break;
                 }
-
-                await this.advertAccountDBService.UpdateAvertAccountsAsync(accountsToFollow);
-
                 var newTask = new DBWorkerTask()
                 {
                     AccountId = account.Id,

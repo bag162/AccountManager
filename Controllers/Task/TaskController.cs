@@ -33,71 +33,35 @@ namespace BASAccountManager.Controllers.InstTask
         [HttpDelete]
         public async Task<string> Delete([FromBody] TaskDTO[] deletetTasks)
         {
+            var isFail = true;
             foreach (var deletetTask in deletetTasks)
             {
                 if (deletetTask.Status == StatusTask.Canceled.ToString() || deletetTask.Status == StatusTask.Completed.ToString())
                 {
-                    await this.TaskDBService.RemoveTaskAsync(this.mapper.Map<DBTask>(deletetTask));
+                    var result = await this.TaskDBService.RemoveTaskAsync(this.mapper.Map<DBTask>(deletetTask));
+                    if (result == false)
+                    {
+                        isFail = false;
+                    }
                 }
                 else
                 {
-                    return JsonConvert.SerializeObject("False");
+                    return JsonConvert.SerializeObject(false);
                 }
             }
-            return JsonConvert.SerializeObject("True");
+            return JsonConvert.SerializeObject(isFail);
         }
 
         [HttpPut]
         public async Task<string> Stop([FromBody] TaskDTO[] stoppedTasks)
         {
-            foreach (var stoppedTask in stoppedTasks)
-            {
-                if (stoppedTask.Status == StatusTask.AddingProcess.ToString() || stoppedTask.Status == StatusTask.Added.ToString() || stoppedTask.Status == StatusTask.Performed.ToString())
-                {
-                    // Устанавливаем статус Canceled головной задаче
-                    stoppedTask.Status = StatusTask.Canceled.ToString();
-                    await this.TaskDBService.UpdateTaskAsync(this.mapper.Map<DBTask>(stoppedTask));
-                    // Получаем лист дочерних воркеров. 
-                    var taskWorkers = await this.WorkerTaskDBService.GetWorkerTaskByDBTaskIdAsync(stoppedTask.Id);
-                    // Вытягиваем прокси которые забронированы для работы. Прокси в работе по завершению сами установят себе свободный статус. Устанавилваем прокси свободный статус
-                    var updatedProxy = taskWorkers.Where(x => x.Status == DB.Models.TaskStatus.NotTaken).Select(x => x.Proxy).ToList();
-                    foreach (var proxy in updatedProxy)
-                    {
-                        await this.ProxyDBService.SetProxyFreeStatusAsync(proxy.Id);
-                    }
-                    taskWorkers = taskWorkers.Where(x => x.Status != DB.Models.TaskStatus.AtWork).ToList();
-                    await this.WorkerTaskDBService.RemoveWorkerTaskAsync(taskWorkers);
-                }
-                else
-                {
-                    return JsonConvert.SerializeObject("False");
-                }
-            }
-            return JsonConvert.SerializeObject("True");
+            return JsonConvert.SerializeObject(await this.TaskDBService.StopTaskAsync(stoppedTasks));
         }
 
         [HttpPut]
-        public async Task<string> Start([FromBody] TaskDTO[] stoppedTasks)
+        public async Task<string> Start([FromBody] TaskDTO[] startedTasks)
         {
-            foreach (var stoppedTask in stoppedTasks)
-            {
-                switch ((StatusTask)Enum.Parse(typeof(StatusTask), stoppedTask.Status))
-                {
-                    case StatusTask.Canceled:
-                        stoppedTask.Status = StatusTask.Added.ToString();
-                        await this.TaskDBService.UpdateTaskAsync(this.mapper.Map<DBTask>(stoppedTask));
-                        break;
-                    case StatusTask.Completed:
-                        stoppedTask.Status = StatusTask.Added.ToString();
-                        var workers = await this.WorkerTaskDBService.GetWorkerTaskByDBTaskIdAsync(stoppedTask.Id);
-                        await this.WorkerTaskDBService.RemoveWorkerTaskAsync(workers);
-                        await this.TaskDBService.UpdateTaskAsync(this.mapper.Map<DBTask>(stoppedTask));
-                        break;
-                    default:
-                        return JsonConvert.SerializeObject("false");
-                }
-            }
-            return JsonConvert.SerializeObject("true");
+            return JsonConvert.SerializeObject(await this.TaskDBService.StartTaskAsync(startedTasks));
         }
 
         [HttpGet]

@@ -4,6 +4,7 @@ using BASAccountManager.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BASAccountManager.Migrations
 {
     [DbContext(typeof(AMContext))]
-    partial class AMContextModelSnapshot : ModelSnapshot
+    [Migration("20240131102457_AddSchedulerImpl")]
+    partial class AddSchedulerImpl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -463,33 +465,20 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("CurrentTaskPositionIndex")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("LastStart")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SchedulerTaskStatus")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("StartupType")
                         .HasColumnType("int");
 
-                    b.Property<string>("TaskIds")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TimeBetweenLaunchesMinutes")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("SchedulerTask");
                 });
@@ -548,6 +537,9 @@ namespace BASAccountManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SchedulerTaskId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -558,6 +550,8 @@ namespace BASAccountManager.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SchedulerTaskId");
 
                     b.ToTable("Task");
                 });
@@ -901,6 +895,15 @@ namespace BASAccountManager.Migrations
                     b.Navigation("ProxyGroup");
                 });
 
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBTask", b =>
+                {
+                    b.HasOne("BASAccountManager.DB.Models.DBSchedulerTask", "SchedulerTask")
+                        .WithMany("ListTask")
+                        .HasForeignKey("SchedulerTaskId");
+
+                    b.Navigation("SchedulerTask");
+                });
+
             modelBuilder.Entity("BASAccountManager.DB.Models.DBWorkerTask", b =>
                 {
                     b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "Account")
@@ -1055,6 +1058,11 @@ namespace BASAccountManager.Migrations
             modelBuilder.Entity("BASAccountManager.DB.Models.DBProxyGroup", b =>
                 {
                     b.Navigation("Proxies");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBSchedulerTask", b =>
+                {
+                    b.Navigation("ListTask");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBTask", b =>

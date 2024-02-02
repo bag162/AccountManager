@@ -159,6 +159,18 @@ namespace BASAccountManager
             {
                 await roleManager.CreateAsync(new IdentityRole("/dashboard"));
             }
+            if (await roleManager.FindByNameAsync("/taskscheduler") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskscheduler"));
+            }
+            if (await roleManager.FindByNameAsync("/taskscheduler/add") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskscheduler/add"));
+            }
+            if (await roleManager.FindByNameAsync("/taskscheduler/view") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("/taskscheduler/view"));
+            }
         }
     }
 }

@@ -5,18 +5,26 @@ using BASAccountManager.DB;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace BASAccountManager.DBServices
 {
     public class TaskDBService : ITaskDBService
     {
+        private IWorkerTaskDBService workerTaskDBService { get; set; }
+        private IProxyDBService proxyDBService { get; set; }
         private AMContext dbcontext;
         private IMapper mapper;
 
-        public TaskDBService(AMContext amcontext, IMapper mapper)
+        public TaskDBService(AMContext amcontext, 
+            IMapper mapper,
+            IWorkerTaskDBService workerTaskDBService,
+            IProxyDBService proxyDBService)
         {
             this.dbcontext = amcontext; ;
             this.mapper = mapper;
+            this.workerTaskDBService = workerTaskDBService;
+            this.proxyDBService = proxyDBService;
         }
 
         public async Task AddTaskAsync(List<DBTask> newTask)
@@ -93,21 +101,141 @@ namespace BASAccountManager.DBServices
             return this.dbcontext.Task.Find(id);
         }
 
-        public async Task RemoveTaskAsync(List<DBTask> removedTask)
+        public async Task<bool> RemoveTaskAsync(List<DBTask> removedTask)
         {
+            var isFail = true;
             foreach (var item in removedTask)
             {
-                await RemoveTaskAsync(item);
+                var result = await RemoveTaskAsync(item);
+                if (result == false)
+                {
+                    isFail = false;
+                }
             }
-            return;
+            return isFail;
         }
 
-        public async Task RemoveTaskAsync(DBTask removedTask)
+        public async Task<bool> RemoveTaskAsync(DBTask removedTask)
         {
+            var taskScheduler = this.dbcontext.SchedulerTask.Select(x => x.TaskIds).ToList();
+            var Ids = new List<int>();
+            foreach (var item in taskScheduler)
+            {
+                Ids.AddRange(JsonConvert.DeserializeObject<int[]>(item));
+            }
             var task = await this.dbcontext.Task.Include(x => x.ListBASExeptions).Where(x => x.Id == removedTask.Id).FirstAsync();
-            this.dbcontext.Task.Remove(task);
-            await this.dbcontext.SaveChangesAsync();
-            return;
+            if (Ids.Contains(task.Id))
+            {
+                return false;
+            }
+            else
+            {
+                this.dbcontext.Task.Remove(task);
+                await this.dbcontext.SaveChangesAsync();
+                return true;
+            }
+        }
+
+        public async Task<bool> StartTaskAsync(TaskDTO[] startedTasks)
+        {
+            foreach (var startedTask in startedTasks)
+            {
+                switch ((StatusTask)Enum.Parse(typeof(StatusTask), startedTask.Status))
+                {
+                    case StatusTask.Canceled:
+                        startedTask.Status = StatusTask.Added.ToString();
+                        await UpdateTaskAsync(this.mapper.Map<DBTask>(startedTask));
+                        break;
+                    case StatusTask.Completed:
+                        startedTask.Status = StatusTask.Added.ToString();
+                        var workers = await this.workerTaskDBService.GetWorkerTaskByDBTaskIdAsync(startedTask.Id);
+                        await this.workerTaskDBService.RemoveWorkerTaskAsync(workers);
+                        await UpdateTaskAsync(this.mapper.Map<DBTask>(startedTask));
+                        break;
+                    default:
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> StopTaskAsync(TaskDTO[] stoppedTasks)
+        {
+            foreach (var stoppedTask in stoppedTasks)
+            {
+                if (stoppedTask.Status == StatusTask.AddingProcess.ToString() || stoppedTask.Status == StatusTask.Added.ToString() || stoppedTask.Status == StatusTask.Performed.ToString())
+                {
+                    // Устанавливаем статус Canceled головной задаче
+                    stoppedTask.Status = StatusTask.Canceled.ToString();
+                    await UpdateTaskAsync(this.mapper.Map<DBTask>(stoppedTask));
+                    // Получаем лист дочерних воркеров. 
+                    var taskWorkers = await this.workerTaskDBService.GetWorkerTaskByDBTaskIdAsync(stoppedTask.Id);
+                    // Вытягиваем прокси которые забронированы для работы. Прокси в работе по завершению сами установят себе свободный статус. Устанавилваем прокси свободный статус
+                    var updatedProxy = taskWorkers.Where(x => x.Status == DB.Models.TaskStatus.NotTaken).Select(x => x.Proxy).ToList();
+                    foreach (var proxy in updatedProxy)
+                    {
+                        await this.proxyDBService.SetProxyFreeStatusAsync(proxy.Id);
+                    }
+                    taskWorkers = taskWorkers.Where(x => x.Status != DB.Models.TaskStatus.AtWork).ToList();
+                    await this.workerTaskDBService.RemoveWorkerTaskAsync(taskWorkers);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> StartTaskAsync(DBTask[] startedTasks)
+        {
+            foreach (var startedTask in startedTasks)
+            {
+                switch (startedTask.Status)
+                {
+                    case StatusTask.Canceled:
+                        startedTask.Status = StatusTask.Added;
+                        await UpdateTaskAsync(startedTask);
+                        break;
+                    case StatusTask.Completed:
+                        startedTask.Status = StatusTask.Added;
+                        var workers = await this.workerTaskDBService.GetWorkerTaskByDBTaskIdAsync(startedTask.Id);
+                        await this.workerTaskDBService.RemoveWorkerTaskAsync(workers);
+                        await UpdateTaskAsync(startedTask);
+                        break;
+                    default:
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> StopTaskAsync(DBTask[] stoppedTasks)
+        {
+            foreach (var stoppedTask in stoppedTasks)
+            {
+                if (stoppedTask.Status == StatusTask.AddingProcess || stoppedTask.Status == StatusTask.Added || stoppedTask.Status == StatusTask.Performed)
+                {
+                    // Устанавливаем статус Canceled головной задаче
+                    stoppedTask.Status = StatusTask.Canceled;
+                    await UpdateTaskAsync(stoppedTask);
+                    // Получаем лист дочерних воркеров. 
+                    var taskWorkers = await this.workerTaskDBService.GetWorkerTaskByDBTaskIdAsync(stoppedTask.Id);
+                    // Вытягиваем прокси которые забронированы для работы. Прокси в работе по завершению сами установят себе свободный статус. Устанавилваем прокси свободный статус
+                    var updatedProxy = taskWorkers.Where(x => x.Status == DB.Models.TaskStatus.NotTaken).Select(x => x.Proxy).ToList();
+                    foreach (var proxy in updatedProxy)
+                    {
+                        await this.proxyDBService.SetProxyFreeStatusAsync(proxy.Id);
+                    }
+                    taskWorkers = taskWorkers.Where(x => x.Status != DB.Models.TaskStatus.AtWork).ToList();
+                    await this.workerTaskDBService.RemoveWorkerTaskAsync(taskWorkers);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public async Task UpdateTaskAsync(List<DBTask> updatedTask)

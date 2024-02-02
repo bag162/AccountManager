@@ -39,7 +39,10 @@ export class GuardService {
             if (splitedEl[3] == 'manager' && splitedEl[2] == 'comment' && splitedEl[1] == 'post') {
                 checlUrl =  '/' + splitedEl[1] + '/' + splitedEl[2] + '/' + splitedEl[3];
             }
-
+            if(splitedEl[2] == "view" && splitedEl[1] == "taskscheduler")
+            {
+                checlUrl =  '/' + splitedEl[1] + '/' + splitedEl[2];
+            }
             if (element.Role == "admin") {
                 accessResult = true;
             }

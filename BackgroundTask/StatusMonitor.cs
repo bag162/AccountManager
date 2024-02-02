@@ -1,5 +1,6 @@
 ﻿using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
+using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.AdvertResourses;
 using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
@@ -104,7 +105,8 @@ namespace BASAccountManager.BackgroundTask
 
         public async Task CheckUntakenComments()
         {
-            var allPostComments = this.postCommentDBService.GetAllPostComments()
+            var allComments = this.postCommentDBService.GetAllPostComments();
+            var allPostComments = allComments
                 .Where(x => x.CommentStatus == DB.Models.Post.CommentStatus.NotPublished)
                 .Where(x => x.SenderAccountId != null).ToList();
 
@@ -128,8 +130,11 @@ namespace BASAccountManager.BackgroundTask
             {
                 if (!activeCommentsId.Contains(postComment.Id))
                 {
-                    postComment.SenderAccountId = null;
-                    listToUpdate.Add(postComment);
+                    if (DateTime.Now - postComment.CommentTime >= TimeSpan.FromSeconds(30))
+                    {
+                        postComment.SenderAccountId = null;
+                        listToUpdate.Add(postComment);
+                    }
                 }
             }
 
@@ -137,12 +142,23 @@ namespace BASAccountManager.BackgroundTask
 
             var commentsToDelete = allPostComments.Where(x => x.CommentStatus == CommentStatus.ErrorPublication).ToList();
             await this.postCommentDBService.RemoveCommentsAsync(commentsToDelete);
-            return;
+
+            var inProcessComments = allComments.Where(x => x.CommentStatus == CommentStatus.InProcessPublication).ToList();
+            var CommentsToDelete = new List<DBPostComment>();
+            foreach (var item in inProcessComments)
+            {
+                if (DateTime.Now - item.CommentTime >= TimeSpan.FromMinutes(30))
+                {
+                    CommentsToDelete.Add(item);
+                }
+            }
+            await this.postCommentDBService.RemoveCommentsAsync(CommentsToDelete);
         }
 
         public async Task CheckUntakenLikes()
         {
-            var allPostLikes = this.postLikeDBService.GetAllLikes()
+            var allLikes = this.postLikeDBService.GetAllLikes();
+            var allPostLikes = allLikes
                 .Where(x => x.LikeStatus == LikeStatus.NotPublished)
                 .Where(x => x.SenderAccountId != null).ToList();
 
@@ -166,8 +182,11 @@ namespace BASAccountManager.BackgroundTask
             {
                 if (!activeLikesId.Contains(postLike.Id))
                 {
-                    postLike.SenderAccountId = null;
-                    listToUpdate.Add(postLike);
+                    if (DateTime.Now - postLike.CreatedDate >= TimeSpan.FromSeconds(30))
+                    {
+                        postLike.SenderAccountId = null;
+                        listToUpdate.Add(postLike);
+                    }
                 }
             }
 
@@ -175,7 +194,17 @@ namespace BASAccountManager.BackgroundTask
 
             var likesToRemove = allPostLikes.Where(x => x.LikeStatus == LikeStatus.ErrorPublication).ToList();
             await this.postLikeDBService.RemoveLikesAsync(likesToRemove);
-            return;
+
+            var inProcessLikes = allLikes.Where(x => x.LikeStatus == LikeStatus.InProcessPublication).ToList();
+            var LikesToDelete = new List<DBPostLikes>();
+            foreach (var item in inProcessLikes)
+            {
+                if (DateTime.Now - item.CreatedDate >= TimeSpan.FromMinutes(30))
+                {
+                    LikesToDelete.Add(item);
+                }
+            }
+            await this.postLikeDBService.RemoveLikesAsync(LikesToDelete);
         }
 
         public async Task CheckUntakenFollows()
@@ -206,10 +235,31 @@ namespace BASAccountManager.BackgroundTask
                 }
             }
 
-            await this.followDBService.RemoveByIdsAsync(followsToCheck.Select(x => x.Id).ToList());
+            var listToDelete = new List<DBFollow>();
+            foreach (var item in followsToCheck)
+            {
+                if (DateTime.Now - item.CreatedDate >= TimeSpan.FromSeconds(30))
+                {
+                    listToDelete.Add(item);
+                }
+            }
+
+            await this.followDBService.RemoveByIdsAsync(listToDelete.Select(x => x.Id).ToList());
 
             var errorFollows = follows.Where(x => x.FollowStatus == DB.Models.FollowStatus.ErrorFollow).ToList();
             await this.followDBService.RemoveFollows(errorFollows);
+
+            // Delete process follows
+            var inProcessFollows = follows.Where(x => x.FollowStatus == FollowStatus.InProcessFollow).ToList();
+            var followsToDelete = new List<DBFollow>();
+            foreach (var item in inProcessFollows)
+            {
+                if (DateTime.Now - item.CreatedDate >= TimeSpan.FromMinutes(30))
+                {
+                    followsToDelete.Add(item);
+                }
+            }
+            await this.followDBService.RemoveByIdsAsync(inProcessFollows.Select(x => x.Id).ToList());
         }
 
         public async Task CheckAdvertUntakenFollows()

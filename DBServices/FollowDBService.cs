@@ -19,6 +19,10 @@ namespace BASAccountManager.DBServices
 
         public async Task AddFollowsAsync(List<DBFollow> follows)
         {
+            foreach (var item in follows)
+            {
+                item.CreatedDate = DateTime.Now;
+            }
             await this.dbcontext.Follow.AddRangeAsync(follows);
             await this.dbcontext.SaveChangesAsync();
             return;

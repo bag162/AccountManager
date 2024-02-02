@@ -17,6 +17,7 @@ namespace BASAccountManager.DB
 
         public DbSet<DBTask> Task { get; set; }
         public DbSet<DBWorkerTask> WorkerTask { get; set; }
+        public DbSet<DBSchedulerTask> SchedulerTask { get; set; }
 
         public DbSet<DBEmail> Email { get; set; }
         public DbSet<DBSMSActivation> SMSActivation { get; set; }

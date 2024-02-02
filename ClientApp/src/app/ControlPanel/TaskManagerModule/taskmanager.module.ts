@@ -22,6 +22,9 @@ import { ProfileFillingTaskComponent } from './ProfileFillingTaskComponent/profi
 import { AdvertFollowingTaskComponent } from './AdvertFollowingTaskComponent/advertfollowingtask.component'
 import { AdvertLikingTaskComponent } from './AdvertLikingTaskComponent/advertlikingtask.component'
 import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//advertcommentingtask.component'
+import { TaskSchedulerComponent } from './TaskSchedulerComponent/taskscheduler.component'
+import { AddOrViewTaskSchedulerComponent } from './TaskSchedulerComponent/AddOrViewTaskSchedulerComponent/addorviewtaskscheduler.component'
+
 
 @NgModule({
     imports: [
@@ -29,7 +32,7 @@ import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//
             {
                 path: '', component: ControlPanelComponent, children: [
                     {
-                        path: 'taskmanager', component: TaskManagerComponent, canActivate: [GuardService.CanAccess],  children: [
+                        path: 'taskmanager', component: TaskManagerComponent, canActivate: [GuardService.CanAccess], children: [
                             { path: "taskdata", component: TaskDataComponent, canActivate: [GuardService.CanAccess] },
                             { path: "registration", component: RegistrationTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "authorization", component: AuthorizatioonTaskComponent, canActivate: [GuardService.CanAccess] },
@@ -41,7 +44,10 @@ import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//
                             { path: "advertliking", component: AdvertLikingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "advertfollowing", component: AdvertFollowingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "advertcommenting", component: AdvertCommentingTaskComponent, canActivate: [GuardService.CanAccess] },
-                            { path: "workertaskdata/:id", component: WorkerTaskDataComponent, canActivate: [GuardService.CanAccess] }
+                            { path: "workertaskdata/:id", component: WorkerTaskDataComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "taskscheduler", component: TaskSchedulerComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "taskscheduler/add", component: AddOrViewTaskSchedulerComponent, canActivate: [GuardService.CanAccess]},
+                            { path: "taskscheduler/view/:id", component: AddOrViewTaskSchedulerComponent, canActivate: [GuardService.CanAccess]}
                         ]
                     }
                 ]
@@ -69,7 +75,9 @@ import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//
         ProfileFillingTaskComponent,
         AdvertFollowingTaskComponent,
         AdvertLikingTaskComponent,
-        AdvertCommentingTaskComponent
+        AdvertCommentingTaskComponent,
+        TaskSchedulerComponent,
+        AddOrViewTaskSchedulerComponent
     ],
     providers: [],
     bootstrap: [TaskManagerComponent]

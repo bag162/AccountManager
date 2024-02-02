@@ -43,86 +43,68 @@ namespace BASAccountManager.DBServices
         public JqueryDataTable<WorkerTaskDTO> GetWorkerTasks(int start, int lenght, string searchdata, int taskId)
         {
             var data = new JqueryDataTable<WorkerTaskDTO>();
-            data.recordsTotal = this.dbcontext.WorkerTask.Count();
-            DBWorkerTask[] filteredData = Array.Empty<DBWorkerTask>();
+            data.recordsTotal = this.dbcontext.WorkerTask.Where(x => x.TaskId == taskId).Count();
+            List<DBWorkerTask> filteredData = new List<DBWorkerTask>();
 
             if (!string.IsNullOrEmpty(searchdata))
             {
-                if (lenght == -1)
+                if (Enum.TryParse(searchdata, out DB.Models.TaskStatus result))
                 {
-                    if (Enum.TryParse(searchdata, out DB.Models.TaskStatus result))
-                    {
-                        filteredData = this.dbcontext.WorkerTask.Include(x => x.Account).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.TaskId == taskId).Where(m =>
-                                                                        m.WorkerId.Equals(searchdata)
-                                                                        || m.InstanceId.Contains(searchdata)
-                                                                        || m.Account.Login.Contains(searchdata)
-                                                                        || m.ProxyId.Equals(searchdata)
-                                                                        || m.UsefulData.Contains(searchdata)
-                                                                        || m.Status.Equals(result)
-                                                                        || m.ErrorMessage.Contains(searchdata)
-                                                                        || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
-                    }
-                    else
-                    {
-                        filteredData = this.dbcontext.WorkerTask.Include(x => x.Account).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.TaskId == taskId).Where(m =>
-                                                                        m.WorkerId.Equals(searchdata)
-                                                                        || m.InstanceId.Contains(searchdata)
-                                                                        || m.Account.Login.Contains(searchdata)
-                                                                        || m.ProxyId.Equals(searchdata)
-                                                                        || m.UsefulData.Contains(searchdata)
-                                                                        || m.ErrorMessage.Contains(searchdata)
-                                                                        || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
-                    }
+                    filteredData = this.dbcontext.WorkerTask.Include(x => x.Account).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.TaskId == taskId).Where(m =>
+                                                                    m.WorkerId.Equals(searchdata)
+                                                                    || m.InstanceId.Contains(searchdata)
+                                                                    || m.Account.Login.Contains(searchdata)
+                                                                    || m.ProxyId.Equals(searchdata)
+                                                                    || m.UsefulData.Contains(searchdata)
+                                                                    || m.Status.Equals(result)
+                                                                    || m.ErrorMessage.Contains(searchdata)
+                                                                    || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToList();
                 }
                 else
                 {
-                    if (Enum.TryParse(searchdata, out DB.Models.TaskStatus result))
-                    {
-                        filteredData = this.dbcontext.WorkerTask.Include(x => x.Account).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.TaskId == taskId).Where(m =>
-                                                m.WorkerId.Equals(searchdata)
-                                                || m.InstanceId.Contains(searchdata)
-                                                || m.Account.Login.Contains(searchdata)
-                                                || m.ProxyId.Equals(searchdata)
-                                                || m.Status.Equals(result)
-                                                || m.UsefulData.Contains(searchdata)
-                                                || m.ErrorMessage.Contains(searchdata)
-                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
-                    }
-                    else
-                    {
-                        filteredData = this.dbcontext.WorkerTask.Include(x => x.Account).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.TaskId == taskId).Where(m =>
-                                                m.WorkerId.Equals(searchdata)
-                                                || m.InstanceId.Contains(searchdata)
-                                                || m.Account.Login.Contains(searchdata)
-                                                || m.ProxyId.Equals(searchdata)
-                                                || m.UsefulData.Contains(searchdata)
-                                                || m.ErrorMessage.Contains(searchdata)
-                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
-                    }
+                    filteredData = this.dbcontext.WorkerTask.Include(x => x.Account).Include(x => x.Proxy).Include(x => x.Task).AsQueryable().Where(x => x.TaskId == taskId).Where(m =>
+                                                                    m.WorkerId.Equals(searchdata)
+                                                                    || m.InstanceId.Contains(searchdata)
+                                                                    || m.Account.Login.Contains(searchdata)
+                                                                    || m.ProxyId.Equals(searchdata)
+                                                                    || m.UsefulData.Contains(searchdata)
+                                                                    || m.ErrorMessage.Contains(searchdata)
+                                                                    || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToList();
                 }
 
+                if (lenght != -1)
+                {
+                    filteredData = filteredData.Take(lenght).ToList();
+                }
 
-                data.recordsFiltered = filteredData.Count();
-                var listData = filteredData.ToList();
-                listData.Reverse();
-                filteredData = listData.ToArray();
                 data.data = mapper.Map<List<WorkerTaskDTO>>(filteredData);
+                data.data.OrderByDescending(x => x.Id);
+                data.data.Reverse();
+                data.recordsFiltered = filteredData.Count();
             }
             else
             {
                 data.recordsFiltered = data.recordsTotal;
+                var listData = this.dbcontext.WorkerTask
+                    .Include(x => x.Task)
+                    .Include(x => x.Account)
+                    .Include(x => x.Proxy)
+                    .AsQueryable()
+                    .Where(x => x.TaskId == taskId)
+                    .OrderByDescending(x => x.Id)
+                    .ToList();
+
                 if (lenght == -1)
+
                 {
-                    var listData = this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.Account).Include(x => x.Proxy).AsQueryable().Where(x => x.TaskId == taskId).Skip(start).Take(data.recordsTotal).ToList();
-                    listData.Reverse();
-                    data.data = mapper.Map<List<WorkerTaskDTO>>(listData.ToArray());
+                    listData = listData.Skip(start).Take(data.recordsTotal).ToList();
                 }
                 else
                 {
-                    var listData = this.dbcontext.WorkerTask.Include(x => x.Task).Include(x => x.Account).Include(x => x.Proxy).AsQueryable().Where(x => x.TaskId == taskId).Skip(start).Take(lenght).ToList();
-                    listData.Reverse();
-                    data.data = mapper.Map<List<WorkerTaskDTO>>(listData.ToArray());
+                    listData = listData.Skip(start).Take(lenght).ToList();
                 }
+                data.data = mapper.Map<List<WorkerTaskDTO>>(listData.ToArray());
+                data.recordsFiltered = listData.Count();
             }
             return data;
         }
