@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ClonGroupService } from 'src/app/Services/ClonGroupService';
 import { DataService } from 'src/app/Services/DataService';
 import { TaskManagerService } from 'src/app/Services/TaskManagerService';
 
@@ -10,17 +11,23 @@ import { TaskManagerService } from 'src/app/Services/TaskManagerService';
 export class PostingTaskComponent implements OnInit {
     accountGroup: string;
     proxyGroup: string;
+
     dataService: DataService;
     taskManagerService: TaskManagerService;
+    ClonGroupService: ClonGroupService;
+
     postPerAccount:number;
     taskName: string;
+    postingResourses: string;
+    clonGroupNames: string[];
 
-    constructor(DataService: DataService, taskManagerService: TaskManagerService) {
+    constructor(DataService: DataService, taskManagerService: TaskManagerService, ClonGroupService: ClonGroupService) {
         this.dataService = DataService;
         this.taskManagerService = taskManagerService;
+        this.ClonGroupService = ClonGroupService;
     }
 
-    ngOnInit() {
+    async ngOnInit() {
         $("#successNot").hide();
         $("#errorNot").hide();
 
@@ -29,6 +36,12 @@ export class PostingTaskComponent implements OnInit {
         })
         this.dataService.subscriberProxyGroup$.subscribe((data: string) => {
             this.proxyGroup = data;
+        });
+
+        (await this.ClonGroupService.GetClonNames()).subscribe({
+            next: (data:string[]) => {
+                this.clonGroupNames = data;
+            }
         })
     }
 
@@ -38,7 +51,10 @@ export class PostingTaskComponent implements OnInit {
         addedTask.ClientTaskName = this.taskName;
         addedTask.PostPerAccount = this.postPerAccount;
         addedTask.ProxyGroup = this.proxyGroup;
-
+        addedTask.ResourseType = this.postingResourses;
+        if (addedTask.ResourseType == "By cloning information") {
+            addedTask.ClonGroupName = <string>$('#selectClonName option:selected').val();
+        }
         (await this.taskManagerService.AddPostingTask(addedTask)).subscribe(
             {
                 next: (data: boolean) => {
@@ -67,4 +83,6 @@ export class AddPostingTaskDTO {
     public PostPerAccount: number;
     public ProxyGroup: string;
     public AccountGroup: string;
+    public ResourseType: string;
+    public ClonGroupName: string;
 }

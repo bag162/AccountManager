@@ -10,7 +10,7 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string Status { get; set; }
         public string TaskType { get; set; }
         public string? UsefulData { get; set; }
-        public string AccountGroup { get; set; }
+        public string? AccountGroup { get; set; }
         public string ProxyGroup { get; set; }
     }
 
@@ -26,18 +26,33 @@ namespace BASAccountManager.Controllers.Task.DTO
     public class PostingTaskWorkerUsefilDataDTO
     {
         public int PostPerAccount { get; set; }
+        public string ResourseType { get; set; }
+        public string? ClonGroupName { get; set; }
     }
 
     public class CommentingTaskWorkerUsefulDataDTO
     {
         public string PostGroup { get; set; }
         public int CommentsPerAccount { get; set; }
+
+        public string commentingAccountResourses { get; set; }
+        public string commentingPostResourses { get; set; }
+
+        public string? commentingAccountClonName { get; set; }
+        public string? commentingPostClonName { get; set; }
     }
 
     public class LikingTaskWorkerUsefulDatadTO
     {
         public string PostGroup { get; set; }
         public int LikesPerAccount { get; set; }
+
+        public string ResourseLikingType { get; set; }
+        public string? LikingClonGroupName { get; set; }
+
+        public string ResourseAccountType { get; set; }
+        public string? AccountClonGroupName { get; set; }
+
     }
 
     public class FollowingTaskWorkerUsefulDataDTO
@@ -45,11 +60,19 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string AccountGroupForSubscription { get; set; }
         public int FollowsPerAccount { get; set; }
         public int RequiredFollowersPerAccount { get; set; }
+
+        public string followingResourseType { get; set; }
+        public string? followingClonName { get; set; }
+
+        public string accountResourseType { get; set; }
+        public string? accountClonName { get; set; }
     }
 
     public class FillingProfileTaskWorkerUsefulDataDTO
     {
-        public string FillingProfileName { get; set; }
+        public string? FillingProfileName { get; set; }
+        public string profileFillingResourse { get; set; }
+        public string? clonName { get; set; }
     }
 
     public class AdvertLikingTaskWorkerUsefulDatadTO
@@ -71,5 +94,13 @@ namespace BASAccountManager.Controllers.Task.DTO
     {
         public string AdvertAccountGroup { get; set; }
         public int FollowsPerAccount { get; set; }
+    }
+
+    public class ParseCloningInformationTaskWorkerUsefuldataDTO
+    {
+        public string CloneGroupForSave { get; set; }
+        public string AdvertAccountGroupsForCloning { get; set; }
+        public int CountCommentToCollect { get; set; }
+        public int CountPostToCollect { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ClonGroupService } from 'src/app/Services/ClonGroupService';
 import { DataService } from 'src/app/Services/DataService';
 import { ProfileFillingService } from 'src/app/Services/ProfileFillingService';
 import { TaskManagerService } from 'src/app/Services/TaskManagerService';
@@ -13,42 +14,55 @@ export class ProfileFillingTaskComponent implements OnInit {
     fillingData: string[];
     accountGroup: string;
     proxyGroup: string;
+    clonGroupNames: string[];
+
+    profileFillingResourse: string;
+
     profileFillingService: ProfileFillingService;
     taskManagerService: TaskManagerService;
     dataService: DataService;
+    ClonGroupService: ClonGroupService;
 
-    constructor(profileFillingService: ProfileFillingService, taskManagerService: TaskManagerService, dataService: DataService) { 
+    constructor(profileFillingService: ProfileFillingService, taskManagerService: TaskManagerService, dataService: DataService, ClonGroupService: ClonGroupService) {
         this.profileFillingService = profileFillingService;
         this.taskManagerService = taskManagerService;
         this.dataService = dataService;
+        this.ClonGroupService = ClonGroupService;
     }
 
-    async ngOnInit() { 
+    async ngOnInit() {
         $("#successNot").hide();
         $("#errorNot").hide();
 
         (await this.profileFillingService.GetProfileFillingNames()).subscribe({
-            next: (data:string[]) => {
+            next: (data: string[]) => {
                 this.fillingData = data;
             }
-        })
+        });
 
         this.dataService.subscriberAccountGroup$.subscribe((data: string) => {
             this.accountGroup = data;
-        })
+        });
         this.dataService.subscriberProxyGroup$.subscribe((data: string) => {
             this.proxyGroup = data;
-        })
+        });
+        (await this.ClonGroupService.GetClonNames()).subscribe({
+            next: (data:string[]) => {
+                this.clonGroupNames = data;
+            }
+        });
     }
 
-    async AddTask()
-    {
+    async AddTask() {
         var addedTask = new AddFillingProfileTaskDTO();
         addedTask.ClientTaskName = this.taskName;
         addedTask.AccountGroup = this.accountGroup;
         addedTask.ProxyGroup = this.proxyGroup;
         addedTask.FillingProfileName = <string>$('#selectFillingData option:selected').val();
-        
+        addedTask.profileFillingResourse = this.profileFillingResourse;
+        if (addedTask.profileFillingResourse == "By cloning information") {
+            addedTask.clonName = <string>$('#selectClonName option:selected').val();
+        }
         (await this.taskManagerService.AddFillingProfileTask(addedTask)).subscribe(
             {
                 next: (data: boolean) => {
@@ -72,10 +86,12 @@ export class ProfileFillingTaskComponent implements OnInit {
     }
 }
 
-export class AddFillingProfileTaskDTO
-{
+export class AddFillingProfileTaskDTO {
     ClientTaskName: string;
     ProxyGroup: string;
     AccountGroup: string;
     FillingProfileName: string;
+
+    profileFillingResourse: string;
+    clonName: string;
 }

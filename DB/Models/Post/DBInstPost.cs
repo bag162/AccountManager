@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Xml.Linq;
 
 namespace BASAccountManager.DB.Models.Post
 {
+    [Index(nameof(PostURI), IsUnique = true)]
     public class DBInstPost
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

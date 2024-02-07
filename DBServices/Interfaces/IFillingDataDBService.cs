@@ -7,7 +7,7 @@ namespace BASAccountManager.DBServices.Interfaces
     public interface IFillingDataDBService
     {
         public JqueryDataTable<ProfileFillingTableDTO> GetFillingData(int start, int lenght, string searchdata);
-        public Task AddFillingDataAsync(AddFillingDataDTO data);
+        public Task<int> AddFillingDataAsync(AddFillingDataDTO data);
         public DBFillingData GetById(int id);
         public List<string> GetFillingDataNames();
         public DBFillingData GetFillingDataByName(string name);

@@ -11,6 +11,7 @@ import { AddFillingProfileTaskDTO } from '../ControlPanel/TaskManagerModule/Prof
 import { AddAdvertLikingTaskDTO } from '../ControlPanel/TaskManagerModule/AdvertLikingTaskComponent/advertlikingtask.component';
 import { AddAdvertFollowingTaskDTO } from '../ControlPanel/TaskManagerModule/AdvertFollowingTaskComponent/advertfollowingtask.component';
 import { AddAdvertCommentingTaskDTO } from '../ControlPanel/TaskManagerModule/AdvertCommentingTaskComponent/advertcommentingtask.component';
+import { AddParseCloningTaskDTO } from '../ControlPanel/TaskManagerModule/ParsingCloningInformationComponent/parsingcloninginformation.component';
 
 @Injectable({ providedIn: 'root' })
 export class TaskManagerService {
@@ -68,5 +69,10 @@ export class TaskManagerService {
     public async AddAdvertFollowingTask(data: AddAdvertFollowingTaskDTO)
     {
         return this.httpClient.post(this.address + "AdvertFollowing", data);
+    }
+
+    public async AddParseCloningInformationTask(data: AddParseCloningTaskDTO)
+    {
+        return this.httpClient.post(this.address + "ParseCloningInformation", data);
     }
 }

@@ -1,4 +1,5 @@
-﻿using BASAccountManager.DB.Models;
+﻿using BASAccountManager.BackgroundTask.DTO;
+using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.AdvertResourses;
 
 namespace BASAccountManager.Controllers.BASTask.DTO
@@ -62,4 +63,40 @@ namespace BASAccountManager.Controllers.BASTask.DTO
     {
         public int WorkerId { get; set; }
     }
+
+    public class GetCollectCloningDataTaskDTO
+    {
+        public int Id { get; set; }
+        public DBInstagramAccount Account { get; set; }
+        public DBProxy Proxy { get; set; }
+        public CollectCloneDataUsefuldataDTO CollectData { get; set; }
+        public string TaskType { get; set; }
+    }
+
+    public class EndIntermediateParseCloningInformationProfileData
+    {
+        public int WorkerId { get; set; }
+        public int ClonId { get; set; }
+        public string ImageBase64Data { get; set; }
+        public string ImageFormat { get; set; }
+        public string ProfileDescription { get; set; }
+    }
+
+    public class EndIntermediateParseCloningInformationPostData
+    {
+        public int WorkerId { get; set; }
+        public int ClonId { get; set; }
+        public string ImageBase64Data { get; set; }
+        public string ImageFormat { get; set; }
+        public string Description { get; set; }
+        public string[] Comments { get; set; }
+        public string PostURI { get; set; }
+    }
+
+    public class EndIntermediateParseCloningInformationData
+    {
+        public int WorkerId { get; set; }
+        public int ClonId { get; set; }
+    }
+
 }

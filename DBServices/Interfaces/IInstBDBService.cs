@@ -15,6 +15,6 @@ namespace BASAccountManager.DBServices.Interfaces
         public Task UpdateInstAccountsAsync(List<DBInstagramAccount> updatedAccount);
         public Task UpdateInstAccountsAsync(List<DBInstagramAccount> updatedAccount, string newGroup);
         public List<string> GetAllGroups();
-        public Task AddGroupAsync(DBInstAccountGroup addedGroup);
+        public Task<int> AddGroupAsync(DBInstAccountGroup addedGroup);
     }
 }

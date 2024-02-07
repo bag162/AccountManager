@@ -41,14 +41,12 @@ namespace BASAccountManager.DB
         public DbSet<DBAdvertPost> AdvertPost { get; set; }
         public DbSet<DBAdvertPostGroup> AdvertPostGroup { get; set; }
 
+        public DbSet<DBClon> Clon { get; set; }
+        public DbSet<DBClonGroup> ClonGroup { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<DBProxyGroup>().HasIndex(x => x.Name).IsUnique();
-            modelBuilder.Entity<DBInstAccountGroup>().HasIndex(x => x.Name).IsUnique();
-            modelBuilder.Entity<DBPostGroup>().HasIndex(x => x.Name).IsUnique();
-            modelBuilder.Entity<DBInstPost>().HasIndex(x => x.PostURI).IsUnique();
-            modelBuilder.Entity<DBPostCommentGroup>().HasIndex(x => x.Name).IsUnique();
+
         }
     }
 }

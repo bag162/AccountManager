@@ -48,7 +48,7 @@ namespace BASAccountManager.DBServices.PostDBServices
         public JqueryDataTable<CommentGroupDTO> GetPostCommentGroups(int start, int lenght, string searchdata)
         {
             var data = new JqueryDataTable<CommentGroupDTO>();
-            data.recordsTotal = this.dbcontext.PostGroup.Count();
+            data.recordsTotal = this.dbcontext.CommentGroup.Count();
             DBPostCommentGroup[] filteredData = Array.Empty<DBPostCommentGroup>();
 
             if (!string.IsNullOrEmpty(searchdata))

@@ -81,7 +81,12 @@ namespace BASAccountManager.Controllers.Task
             task.AccountGroup = newTask.AccountGroup;
             task.ClientTaskName = newTask.ClientTaskName;
             task.TaskType = TaskType.Posting;
-            task.UsefulData = JsonConvert.SerializeObject(new PostingTaskWorkerUsefilDataDTO() { PostPerAccount = newTask.PostPerAccount });
+            task.UsefulData = JsonConvert.SerializeObject(new PostingTaskWorkerUsefilDataDTO() 
+            { 
+                PostPerAccount = newTask.PostPerAccount,
+                ClonGroupName = newTask.ClonGroupName,
+                ResourseType = newTask.ResourseType
+            });
 
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
@@ -97,7 +102,15 @@ namespace BASAccountManager.Controllers.Task
             task.AccountGroup = newTask.AccountGroup;
             task.ClientTaskName = newTask.ClientTaskName;
             task.TaskType = TaskType.Commenting;
-            task.UsefulData = JsonConvert.SerializeObject(new CommentingTaskWorkerUsefulDataDTO() { CommentsPerAccount = newTask.CommentsPerAccount, PostGroup = newTask.PostGroup });
+            task.UsefulData = JsonConvert.SerializeObject(new CommentingTaskWorkerUsefulDataDTO() 
+            { 
+                CommentsPerAccount = newTask.CommentsPerAccount, 
+                PostGroup = newTask.PostGroup,
+                commentingAccountClonName = newTask.commentingAccountClonName,
+                commentingAccountResourses = newTask.commentingAccountResourses,
+                commentingPostClonName = newTask.commentingPostClonName,
+                commentingPostResourses = newTask.commentingPostResourses
+            });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
         }
@@ -112,7 +125,15 @@ namespace BASAccountManager.Controllers.Task
             task.AccountGroup = newTask.AccountGroup;
             task.ClientTaskName = newTask.ClientTaskName;
             task.TaskType = TaskType.Liking;
-            task.UsefulData = JsonConvert.SerializeObject(new LikingTaskWorkerUsefulDatadTO() { LikesPerAccount = newTask.LikesPerAccount, PostGroup = newTask.PostGroup });
+            task.UsefulData = JsonConvert.SerializeObject(new LikingTaskWorkerUsefulDatadTO() 
+            { 
+                LikesPerAccount = newTask.LikesPerAccount, 
+                PostGroup = newTask.PostGroup,
+                AccountClonGroupName = newTask.AccountClonGroupName,
+                LikingClonGroupName = newTask.LikingClonGroupName,
+                ResourseAccountType = newTask.ResourseAccountType,
+                ResourseLikingType = newTask.ResourseLikingType
+            });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
         }
@@ -131,7 +152,11 @@ namespace BASAccountManager.Controllers.Task
             { 
                 FollowsPerAccount = newTask.FollowsPerAccount,
                 AccountGroupForSubscription = newTask.AccountGroupForSubscription,
-                RequiredFollowersPerAccount = newTask.RequiredFollowersPerAccount
+                RequiredFollowersPerAccount = newTask.RequiredFollowersPerAccount,
+                accountClonName = newTask.accountClonName,
+                accountResourseType = newTask.accountResourseType,
+                followingClonName = newTask.followingClonName,
+                followingResourseType = newTask.followingResourseType
             });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
@@ -147,7 +172,12 @@ namespace BASAccountManager.Controllers.Task
             task.AccountGroup = newTask.AccountGroup;
             task.ClientTaskName = newTask.ClientTaskName;
             task.TaskType = TaskType.FillingProfile;
-            task.UsefulData = JsonConvert.SerializeObject(new FillingProfileTaskWorkerUsefulDataDTO() { FillingProfileName = newTask.FillingProfileName });
+            task.UsefulData = JsonConvert.SerializeObject(new FillingProfileTaskWorkerUsefulDataDTO() 
+            { 
+                FillingProfileName = newTask.FillingProfileName,
+                clonName = newTask.clonName,
+                profileFillingResourse = newTask.profileFillingResourse
+            });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);
         }
@@ -207,6 +237,27 @@ namespace BASAccountManager.Controllers.Task
             {
                 AdvertAccountGroup = newTask.AdvertAccountGroup,
                 FollowsPerAccount = newTask.FollowsPerAccount
+            });
+            await this.TaskDBService.AddTaskAsync(task);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        [HttpPost]
+        public async Task<string> ParseCloningInformation([FromBody] ParseCloningInformation newTask)
+        {
+            var task = new DBTask();
+            task.Status = StatusTask.Added;
+            task.ProxyGroup = newTask.ProxyGroup;
+            task.AccountGroup = newTask.AccountGroup;
+            task.ClientTaskName = newTask.TaskName;
+            task.TaskType = TaskType.ParseCloningInformation;
+
+            task.UsefulData = JsonConvert.SerializeObject(new ParseCloningInformationTaskWorkerUsefuldataDTO()
+            {
+                AdvertAccountGroupsForCloning = newTask.AdvertAccountGroupsForCloning,
+                CloneGroupForSave = newTask.CloneGroupForSave,
+                CountCommentToCollect = newTask.CountCommentToCollect,
+                CountPostToCollect = newTask.CountPostToCollect
             });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);

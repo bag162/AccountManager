@@ -162,6 +162,67 @@ namespace BASAccountManager.Migrations
                     b.ToTable("BASExeption");
                 });
 
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBClon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("ClonGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClonStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClonURI")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("FillingDataId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PostGroupId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClonGroupId");
+
+                    b.HasIndex("ClonURI")
+                        .IsUnique();
+
+                    b.HasIndex("FillingDataId");
+
+                    b.HasIndex("PostGroupId");
+
+                    b.ToTable("Clon");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBClonGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ClonGroup");
+                });
+
             modelBuilder.Entity("BASAccountManager.DB.Models.DBEmail", b =>
                 {
                     b.Property<int>("Id")
@@ -295,6 +356,9 @@ namespace BASAccountManager.Migrations
                     b.Property<int>("AccountStatus")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ClonId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
@@ -331,6 +395,8 @@ namespace BASAccountManager.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClonId");
 
                     b.HasIndex("FillingDataId");
 
@@ -534,7 +600,6 @@ namespace BASAccountManager.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("AccountGroup")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClientTaskName")
@@ -743,19 +808,19 @@ namespace BASAccountManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AccountGroupId")
+                    b.Property<int?>("AccountGroupId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PostGroupType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AccountGroupId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("PostGroup");
                 });
@@ -835,6 +900,29 @@ namespace BASAccountManager.Migrations
                     b.Navigation("Task");
                 });
 
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBClon", b =>
+                {
+                    b.HasOne("BASAccountManager.DB.Models.DBClonGroup", "ClonGroup")
+                        .WithMany("ListClon")
+                        .HasForeignKey("ClonGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BASAccountManager.DB.Models.DBFillingData", "FillingData")
+                        .WithMany()
+                        .HasForeignKey("FillingDataId");
+
+                    b.HasOne("BASAccountManager.DB.Models.Post.DBPostGroup", "PostGroup")
+                        .WithMany()
+                        .HasForeignKey("PostGroupId");
+
+                    b.Navigation("ClonGroup");
+
+                    b.Navigation("FillingData");
+
+                    b.Navigation("PostGroup");
+                });
+
             modelBuilder.Entity("BASAccountManager.DB.Models.DBFollow", b =>
                 {
                     b.HasOne("BASAccountManager.DB.Models.DBInstagramAccount", "RecipientAccount")
@@ -856,6 +944,10 @@ namespace BASAccountManager.Migrations
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBInstagramAccount", b =>
                 {
+                    b.HasOne("BASAccountManager.DB.Models.DBClon", "Clon")
+                        .WithMany("ListInstAccount")
+                        .HasForeignKey("ClonId");
+
                     b.HasOne("BASAccountManager.DB.Models.DBFillingData", "FillingData")
                         .WithMany("ListAccounts")
                         .HasForeignKey("FillingDataId");
@@ -865,6 +957,8 @@ namespace BASAccountManager.Migrations
                         .HasForeignKey("InstGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Clon");
 
                     b.Navigation("FillingData");
 
@@ -987,9 +1081,7 @@ namespace BASAccountManager.Migrations
                 {
                     b.HasOne("BASAccountManager.DB.Models.DBInstAccountGroup", "AccountGroup")
                         .WithMany()
-                        .HasForeignKey("AccountGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AccountGroupId");
 
                     b.Navigation("AccountGroup");
                 });
@@ -1019,6 +1111,16 @@ namespace BASAccountManager.Migrations
             modelBuilder.Entity("BASAccountManager.DB.Models.AdvertResourses.DBAdvertPostGroup", b =>
                 {
                     b.Navigation("ListAdvertPost");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBClon", b =>
+                {
+                    b.Navigation("ListInstAccount");
+                });
+
+            modelBuilder.Entity("BASAccountManager.DB.Models.DBClonGroup", b =>
+                {
+                    b.Navigation("ListClon");
                 });
 
             modelBuilder.Entity("BASAccountManager.DB.Models.DBFillingData", b =>

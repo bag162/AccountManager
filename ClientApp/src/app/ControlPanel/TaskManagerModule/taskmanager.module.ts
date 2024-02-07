@@ -24,7 +24,7 @@ import { AdvertLikingTaskComponent } from './AdvertLikingTaskComponent/advertlik
 import { AdvertCommentingTaskComponent } from './AdvertCommentingTaskComponent//advertcommentingtask.component'
 import { TaskSchedulerComponent } from './TaskSchedulerComponent/taskscheduler.component'
 import { AddOrViewTaskSchedulerComponent } from './TaskSchedulerComponent/AddOrViewTaskSchedulerComponent/addorviewtaskscheduler.component'
-
+import { ParsingCloningInformationComponent } from './ParsingCloningInformationComponent/parsingcloninginformation.component'
 
 @NgModule({
     imports: [
@@ -46,8 +46,9 @@ import { AddOrViewTaskSchedulerComponent } from './TaskSchedulerComponent/AddOrV
                             { path: "advertcommenting", component: AdvertCommentingTaskComponent, canActivate: [GuardService.CanAccess] },
                             { path: "workertaskdata/:id", component: WorkerTaskDataComponent, canActivate: [GuardService.CanAccess] },
                             { path: "taskscheduler", component: TaskSchedulerComponent, canActivate: [GuardService.CanAccess] },
-                            { path: "taskscheduler/add", component: AddOrViewTaskSchedulerComponent, canActivate: [GuardService.CanAccess]},
-                            { path: "taskscheduler/view/:id", component: AddOrViewTaskSchedulerComponent, canActivate: [GuardService.CanAccess]}
+                            { path: "taskscheduler/add", component: AddOrViewTaskSchedulerComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "taskscheduler/view/:id", component: AddOrViewTaskSchedulerComponent, canActivate: [GuardService.CanAccess] },
+                            { path: "parsingcloninginformation", component: ParsingCloningInformationComponent }
                         ]
                     }
                 ]
@@ -77,7 +78,8 @@ import { AddOrViewTaskSchedulerComponent } from './TaskSchedulerComponent/AddOrV
         AdvertLikingTaskComponent,
         AdvertCommentingTaskComponent,
         TaskSchedulerComponent,
-        AddOrViewTaskSchedulerComponent
+        AddOrViewTaskSchedulerComponent,
+        ParsingCloningInformationComponent
     ],
     providers: [],
     bootstrap: [TaskManagerComponent]

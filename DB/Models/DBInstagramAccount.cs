@@ -26,7 +26,11 @@ namespace BASAccountManager.DB.Models
         [ForeignKey(nameof(DBFillingData))]
         public int? FillingDataId { get; set; }
         public DBFillingData? FillingData { get; set; }
-        
+
+        [ForeignKey(nameof(DBClon))]
+        public int? ClonId { get; set; }
+        public DBClon? Clon { get; set; }
+
         public AccountStatus AccountStatus { get; set; }
 
         public List<DBInstPost> ListPost { get; set; } = new List<DBInstPost>();

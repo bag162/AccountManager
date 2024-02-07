@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { data } from 'jquery';
+import { ClonGroupService } from 'src/app/Services/ClonGroupService';
 import { DataService } from 'src/app/Services/DataService';
 import { InstAccountService } from 'src/app/Services/InstAccountService';
 import { TaskManagerService } from 'src/app/Services/TaskManagerService';
@@ -13,20 +14,26 @@ export class FollowingTaskComponent implements OnInit {
     instAccountService: InstAccountService;
     dataService: DataService;
     taskManagerService: TaskManagerService;
-
+    clonGroupService: ClonGroupService;
+    
+    clonGroupNames: string[];
     accountGroups: string[];
     followsPerAccount: number;
     requiredFollowerPerAccount: number;
     taskName: string;
     accountGroup: string;
     proxyGroup: string;
+    followingPostResourses: string;
+    followingAccountResourses: string;
 
     constructor(instAccountService: InstAccountService,
         dataService: DataService,
-        taskManagerService: TaskManagerService) { 
+        taskManagerService: TaskManagerService,
+        clonGroupService: ClonGroupService) { 
             this.instAccountService = instAccountService;
             this.dataService = dataService;
             this.taskManagerService = taskManagerService;
+            this.clonGroupService = clonGroupService;
         }
 
     async ngOnInit() { 
@@ -35,17 +42,23 @@ export class FollowingTaskComponent implements OnInit {
 
         this.dataService.subscriberAccountGroup$.subscribe((data) => {
             this.accountGroup = <string>data;
-        })
+        });
         this.dataService.subscriberProxyGroup$.subscribe((data: string) => {
             this.proxyGroup = <string>data;
-        })
+        });
 
         await InstAccountService.GetInstAccGroups().subscribe({
             next: (data: string[]) => {
                 this.accountGroups = data;
                 this.accountGroups.unshift("All groups")
             }
-        })
+        });
+
+        (await this.clonGroupService.GetClonNames()).subscribe({
+            next: (data:string[]) => {
+                this.clonGroupNames = data;
+            }
+        });
     }
 
     async AddTask()
@@ -58,6 +71,15 @@ export class FollowingTaskComponent implements OnInit {
         newTask.RequiredFollowersPerAccount = this.requiredFollowerPerAccount;
         newTask.AccountGroupForSubscription = <string>$('#selectAccountGroupForSubscription option:selected').val();
 
+        newTask.accountResourseType = this.followingAccountResourses;
+        newTask.followingResourseType = this.followingPostResourses;
+        if (newTask.accountResourseType == "By cloning information") {
+            newTask.accountClonName = <string>$('#followingSelectClonName option:selected').val();
+        }
+        if (newTask.followingResourseType == "By cloning information") {
+            newTask.followingClonName = <string>$('#postSelectClonName option:selected').val();
+        }
+        
         (await this.taskManagerService.AddFollowingTask(newTask)).subscribe(
             {
                 next: (data: boolean) => {
@@ -90,4 +112,10 @@ export class AddFollowingTaskDTO
     AccountGroup: string;
     FollowsPerAccount: number;
     RequiredFollowersPerAccount: number;
+
+    followingResourseType: string;
+    followingClonName: string;
+
+    accountResourseType: string;
+    accountClonName: string;
 }

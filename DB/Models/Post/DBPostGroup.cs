@@ -9,11 +9,18 @@ namespace BASAccountManager.DB.Models.Post
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
+        public PostGroupType PostGroupType { get; set; }
 
         [ForeignKey(nameof(DBInstAccountGroup))]
-        public int AccountGroupId { get; set; }
-        public DBInstAccountGroup AccountGroup { get; set; }
+        public int? AccountGroupId { get; set; }
+        public DBInstAccountGroup? AccountGroup { get; set; }
 
         public List<DBPost> ListPost { get; set; } = new List<DBPost>();
+    }
+
+    public enum PostGroupType
+    { 
+        Default,
+        Clon
     }
 }

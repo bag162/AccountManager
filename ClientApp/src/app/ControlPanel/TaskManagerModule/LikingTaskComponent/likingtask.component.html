@@ -1,20 +1,19 @@
 <div class="container">
     <div class="row mb-3">
-        <div class="col">
-            <label>Account Group</label>
-            <select-account-group></select-account-group>
+        <div class="col-6">
+            <label class="form-label">Liking resources</label>
+            <select class="form-control" id="selectPostsResourses" [(ngModel)]="likingPostResourses"> 
+                <option>By cloning information</option>
+                <option>By default post group</option>
+            </select>
         </div>
-        <div class="col">
-            <label>Proxy Group</label>
-            <select-proxy-group></select-proxy-group>
+        <div class="col-6" *ngIf="likingPostResourses == 'By cloning information'">
+            <label class="form-label">Clon group posts</label>
+            <select class="form-control" id="likingSelectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
         </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col">
-            <label>Count likes per 1 account</label>
-            <input type="number" class="form-control" [(ngModel)]="likesPerAccount">
-        </div>
-        <div class="col">
+        <div class="col-6" *ngIf="likingPostResourses == 'By default post group'">
             <label>Group of posts for liking</label>
             <select class="form-control" id="selectPostGroup">
                 <option *ngFor="let Group of postGroups">{{Group}}</option>
@@ -22,6 +21,35 @@
         </div>
     </div>
     <div class="row mb-3">
+        <div class="col-6">
+            <label class="form-label">Account resources</label>
+            <select class="form-control" id="selectAccountResourses" [(ngModel)]="likingAccountResourses"> 
+                <option>By cloning information</option>
+                <option>By default account group</option>
+            </select>
+        </div>
+        <div class="col-6" *ngIf="likingAccountResourses == 'By cloning information'">
+            <label class="form-label">Clon group accounts</label>
+            <select class="form-control" id="accountSelectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
+        </div>
+        <div class="col"  *ngIf="likingAccountResourses == 'By default account group'">
+            <label>Account Group</label>
+            <select-account-group></select-account-group>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-6">
+            <label>Proxy Group</label>
+            <select-proxy-group></select-proxy-group>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-6">
+            <label>Count likes per 1 account</label>
+            <input type="number" class="form-control" [(ngModel)]="likesPerAccount">
+        </div>
         <div class="col-6">
             <label>Task name</label>
             <input type="text" class="form-control" [(ngModel)]="taskName">

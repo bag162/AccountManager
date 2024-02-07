@@ -187,6 +187,7 @@
         public AdvertCommentingErrorType AdvertCommentingErrorType { get; set; }
     }
 
+
     public enum AdvertCommentingErrorType
     {
         FullBan,
@@ -194,6 +195,20 @@
         DeauthorizedError
     }
 
+    public class ParseCloningInformationErrorDTO
+    {
+        public int WorkerId { get; set; }
+        public int ClonId { get; set; }
+        public ParseCloningInformationErrorType ParseCloningInformationErrorType { get; set; }
+    }
+
+    public enum ParseCloningInformationErrorType
+    {
+        FullBan,
+        UnrecognizedError,
+        DeauthorizedError,
+        PageNotAvailable
+    }
 
     // Global Error
     public class GlobalErrorDTO

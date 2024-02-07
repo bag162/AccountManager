@@ -1,9 +1,51 @@
 <div class="container">
-    <div class="row">
+    <div class="row mb-3">
+        <div class="col-6">
+            <label class="form-label">Commenting resourses</label>
+            <select class="form-control" id="selectPostsResourses" [(ngModel)]="commentingPostResourses"> 
+                <option>By cloning information</option>
+                <option>By default post group</option>
+            </select>
+        </div>
+        <div class="col-6" *ngIf="commentingPostResourses == 'By cloning information'">
+            <label class="form-label">Clon group posts</label>
+            <select class="form-control" id="postSelectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
+        </div>
+        <div class="col">
+            <div class="form-group" *ngIf="commentingPostResourses == 'By default post group'">
+                <label>Group of posts for commenting</label>
+                <select class="form-control" id="selectGroupPost">
+                    <option *ngFor="let Group of postGroups">{{Group}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-6">
+            <label class="form-label">Account resourses</label>
+            <select class="form-control" id="selectPostsResourses" [(ngModel)]="commentingAccountResourses"> 
+                <option>By cloning information</option>
+                <option>By default account group</option>
+            </select>
+        </div>
+        <div class="col-6" *ngIf="commentingAccountResourses == 'By default account group'">
+           <label>Account group</label>
+           <select-account-group></select-account-group>
+        </div>
+        <div class="col-6" *ngIf="commentingAccountResourses == 'By cloning information'">
+            <label class="form-label">Clon group posts</label>
+            <select class="form-control" id="accountSelectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row mb-3">
         <div class="col">
             <div class="form-group">
-                <label>Account Group</label>
-                <select-account-group></select-account-group>
+                <label>Number of commenting posts per 1 account</label>
+                <input class="form-control" type="number" [(ngModel)]="commentsPerAccount">
             </div>
         </div>
         <div class="col">
@@ -13,23 +55,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col">
-            <div class="form-group">
-                <label>Number of commenting posts per 1 account</label>
-                <input class="form-control" type="number" [(ngModel)]="commentsPerAccount">
-            </div>
-        </div>
-        <div class="col">
-            <div class="form-group">
-                <label>Group of posts for commenting</label>
-                <select class="form-control" id="selectGroupPost">
-                    <option *ngFor="let Group of postGroups">{{Group}}</option>
-                </select>
-            </div>
-        </div>
-    </div>
-    <div class="row">
+    <div class="row mb-3">
         <div class="col-6">
             <div class="form-group">
                 <label>Task name</label>

@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace BASAccountManager.DB.Models.Post
 {
+    [Index(nameof(Name), IsUnique = true)]
     public class DBPostCommentGroup
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

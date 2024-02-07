@@ -19,6 +19,13 @@ namespace BASAccountManager.DBServices.PostDBServices
             this.mapper = mapper;
         }
 
+        public async Task<int> AddGroupAsync(DBPostGroup group)
+        {
+            await this.dbcontext.PostGroup.AddAsync(group);
+            await this.dbcontext.SaveChangesAsync();
+            return this.dbcontext.PostGroup.Where(x => x.Name == group.Name).First().Id;
+        }
+
         public async Task AddGroupsAsync(List<PostGroupDTO> groups)
         {
             var newGroups = new List<DBPostGroup>();
@@ -27,6 +34,7 @@ namespace BASAccountManager.DBServices.PostDBServices
             {
                 var newGroup = this.mapper.Map<DBPostGroup>(group);
                 newGroup.AccountGroupId = this.dbcontext.InstAccountGroup.Where(x => x.Name == group.AccountGroupName).Select(x => x.Id).First();
+                newGroup.PostGroupType = PostGroupType.Default;
                 newGroups.Add(newGroup);
             }
             await this.dbcontext.PostGroup.AddRangeAsync(newGroups);

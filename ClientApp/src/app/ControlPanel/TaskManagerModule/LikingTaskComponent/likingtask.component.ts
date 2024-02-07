@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ClonGroupService } from 'src/app/Services/ClonGroupService';
 import { DataService } from 'src/app/Services/DataService';
 import { PostGroupService } from 'src/app/Services/PostGroupService';
 import { TaskManagerService } from 'src/app/Services/TaskManagerService';
@@ -14,16 +15,23 @@ export class LikingTaskComponent implements OnInit {
     postGroups: string[];
     likesPerAccount: number;
     taskName: string;
+    likingPostResourses: string;
+    likingAccountResourses: string;
+    clonGroupNames: string[];
+
     dataService: DataService;
     taskManagerService: TaskManagerService;
     postGroupService: PostGroupService;
+    clonGroupService: ClonGroupService;
 
     constructor(dataService: DataService,
         taskManagerService: TaskManagerService,
-        postGroupService: PostGroupService) {
+        postGroupService: PostGroupService,
+        clonGroupService: ClonGroupService) {
             this.dataService = dataService
             this.taskManagerService = taskManagerService;
             this.postGroupService = postGroupService;
+            this.clonGroupService = clonGroupService;
     }
 
     async ngOnInit() {
@@ -35,14 +43,20 @@ export class LikingTaskComponent implements OnInit {
                 this.postGroups = data;
                 this.postGroups.unshift("All groups");
             }
-        })
+        });
 
         this.dataService.subscriberAccountGroup$.subscribe((data) => {
             this.accountGroup = <string>data;
-        })
+        });
         this.dataService.subscriberProxyGroup$.subscribe((data: string) => {
             this.proxyGroup = <string>data;
-        })
+        });
+
+        (await this.clonGroupService.GetClonNames()).subscribe({
+            next: (data:string[]) => {
+                this.clonGroupNames = data;
+            }
+        });
     }
 
     async AddTask() {
@@ -53,6 +67,15 @@ export class LikingTaskComponent implements OnInit {
         newTask.LikesPerAccount = this.likesPerAccount;
         newTask.PostGroup = <string>$('#selectPostGroup option:selected').val();
 
+        newTask.ResourseLikingType = this.likingPostResourses;
+        if (newTask.ResourseLikingType == "By cloning information") {
+            newTask.LikingClonGroupName = <string>$('#likingSelectClonName option:selected').val();
+        }
+
+        newTask.ResourseAccountType = this.likingAccountResourses;
+        if (newTask.ResourseAccountType == "By cloning information") {
+            newTask.AccountClonGroupName = <string>$('#accountSelectClonName option:selected').val();
+        }
         (await this.taskManagerService.AddLikingTask(newTask)).subscribe(
             {
                 next: (data: boolean) => {
@@ -82,4 +105,10 @@ export class AddLikingTaskDTO {
     AccountGroup: string;
     PostGroup: string;
     LikesPerAccount: number;
+
+    ResourseLikingType: string;
+    LikingClonGroupName: string;
+
+    ResourseAccountType: string;
+    AccountClonGroupName: string;
 }

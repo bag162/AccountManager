@@ -9,8 +9,7 @@ using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Newtonsoft.Json;
-using System.Net.WebSockets;
-using System.Runtime.InteropServices;
+using System.Security.Principal;
 
 namespace BASAccountManager.BackgroundTask
 {
@@ -35,6 +34,8 @@ namespace BASAccountManager.BackgroundTask
         private IAdvertAccountDBService advertAccountDBService { get; set; }
         private ICommentDBService commentDBService { get; set; }
         private ISchedulerTaskDBService schedulerTaskDBService { get; set; }
+        private IClonGroupDBService clonGroupDBService { get; set; }
+        private IClonDBService cloneDBService { get; set; }
 
         public AssignmentWriter(ITaskDBService taskDbService,
             IWorkerTaskDBService workerTaskDbService,
@@ -54,7 +55,9 @@ namespace BASAccountManager.BackgroundTask
             IAdvertPostDBService advertPostDBService,
             IAdvertAccountDBService advertAccountDBService,
             ICommentDBService commentDBService,
-            ISchedulerTaskDBService schedulerTaskDBService)
+            ISchedulerTaskDBService schedulerTaskDBService,
+            IClonDBService cloneDBService,
+            IClonGroupDBService clonGroupDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -75,6 +78,8 @@ namespace BASAccountManager.BackgroundTask
             this.advertPostDBService = advertPostDBService;
             this.commentDBService = commentDBService;
             this.schedulerTaskDBService = schedulerTaskDBService;
+            this.cloneDBService = cloneDBService;
+            this.clonGroupDBService = clonGroupDBService;
         }
 
         public async Task ParseSchedulerTask()
@@ -217,7 +222,7 @@ namespace BASAccountManager.BackgroundTask
         // Парсит Post и добавляет InstPost
         public async Task PostParserAsync()
         {
-            var allPostGroups = this.postGroupDBService.GetGroups();
+            var allPostGroups = this.postGroupDBService.GetGroups().Where(x => x.PostGroupType == PostGroupType.Default).ToList();
             foreach (var postGroup in allPostGroups)
             {
                 var parsedPosts = postGroup.ListPost.Where(x => x.PostStatus == PostStatus.Active).ToList();
@@ -232,6 +237,28 @@ namespace BASAccountManager.BackgroundTask
                             await this.instPostDBService.AddInstPostAsync(newInstPost);
                         }
                     }
+                }
+            }
+
+            var clonGroups = await this.clonGroupDBService.GetGroups();
+            foreach (var item in clonGroups)
+            {
+                foreach (var clon in item.ListClon)
+                {
+                    var posts = clon.PostGroup.ListPost.Where(x => x.PostStatus == PostStatus.Active).ToList();
+                    var accounts = clon.ListInstAccount;
+                    foreach (var account in accounts)
+                    {
+                        foreach (var checkedPost in posts)
+                        {
+                            if (account.ListPost.Where(x => x.PostId == checkedPost.Id).Count() == 0)
+                            {
+                                var newInstPost = new DBInstPost() { AccountId = account.Id, PostId = checkedPost.Id, InstPostStatus = InstPostStatus.NotPublished };
+                                await this.instPostDBService.AddInstPostAsync(newInstPost);
+                            }
+                        }
+                    }
+
                 }
             }
         }
@@ -279,6 +306,9 @@ namespace BASAccountManager.BackgroundTask
                     break;
                 case TaskType.AdvertLiking:
                     await ParseAdvertLikingTask(task);
+                    break;
+                case TaskType.ParseCloningInformation:
+                    await ParseCollectClonInformation(task);
                     break;
                 default:
                     break;
@@ -417,8 +447,29 @@ namespace BASAccountManager.BackgroundTask
             List<DBWorkerTask> workerTaskList = new();
             // Получаем список активных воркеров
             var addedWorkers = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+
+            var usefuldata = JsonConvert.DeserializeObject<PostingTaskWorkerUsefilDataDTO>(task.UsefulData);
+            if (usefuldata.ResourseType == "By cloning information")
+            {
+                await ParseAccountsByClons(usefuldata.ClonGroupName, task.AccountGroup);
+            }
+
             // Получаем список аккаунтов, для которых будем осуществлять постинг
-            var accountList = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            var accountList = new List<DBInstagramAccount>();
+            if (usefuldata.ResourseType == "By cloning information")
+            {
+                var clon = this.clonGroupDBService.GetGroupByName(usefuldata.ClonGroupName);
+                foreach (var item in clon.ListClon)
+                {
+                    accountList.AddRange(item.ListInstAccount);
+                }
+            }
+            else
+            {
+                accountList = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            }
+            
+            
             // Используем только авторизованные аккаунты
             accountList = accountList.Where(x => x.AccountStatus == AccountStatus.Authorized)
                 // Используем аккаунты, у которых есть посты для публикации
@@ -471,12 +522,24 @@ namespace BASAccountManager.BackgroundTask
             task.Status = StatusTask.AddingProcess;
             await this.taskDbService.UpdateTaskAsync(task);
             List<DBWorkerTask> workerTaskList = new();
+            var usefulData = JsonConvert.DeserializeObject<CommentingTaskWorkerUsefulDataDTO>(task.UsefulData);
 
             // Получае список всех добавленных задач на комментинг
             var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+            var accounts = new List<DBInstagramAccount>();
 
-            // Получаем все аккаунты по группе и оставляем только авторизованные
-            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            if (usefulData.commentingAccountResourses == "By cloning information")
+            {
+                var clon = this.clonGroupDBService.GetGroupByName(usefulData.commentingAccountClonName);
+                foreach (var item in clon.ListClon)
+                {
+                    accounts.AddRange(item.ListInstAccount);
+                }
+            }
+            else
+            {
+                accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            }
             accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).OrderBy(x => Guid.NewGuid().ToString()).ToList();
 
             // Удаляем из списка аккаунты, для которых уже были добавлены комментарии
@@ -487,18 +550,44 @@ namespace BASAccountManager.BackgroundTask
                     accounts.Remove(accounts.Where(x => x.Id == addedTask.AccountId).First());
                 }
             }
-            var usefulData = JsonConvert.DeserializeObject<CommentingTaskWorkerUsefulDataDTO>(task.UsefulData);
+            
 
             var posts = new List<DBInstPost>();
-            // Получаем все посты по группам
-            if (usefulData.PostGroup == "All groups")
+            if (usefulData.commentingPostResourses == "By cloning information")
             {
-                posts = await this.instPostDBService.GetAllInstPostAsync();
+                if (usefulData.commentingAccountClonName == usefulData.commentingPostClonName)
+                {
+                    var accPosts = accounts.Select(x => x.ListPost).ToList();
+                    foreach (var item in accPosts)
+                    {
+                        posts.AddRange(item);
+                    }
+                }
+                else
+                {
+                    var clon = this.clonGroupDBService.GetGroupByName(usefulData.commentingPostClonName);
+                    foreach (var item in clon.ListClon)
+                    {
+                        foreach (var item1 in item.ListInstAccount)
+                        {
+                            posts.AddRange(item1.ListPost);
+                        }
+                    }
+                }
             }
             else
             {
-                posts = await this.instPostDBService.GetAllPostByGroupAsync(usefulData.PostGroup);
+                // Получаем все посты по группам
+                if (usefulData.PostGroup == "All groups")
+                {
+                    posts = await this.instPostDBService.GetAllInstPostAsync();
+                }
+                else
+                {
+                    posts = await this.instPostDBService.GetAllPostByGroupAsync(usefulData.PostGroup);
+                }
             }
+            
             // Получаем все комментарии по выбраннной группе
             var allComments = new List<DBPostComment>();
             foreach (var post in posts)
@@ -596,26 +685,54 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем уже добавленные задачи
             var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+            var usefulData = JsonConvert.DeserializeObject<LikingTaskWorkerUsefulDatadTO>(task.UsefulData);
 
+            var accounts = new List<DBInstagramAccount>();
+            if (usefulData.ResourseAccountType == "By cloning information")
+            {
+                var clonGroup = this.clonGroupDBService.GetGroupByName(usefulData.AccountClonGroupName);
+                foreach (var item in clonGroup.ListClon)
+                {
+                    accounts.AddRange(item.ListInstAccount);
+                }
+            }
+            else
+            {
+                accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            }
             // Получаем авторизованные аккаунты по группе
-            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
             accounts = accounts
                 .Where(x => x.AccountStatus == AccountStatus.Authorized)
                 .OrderBy(x => Guid.NewGuid().ToString())
                 .ToList();
             
-            var usefulData = JsonConvert.DeserializeObject<LikingTaskWorkerUsefulDatadTO>(task.UsefulData);
+            
 
             // Получаем посты которые будем лайкать
             var postsForLiking = new List<DBInstPost>();
-            if (usefulData.PostGroup == "All groups")
+            if (usefulData.ResourseLikingType == "By cloning information")
             {
-                postsForLiking = await this.instPostDBService.GetAllInstPostAsync();
+                var clonGroup = this.clonGroupDBService.GetGroupByName(usefulData.LikingClonGroupName);
+                foreach (var item in clonGroup.ListClon)
+                {
+                    foreach (var item1 in item.ListInstAccount)
+                    {
+                        postsForLiking.AddRange(item1.ListPost);
+                    }
+                }
             }
             else
             {
-                postsForLiking = await this.instPostDBService.GetAllPostByGroupAsync(usefulData.PostGroup);
+                if (usefulData.PostGroup == "All groups")
+                {
+                    postsForLiking = await this.instPostDBService.GetAllInstPostAsync();
+                }
+                else
+                {
+                    postsForLiking = await this.instPostDBService.GetAllPostByGroupAsync(usefulData.PostGroup);
+                }
             }
+            
 
             // Вытягиваем из постов все сущности Like
             var allLikes = new List<DBPostLikes>();
@@ -718,7 +835,22 @@ namespace BASAccountManager.BackgroundTask
             var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
 
             // Получаем авторизованные аккаунты по группе
-            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            var accounts = new List<DBInstagramAccount>();
+            var accToSubsribe = new List<DBInstagramAccount>();
+
+            if (usefulData.accountResourseType == "By cloning information")
+            {
+                var clon = this.clonGroupDBService.GetGroupByName(usefulData.accountClonName);
+                foreach (var item in clon.ListClon)
+                {
+                    accounts.AddRange(item.ListInstAccount);
+                }
+            }
+            else
+            {
+                accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            }
+            accToSubsribe.AddRange(accounts);
             accounts = accounts
                 .Where(x => x.AccountStatus == AccountStatus.Authorized)
                 .OrderBy(x => Guid.NewGuid().ToString())
@@ -731,17 +863,36 @@ namespace BASAccountManager.BackgroundTask
                     accounts.Remove(accounts.Where(x => x.Id == account.Id).First());
             }
 
-            // Получаем аккаунты на которые будем подписываться
             var accountsToSubscription = new List<DBInstagramAccount>();
-            if (usefulData.AccountGroupForSubscription == "All groups")
+            if (usefulData.followingResourseType == "By cloning information")
             {
-                accountsToSubscription = this.instDBService.GetInstAccounts().Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+                if (usefulData.followingClonName == usefulData.accountClonName)
+                {
+                    accountsToSubscription = accToSubsribe;
+                }
+                else
+                {
+                    var clon = this.clonGroupDBService.GetGroupByName(usefulData.followingClonName);
+                    foreach (var item in clon.ListClon)
+                    {
+                        accountsToSubscription.AddRange(item.ListInstAccount);
+                    }
+                }
             }
             else
             {
-                accountsToSubscription = await this.instDBService.GetInstAccountsByGroupAsync(usefulData.AccountGroupForSubscription);
-                accountsToSubscription = accountsToSubscription.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+                // Получаем аккаунты на которые будем подписываться
+                if (usefulData.AccountGroupForSubscription == "All groups")
+                {
+                    accountsToSubscription = this.instDBService.GetInstAccounts().Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+                }
+                else
+                {
+                    accountsToSubscription = await this.instDBService.GetInstAccountsByGroupAsync(usefulData.AccountGroupForSubscription);
+                    accountsToSubscription = accountsToSubscription.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+                }
             }
+
             accountsToSubscription = accountsToSubscription.OrderBy(x => Guid.NewGuid().ToString()).ToList();
             var listFollows = new List<DBFollow>();
             // Создаем подписки на аккаунты
@@ -847,53 +998,103 @@ namespace BASAccountManager.BackgroundTask
             task.Status = StatusTask.AddingProcess;
             await this.taskDbService.UpdateTaskAsync(task);
 
+            if (usefulData.profileFillingResourse == "By cloning information")
+            {
+                await ParseAccountsByClons(usefulData.clonName, task.AccountGroup);
+            }
+
             // Получаем уже добавленные задачи
             var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
 
-            // Получаем данные для заполнения профиля
-            var profileFilling = this.fillingDataDBService.GetFillingDataByName(usefulData.FillingProfileName);
-
-            // Получаем аккаунты, которые будем заполнять
-            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-            accounts = accounts.Where(x => x.FillingDataId != profileFilling.Id).Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
-
-            // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
-            foreach (var taskAccount in addedTasks.Select(x => x.Account).ToList())
+            if (usefulData.profileFillingResourse == "By cloning information")
             {
-                // Не заполняем аккаунты если он содержится в workerList
-                if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
-                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
-            }
-
-            foreach (var accountToAdd in accounts)
-            {
-                ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(profileFilling);
-                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
-                if (proxy == null)
+                bool proxyIsNull = false;
+                var clonGroup = this.clonGroupDBService.GetGroupByName(usefulData.clonName);
+                foreach (var clon in clonGroup.ListClon)
                 {
-                    break;
+                    foreach (var account in clon.ListInstAccount.Where(x => x.AccountStatus == AccountStatus.Authorized))
+                    {
+                        if (account.FillingDataId != clon.FillingDataId && addedTasks.Where(x => x.AccountId == account.Id).Count() == 0)
+                        {
+                            ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(clon.FillingData);
+                            var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                            if (proxy == null)
+                            {
+                                proxyIsNull = true;
+                                goto EndParseFillingData;
+                            }
+
+                            var newTask = new DBWorkerTask()
+                            {
+                                AccountId = account.Id,
+                                ProxyId = proxy.Id,
+                                Status = DB.Models.TaskStatus.NotTaken,
+                                TaskType = TaskType.FillingProfile,
+                                TaskId = task.Id,
+                                UsefulData = JsonConvert.SerializeObject(serializedUsefulData)
+                            };
+
+                            workerTaskList.Add(newTask);
+                        }
+                    }
                 }
-                
-
-                var newTask = new DBWorkerTask()
+                EndParseFillingData:
+                if (proxyIsNull == false)
                 {
-                    AccountId = accountToAdd.Id,
-                    ProxyId = proxy.Id,
-                    Status = DB.Models.TaskStatus.NotTaken,
-                    TaskType = TaskType.FillingProfile,
-                    TaskId = task.Id,
-                    UsefulData = JsonConvert.SerializeObject(serializedUsefulData)
-                };
-
-                workerTaskList.Add(newTask);
+                    task.Status = StatusTask.Performed;
+                    await this.taskDbService.UpdateTaskAsync(task);
+                }
+                await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+                return;
             }
-
-            if (workerTaskList.Count() == accounts.Count())
+            else
             {
-                task.Status = StatusTask.Performed;
-                await this.taskDbService.UpdateTaskAsync(task);
+                // Получаем данные для заполнения профиля
+                var profileFilling = this.fillingDataDBService.GetFillingDataByName(usefulData.FillingProfileName);
+
+                // Получаем аккаунты, которые будем заполнять
+                var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+                accounts = accounts.Where(x => x.FillingDataId != profileFilling.Id).Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+
+                // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
+                foreach (var taskAccount in addedTasks.Select(x => x.Account).ToList())
+                {
+                    // Не заполняем аккаунты если он содержится в workerList
+                    if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
+                        accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
+                }
+
+                foreach (var accountToAdd in accounts)
+                {
+                    ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(profileFilling);
+                    var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                    if (proxy == null)
+                    {
+                        break;
+                    }
+
+
+                    var newTask = new DBWorkerTask()
+                    {
+                        AccountId = accountToAdd.Id,
+                        ProxyId = proxy.Id,
+                        Status = DB.Models.TaskStatus.NotTaken,
+                        TaskType = TaskType.FillingProfile,
+                        TaskId = task.Id,
+                        UsefulData = JsonConvert.SerializeObject(serializedUsefulData)
+                    };
+
+                    workerTaskList.Add(newTask);
+                }
+
+                if (workerTaskList.Count() == accounts.Count())
+                {
+                    task.Status = StatusTask.Performed;
+                    await this.taskDbService.UpdateTaskAsync(task);
+                }
+                await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+                return;
             }
-            await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
         }
 
         private async Task ParseAdvertLikingTask(DBTask task)
@@ -1124,6 +1325,130 @@ namespace BASAccountManager.BackgroundTask
             }
 
             await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+        }
+
+        private async Task ParseCollectClonInformation(DBTask task)
+        {
+            List<DBWorkerTask> workerTaskList = new();
+
+            // Парсим UsefulData
+            var usefulData = JsonConvert.DeserializeObject<ParseCloningInformationTaskWorkerUsefuldataDTO>(task.UsefulData);
+
+            // Обновляем статус задачи
+            task.Status = StatusTask.AddingProcess;
+            await this.taskDbService.UpdateTaskAsync(task);
+
+            // Получаем уже добавленные задачи
+            var addedTasks = await this.workerTaskDbService.GetWorkerTaskByDBTaskIdAsync(task.Id);
+
+            // Получаем аккаунты
+            var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+
+            // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
+            foreach (var taskAccount in addedTasks
+                .Where(x => x.Status == DB.Models.TaskStatus.AtWork || x.Status == DB.Models.TaskStatus.NotTaken)
+                .Select(x => x.Account)
+                .ToList())
+            {
+                // Не используем аккаунты если он содержится в workerList
+                if (accounts.Where(x => x.Id == taskAccount.Id).Count() != 0)
+                    accounts.Remove(accounts.Where(x => x.Id == taskAccount.Id).First());
+            }
+
+            var allClones = this.cloneDBService.GetClones();
+            var advertAccounts = await this.advertAccountDBService.GetAdvertAccountsByGroupAsync(usefulData.AdvertAccountGroupsForCloning);
+
+            foreach (var item in allClones)
+            {
+                if (advertAccounts.Where(x => x.AccountURL == item.ClonURI).Count() != 0)
+                {
+                    advertAccounts.Remove(advertAccounts.Where(x => x.AccountURL == item.ClonURI).First());
+                }
+            }
+
+            var clonGroupId = this.clonGroupDBService.GetGroupByName(usefulData.CloneGroupForSave).Id;
+            foreach (var account in accounts)
+            {
+                if (advertAccounts.Count() == 0)
+                {
+                    break;
+                }
+                
+                var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
+                if (proxy == null)
+                {
+                    break;
+                }
+
+                var advertAccount = advertAccounts.First();
+                advertAccounts.Remove(advertAccount);
+                var clon = new DBClon()
+                {
+                    ClonURI = advertAccount.AccountURL,
+                    ClonGroupId = clonGroupId,
+                    ClonStatus = ClonStatus.NotProcessed,
+                    CreateTime = DateTime.Now
+                };
+                var cloneId = await this.cloneDBService.AddCloneAsync(clon);
+                var usefuldata = new CollectCloneDataUsefuldataDTO()
+                {
+                    ClonId = cloneId,
+                    CountCommentToCollect = usefulData.CountCommentToCollect,
+                    CountPostToCollect = usefulData.CountPostToCollect,
+                    ClonURI = advertAccount.AccountURL
+                };
+                var newTask = new DBWorkerTask()
+                {
+                    AccountId = account.Id,
+                    ProxyId = proxy.Id,
+                    Status = DB.Models.TaskStatus.NotTaken,
+                    TaskType = TaskType.ParseCloningInformation,
+                    TaskId = task.Id,
+                    UsefulData = JsonConvert.SerializeObject(usefuldata)
+                };
+
+                workerTaskList.Add(newTask);
+            }
+
+            if (workerTaskList.Count() == advertAccounts.Count())
+            {
+                task.Status = StatusTask.Performed;
+                await this.taskDbService.UpdateTaskAsync(task);
+            }
+
+            await this.workerTaskDbService.AddWorkerTaskAsync(workerTaskList);
+        }
+
+        private async Task ParseAccountsByClons(string clonGroup, string accountGroup)
+        {
+            var allClons = this.clonGroupDBService.GetGroupByName(clonGroup).ListClon.OrderBy(x => x.ListInstAccount.Count());
+            var allAccounts = await this.instDBService.GetInstAccountsByGroupAsync(accountGroup);
+            var enumerator = allClons.GetEnumerator();
+            enumerator.MoveNext();
+            foreach (var account in allAccounts)
+            {
+                if (account.ClonId == null)
+                {
+                    account.ClonId = enumerator.Current.Id;
+                    if (!enumerator.MoveNext())
+                    {
+                        enumerator.Reset();
+                    }
+                }
+                else
+                {
+                    if (allClons.Where(x => x.Id == account.ClonId).Count() == 0)
+                    {
+                        account.ClonId = enumerator.Current.Id;
+                        if (!enumerator.MoveNext())
+                        {
+                            enumerator.Reset();
+                        }
+                    }
+                }
+            }
+            await this.instDBService.UpdateInstAccountsAsync(allAccounts);
         }
     }
 }

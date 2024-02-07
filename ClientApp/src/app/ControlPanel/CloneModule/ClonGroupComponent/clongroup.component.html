@@ -1,0 +1,13 @@
+<div class="container" id="addGroupForm">
+    <div class="row mb-3">
+        <div class="col-3">
+            <label>Group name</label>
+            <input type="text" [(ngModel)]="neGroupName" class="form-control">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg mb-3" (click)="AddGroup()">Add</button>
+</div>
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="clonGroupTable"></table>

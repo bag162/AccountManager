@@ -124,6 +124,12 @@ namespace BASAccountManager.Controllers.BASTask
         }
 
         [HttpPost]
+        public async Task<string> ParseCloningInformationError([FromBody] ParseCloningInformationErrorDTO error)
+        {
+            return await this.InstTaskManager.ErrorParseCloningInformation(error.WorkerId, error.ClonId, error.ParseCloningInformationErrorType);
+        }
+
+        [HttpPost]
         public async Task<string> VerifyServiceError([FromBody] VerifyServiceErrorDTO error)
         {
             return await this.InstTaskManager.ErrorVerifyServiceAsync(error);

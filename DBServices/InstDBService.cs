@@ -34,11 +34,11 @@ namespace BASAccountManager.DBServices
             return;
         }
 
-        public async Task AddGroupAsync(DBInstAccountGroup addedGroup)
+        public async Task<int> AddGroupAsync(DBInstAccountGroup addedGroup)
         {
             await this.dbcontext.InstAccountGroup.AddAsync(addedGroup);
             await this.dbcontext.SaveChangesAsync();
-            return;
+            return this.dbcontext.InstAccountGroup.Where(x => x.Name == addedGroup.Name).First().Id;
         }
 
         public List<string> GetAllGroups()

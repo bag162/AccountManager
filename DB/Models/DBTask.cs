@@ -8,7 +8,7 @@ namespace BASAccountManager.DB.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string ClientTaskName { get; set; }
-        public string AccountGroup { get; set; }
+        public string? AccountGroup { get; set; }
         public string ProxyGroup { get; set; }
         public string? UsefulData { get; set; }
         public DateTime? CreatedDate { get; set; }
@@ -39,6 +39,7 @@ namespace BASAccountManager.DB.Models
         FillingProfile,
         AdvertLiking,
         AdvertCommenting,
-        AdvertFollowing
+        AdvertFollowing,
+        ParseCloningInformation
     }
 }

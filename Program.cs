@@ -30,6 +30,12 @@ builder.Services.AddTransient<ITaskDBService, TaskDBService>();
 builder.Services.AddTransient<IWorkerTaskDBService, WorkerTaskDBService>();
 builder.Services.AddTransient<IEmailDBService, EmailDBService>();
 builder.Services.AddTransient<IBASExeptionDBService, BASExeptionDBService>();
+builder.Services.AddTransient<IFollowDBService, FollowDBService>();
+builder.Services.AddTransient<ICommentDBService, CommentDBService>();
+builder.Services.AddTransient<IFillingDataDBService, FillingDataDBService>();
+builder.Services.AddTransient<IClonGroupDBService, ClonGroupDBService>();
+builder.Services.AddTransient<IClonDBService, ClonDBService>();
+builder.Services.AddTransient<ISchedulerTaskDBService, SchedulerTaskDBService>();
 
 builder.Services.AddTransient<IPostDBService, PostDBService>();
 builder.Services.AddTransient<IPostCommentDBService, PostCommentDBService>();
@@ -37,17 +43,11 @@ builder.Services.AddTransient<IPostGroupDBService, PostGroupDBService>();
 builder.Services.AddTransient<IInstPostDBService, InstPostDBService>();
 builder.Services.AddTransient<IPostCommentGroupDBService, PostCommentGroupDBService>();
 builder.Services.AddTransient<IPostLikeDBService, PostLikeDBService>();
-builder.Services.AddTransient<IFollowDBService, FollowDBService>();
-builder.Services.AddTransient<ICommentDBService, CommentDBService>();
-builder.Services.AddTransient<IFillingDataDBService, FillingDataDBService>();
 
 builder.Services.AddTransient<IAdvertAccountDBService, AdvertAccountDBService>();
 builder.Services.AddTransient<IAdvertAccountGroupDBService, AdvertAccountGroupDBService>();
 builder.Services.AddTransient<IAdvertPostGroupDBService, AdvertPostGroupDBService>();
 builder.Services.AddTransient<IAdvertPostDBService, AdvertPostDBService>();
-builder.Services.AddTransient<ISchedulerTaskDBService, SchedulerTaskDBService>();
-
-
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();

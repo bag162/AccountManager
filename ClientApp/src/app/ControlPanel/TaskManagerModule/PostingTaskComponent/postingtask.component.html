@@ -1,5 +1,20 @@
 <div class="container">
     <div class="row mb-3">
+        <div class="col-6">
+            <label class="form-label">Posting resources</label>
+            <select class="form-control" id="selectResourses" [(ngModel)]="postingResourses"> 
+                <option>By cloning information</option>
+                <option>By default post group</option>
+            </select>
+        </div>
+        <div class="col" *ngIf="postingResourses == 'By cloning information'">
+            <label class="form-label">Clon group</label>
+            <select class="form-control" id="selectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row mb-3">
         <div class="col">
             <label class="form-label">Account Group</label>
             <select-account-group></select-account-group>

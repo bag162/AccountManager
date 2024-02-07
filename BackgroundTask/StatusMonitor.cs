@@ -1,4 +1,5 @@
-﻿using BASAccountManager.BackgroundTask.DTO;
+﻿using AutoMapper.Internal.Mappers;
+using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.AdvertResourses;
@@ -6,6 +7,7 @@ using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Humanizer.DateTimeHumanizeStrategy;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Newtonsoft.Json;
 
@@ -22,7 +24,10 @@ namespace BASAccountManager.BackgroundTask
         private IFollowDBService followDBService { get; set; }
         private IAdvertAccountDBService advertAccountDBService { get; set; }
         private IAdvertPostDBService advertPostDBService { get; set; }
-
+        private IClonDBService clonDBService { get; set; }
+        private IPostCommentGroupDBService postCommentGroupDBService { get; set; }
+        private IPostGroupDBService postGroupDBService { get; set; }
+        private IFillingDataDBService fillingDataDBService { get; set; }
 
         public StatusMonitor(ITaskDBService taskDbService, 
             IWorkerTaskDBService workerTaskDbService, 
@@ -32,7 +37,11 @@ namespace BASAccountManager.BackgroundTask
             IPostLikeDBService postLikeDBService,
             IFollowDBService followDBService,
             IAdvertAccountDBService advertAccountDBService,
-            IAdvertPostDBService advertPostDBService)
+            IAdvertPostDBService advertPostDBService,
+            IClonDBService clonDBService,
+            IPostCommentGroupDBService postCommentGroupDBService,
+            IPostGroupDBService postGroupDBService,
+            IFillingDataDBService fillingDataDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -43,6 +52,10 @@ namespace BASAccountManager.BackgroundTask
             this.followDBService = followDBService;
             this.advertPostDBService = advertPostDBService;
             this.advertAccountDBService = advertAccountDBService;
+            this.clonDBService = clonDBService;
+            this.postCommentGroupDBService = postCommentGroupDBService;
+            this.postGroupDBService = postGroupDBService;
+            this.fillingDataDBService = fillingDataDBService;
         }
 
         public async Task CheckTaskWorkerStatusAsync()
@@ -67,7 +80,6 @@ namespace BASAccountManager.BackgroundTask
             }
         }
 
-        // dont work
         public async Task CheckProxyStatusAsync()
         {
             var allWorkerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
@@ -130,7 +142,7 @@ namespace BASAccountManager.BackgroundTask
             {
                 if (!activeCommentsId.Contains(postComment.Id))
                 {
-                    if (DateTime.Now - postComment.CommentTime >= TimeSpan.FromSeconds(30))
+                    if (DateTime.Now - postComment.CommentTime >= TimeSpan.FromMinutes(30))
                     {
                         postComment.SenderAccountId = null;
                         listToUpdate.Add(postComment);
@@ -182,7 +194,7 @@ namespace BASAccountManager.BackgroundTask
             {
                 if (!activeLikesId.Contains(postLike.Id))
                 {
-                    if (DateTime.Now - postLike.CreatedDate >= TimeSpan.FromSeconds(30))
+                    if (DateTime.Now - postLike.CreatedDate >= TimeSpan.FromMinutes(30))
                     {
                         postLike.SenderAccountId = null;
                         listToUpdate.Add(postLike);
@@ -230,21 +242,16 @@ namespace BASAccountManager.BackgroundTask
                     var deletedFollows = followsToCheck.Where(x => x.SenderAccountId == account.Id).ToList();
                     foreach (var delFollow in deletedFollows)
                     {
-                        followsToCheck.Remove(delFollow);
+                        if (DateTime.Now - delFollow.CreatedDate >= TimeSpan.FromMinutes(30))
+                        {
+                            followsToCheck.Remove(delFollow);
+                        }
+                        
                     }
                 }
             }
 
-            var listToDelete = new List<DBFollow>();
-            foreach (var item in followsToCheck)
-            {
-                if (DateTime.Now - item.CreatedDate >= TimeSpan.FromSeconds(30))
-                {
-                    listToDelete.Add(item);
-                }
-            }
-
-            await this.followDBService.RemoveByIdsAsync(listToDelete.Select(x => x.Id).ToList());
+            await this.followDBService.RemoveByIdsAsync(followsToCheck.Select(x => x.Id).ToList());
 
             var errorFollows = follows.Where(x => x.FollowStatus == DB.Models.FollowStatus.ErrorFollow).ToList();
             await this.followDBService.RemoveFollows(errorFollows);
@@ -354,6 +361,45 @@ namespace BASAccountManager.BackgroundTask
             }
 
             await this.advertPostDBService.UpdateAdvertPostAsync(commentingPosts);
+        }
+
+        public async Task CheckUntakenClon()
+        {
+            var allClones = this.clonDBService.GetClones();
+
+            var deletedClones = allClones
+                .Where(x => x.ClonStatus == ClonStatus.NotProcessed)
+                .Where(x => DateTime.Now - x.CreateTime >= TimeSpan.FromHours(1))
+                .ToList();
+
+            var deletedCommentGroup = new List<DBPostCommentGroup>();
+            var deletedPostGroup = new List<DBPostGroup>();
+            var deletedFillingData = new List<DBFillingData>();
+
+            foreach (var item in deletedClones)
+            {
+                if (item.FillingDataId != null)
+                {
+                    deletedFillingData.Add(item.FillingData);
+                }
+                if (item.PostGroupId != null)
+                {
+                    deletedPostGroup.Add(item.PostGroup);
+                    if (item.PostGroup.ListPost.Count() != 0)
+                    {
+                        foreach (var item1 in item.PostGroup.ListPost)
+                        {
+                            deletedCommentGroup.Add(item1.PostCommentGroup);
+                        }
+                    }
+                }
+                
+            }
+
+            await this.clonDBService.DeleteClonesAsync(deletedClones);
+            await this.postCommentGroupDBService.DeleteCommentGroupAsync(deletedCommentGroup);
+            await this.fillingDataDBService.DeleteAsync(deletedFillingData);
+            await this.postGroupDBService.DeleteGroupsAsync(deletedPostGroup);
         }
     }
 }

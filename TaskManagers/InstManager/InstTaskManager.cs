@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
 using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.BASTask.DTO;
+using BASAccountManager.Controllers.Clon.DTO;
+using BASAccountManager.Controllers.Post.Comment.DTO;
+using BASAccountManager.Controllers.Post.Post.DTO;
+using BASAccountManager.Controllers.ProfileFilling.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.AdvertResourses;
@@ -31,7 +35,13 @@ namespace BASAccountManager.TaskManagers.InstManager
         private IProxyDBService proxyDBService { get; set; }
         private IAdvertPostDBService advertPostDBService { get; set; }
         private IAdvertAccountDBService advertAccountDBService { get; set; }
-
+        private IClonDBService clonDBService { get; set; }
+        private IClonGroupDBService clonGroupDBService { get; set; }
+        private IFillingDataDBService fillingDataDBService { get; set; }
+        private IPostGroupDBService postGroupDBService { get; set; }
+        private IPostDBService postDBService { get; set; }
+        private ICommentDBService commentDBService { get; set; }
+        private IPostCommentGroupDBService postCommentGroupDBService { get; set; }
 
         public InstTaskManager(ILogger<InstTaskManager> logger,
             IMapper mapper,
@@ -45,7 +55,14 @@ namespace BASAccountManager.TaskManagers.InstManager
             IFollowDBService followDBService,
             IProxyDBService proxyDBService,
             IAdvertAccountDBService advertAccountDBService,
-            IAdvertPostDBService advertPostDBService)
+            IAdvertPostDBService advertPostDBService,
+            IClonDBService clonDBService,
+            IClonGroupDBService clonGroupDBService,
+            IFillingDataDBService fillingDataDBService,
+            IPostGroupDBService postGroupDBService,
+            IPostDBService postDBService,
+            ICommentDBService commentDBService,
+            IPostCommentGroupDBService postCommentGroupDBService)
         {
             this.Logger = logger;
             this.mapper = mapper;
@@ -60,6 +77,13 @@ namespace BASAccountManager.TaskManagers.InstManager
             this.proxyDBService = proxyDBService;
             this.advertAccountDBService = advertAccountDBService;
             this.advertPostDBService = advertPostDBService;
+            this.clonDBService = clonDBService;
+            this.clonGroupDBService = clonGroupDBService;
+            this.fillingDataDBService = fillingDataDBService;
+            this.postGroupDBService = postGroupDBService;
+            this.postDBService = postDBService;
+            this.commentDBService = commentDBService;
+            this.postCommentGroupDBService = postCommentGroupDBService;
         }
 
         public async Task<string> GetTaskAsync(GetTaskDTO getTaskData)
@@ -107,6 +131,8 @@ namespace BASAccountManager.TaskManagers.InstManager
                     return await AdvertCommentingTaskImplAsync(returnedTask, getTaskData);
                 case TaskType.AdvertLiking:
                     return await AdvertLikingTaskImplAsync(returnedTask, getTaskData);
+                case TaskType.ParseCloningInformation:
+                    return await ParseCloningInformation(returnedTask, getTaskData);
 
             }
             this.Logger.LogWarning("Skip switch on InstTaskManager");
@@ -299,6 +325,75 @@ namespace BASAccountManager.TaskManagers.InstManager
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> IntermediateEndParseCloningInformationProfileData(EndIntermediateParseCloningInformationProfileData endData)
+        {
+            var clon = this.clonDBService.GetClonById(endData.ClonId);
+            var fillingData = new AddFillingDataDTO()
+            {
+                AboutMe = endData.ProfileDescription,
+                ClosedAccount = false,
+                EnableRecomendations = true,
+                Gender = "Male",
+                NameOrSurnameGenString = "<RMaleName>:<RSurname>",
+                UsernameGenString = "{<ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit><AnyDigit><AnyDigit>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><AnyDigit><AnyDigit><AnyDigit><AnyDigit>}",
+                Name = "z_clon_" + clon.Id,
+                AvatarBASE64 = endData.ImageBase64Data,
+                AvatarFormat = endData.ImageFormat
+            };
+            var fillingDataId = await this.fillingDataDBService.AddFillingDataAsync(fillingData);
+            clon.FillingDataId = fillingDataId;
+            await this.clonDBService.UpdateCloneAsync(clon);
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> IntermediateEndParseCloningInformationPostData(EndIntermediateParseCloningInformationPostData endData)
+        {
+            var clon = this.clonDBService.GetClonById(endData.ClonId);
+            int clonPostId;
+            if (clon.PostGroupId == null)
+            {
+                var postGroupId = await this.postGroupDBService.AddGroupAsync(new DBPostGroup() { Name = "z_clon_" + clon.Id, PostGroupType = PostGroupType.Clon });
+                clon.PostGroupId = postGroupId;
+                await this.clonDBService.UpdateCloneAsync(clon);
+            }
+
+            await this.postCommentGroupDBService.AddPostCommentGroupAsync(new DBPostCommentGroup() { Name = "z_clon_" + clon.Id + "_" + endData.PostURI});
+            var comments = new List<CRUDCommentDTO>();
+            foreach (var item in endData.Comments)
+            {
+                comments.Add(new CRUDCommentDTO() { CommentGroupName = "z_clon_" + clon.Id + "_" + endData.PostURI, Message = item });
+            }
+            await this.commentDBService.AddCommentAsync(comments);
+
+            await this.postDBService.AddPostAsync(new CRUDPostDTO()
+            {
+                Description = endData.Description,
+                Name = "z_clon_" + clon.Id + "_" + Guid.NewGuid(),
+                ImageBase64 = endData.ImageBase64Data,
+                ImageFormat = endData.ImageFormat,
+                PostGroupName = "z_clon_" + clon.Id,
+                PostStatus = "Active",
+                RequiredCountComments = Random.Shared.Next(0, 10),
+                RequiredCountLikes = Random.Shared.Next(10, 40),
+                PostURI = endData.PostURI,
+                CommentGroupName = "z_clon_" + clon.Id + "_" + endData.PostURI
+            });
+            return JsonConvert.SerializeObject(true);
+        }
+
+        public async Task<string> EndParseCloningInformationData(EndIntermediateParseCloningInformationData endData)
+        {
+            var clon = this.clonDBService.GetClonById(endData.ClonId);
+            clon.ClonStatus = ClonStatus.Processed;
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            taskWorker.Status = DB.Models.TaskStatus.Completed;
+
+            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            await this.clonDBService.UpdateCloneAsync(clon);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             return JsonConvert.SerializeObject(true);
         }
@@ -585,6 +680,32 @@ namespace BASAccountManager.TaskManagers.InstManager
             return JsonConvert.SerializeObject(true);
         }
 
+        public async Task<string> ErrorParseCloningInformation(int workerId, int ClonId, ParseCloningInformationErrorType error)
+        {
+            var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            workerTask.Status = DB.Models.TaskStatus.Error;
+            workerTask.ErrorMessage = error.ToString();
+
+            switch (error)
+            {
+                case ParseCloningInformationErrorType.FullBan:
+                    workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    break;
+                case ParseCloningInformationErrorType.DeauthorizedError:
+                    workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    break;
+                case ParseCloningInformationErrorType.PageNotAvailable:
+                    var clon = this.clonDBService.GetClonById(ClonId);
+                    clon.ClonStatus = ClonStatus.NotAvailable;
+                    await this.clonDBService.UpdateCloneAsync(clon);
+                    break;
+            }
+
+            await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            return JsonConvert.SerializeObject(true);
+        }
+
         public async Task<string> ErrorGlobalAsync(GlobalErrorDTO error)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(error.workerId);
@@ -604,7 +725,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
             return JsonConvert.SerializeObject(true);
         }
-
+        
 
 
         private async Task<string> RegistrationTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
@@ -702,7 +823,20 @@ namespace BASAccountManager.TaskManagers.InstManager
             List<DBPostComment> updatedComments = new();
             foreach (var comment in comments)
             {
-                var updatedComment = this.postCommentDBService.GetPostCommentById(comment.PostCommentId);
+                DBPostComment updatedComment = new DBPostComment();
+                try
+                {
+                    updatedComment = this.postCommentDBService.GetPostCommentById(comment.PostCommentId);
+                }
+                catch (Exception)
+                {
+                    returnedTask.Status = DB.Models.TaskStatus.Error;
+                    returnedTask.ErrorMessage = "Error parse task";
+                    await this.proxyDBService.SetProxyFreeStatusAsync(returnedTask.Proxy.Id);
+                    await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+                    return "No tasks";
+                }
+
                 updatedComment.CommentStatus = CommentStatus.InProcessPublication;
                 updatedComments.Add(updatedComment);
             }
@@ -728,7 +862,20 @@ namespace BASAccountManager.TaskManagers.InstManager
             List<DBPostLikes> updatedLikes = new();
             foreach (var like in likes)
             {
-                var updatedlike = this.postLikeDBService.GetPostLikeById(like.PostLikeId);
+                DBPostLikes updatedlike = new DBPostLikes();
+                try
+                {
+                    updatedlike = this.postLikeDBService.GetPostLikeById(like.PostLikeId);
+                }
+                catch (Exception)
+                {
+                    returnedTask.Status = DB.Models.TaskStatus.Error;
+                    returnedTask.ErrorMessage = "Error parse task";
+                    await this.proxyDBService.SetProxyFreeStatusAsync(returnedTask.Proxy.Id);
+                    await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+                    return "No tasks";
+                }
+
                 updatedlike.LikeStatus = LikeStatus.InProcessPublication;
                 updatedLikes.Add(updatedlike);
             }
@@ -753,7 +900,20 @@ namespace BASAccountManager.TaskManagers.InstManager
             var follows = new List<FollowUsefulDataDTO>();
             foreach (var followid in followIds)
             {
-                var newFollow = this.followDBService.GetFollowById(followid);
+                DBFollow newFollow = new DBFollow();
+                try
+                {
+                    newFollow = this.followDBService.GetFollowById(followid);
+                }
+                catch (Exception)
+                {
+                    returnedTask.Status = DB.Models.TaskStatus.Error;
+                    returnedTask.ErrorMessage = "Error parse task";
+                    await this.proxyDBService.SetProxyFreeStatusAsync(returnedTask.Proxy.Id);
+                    await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+                    return "No tasks";
+                }
+                
                 newFollow.FollowStatus = FollowStatus.InProcessFollow;
                 await this.followDBService.UpdateFollowAsync(newFollow);
                 follows.Add(mapper.Map<FollowUsefulDataDTO>(newFollow));
@@ -817,6 +977,21 @@ namespace BASAccountManager.TaskManagers.InstManager
             List<DBAdvertAccount> listAccounts = JsonConvert.DeserializeObject<List<DBAdvertAccount>>(returnedTask.UsefulData);
             var task = this.mapper.Map<GetAdvertFollowingTaskDTO>(returnedTask);
             task.AdvertAccounts = listAccounts;
+            await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
+            return JsonConvert.SerializeObject(task);
+        }
+
+        private async Task<string> ParseCloningInformation(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
+        {
+            returnedTask.Status = DB.Models.TaskStatus.AtWork;
+            returnedTask.Proxy.ProxyStatus = ProxyStatus.InWork;
+            returnedTask.WorkerId = getTaskData.WorkerId;
+            returnedTask.InstanceId = getTaskData.InstanceId;
+
+            CollectCloneDataUsefuldataDTO usefulData = JsonConvert.DeserializeObject<CollectCloneDataUsefuldataDTO>(returnedTask.UsefulData);
+            var task = this.mapper.Map<GetCollectCloningDataTaskDTO>(returnedTask);
+            task.CollectData = usefulData;
+
             await this.workerTaskDBService.UpdateWorkerTaskAsync(returnedTask);
             return JsonConvert.SerializeObject(task);
         }

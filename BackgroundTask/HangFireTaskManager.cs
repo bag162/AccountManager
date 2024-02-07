@@ -105,9 +105,6 @@ namespace BASAccountManager
             {
                 this.cache.Set("MonitorStatusTaskStatus", true, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
             }
-            
-            // Dont work
-            /*await this.StatusMonitor.CheckProxyStatusAsync();*/
 
             await this.StatusMonitor.CheckTaskWorkerStatusAsync();
             await this.StatusMonitor.CheckInactiveTask();
@@ -116,6 +113,7 @@ namespace BASAccountManager
             await this.StatusMonitor.CheckUntakenFollows();
             await this.StatusMonitor.CheckAdvertUntakenLikesAndComments();
             await this.StatusMonitor.CheckAdvertUntakenFollows();
+            await this.StatusMonitor.CheckUntakenClon();
 
             this.cache.Set("MonitorStatusTaskStatus", false);
         }

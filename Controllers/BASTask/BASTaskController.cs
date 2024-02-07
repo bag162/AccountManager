@@ -128,5 +128,23 @@ namespace BASAccountManager.Controllers
         {
             return await this.InstTaskManager.EndAdvertCommentingTask(data);
         }
+
+        [HttpPost]
+        public async Task<string> IntermediateEndParseCloningInformationProfileData(EndIntermediateParseCloningInformationProfileData endData)
+        {
+           return await this.InstTaskManager.IntermediateEndParseCloningInformationProfileData(endData);
+        }
+
+        [HttpPost]
+        public async Task<string> IntermediateEndParseCloningInformationPostData(EndIntermediateParseCloningInformationPostData endData)
+        {
+            return await this.InstTaskManager.IntermediateEndParseCloningInformationPostData(endData);
+        }
+
+        [HttpPost]
+        public async Task<string> EndParseCloningInformationData(EndIntermediateParseCloningInformationData endData)
+        {
+            return await this.InstTaskManager.EndParseCloningInformationData(endData);
+        }
     }
 }

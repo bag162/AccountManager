@@ -1,20 +1,48 @@
 <div class="container">
     <div class="row mb-3">
-        <div class="col">
+        <div class="col-6">
+            <label class="form-label">Account resourses</label>
+            <select class="form-control" id="selectPostsResourses" [(ngModel)]="followingAccountResourses"> 
+                <option>By cloning information</option>
+                <option>By default account group</option>
+            </select>
+        </div>
+        <div class="col-6" *ngIf="followingAccountResourses == 'By default account group'">
            <label>Account group</label>
            <select-account-group></select-account-group>
         </div>
-        <div class="col">
-            <label>Proxy group</label>
-            <select-proxy-group></select-proxy-group>
+        <div class="col-6" *ngIf="followingAccountResourses == 'By cloning information'">
+            <label class="form-label">Clon group posts</label>
+            <select class="form-control" id="followingSelectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
         </div>
     </div>
     <div class="row mb-3">
-        <div class="col">
+        <div class="col-6">
+            <label class="form-label">Following resourses</label>
+            <select class="form-control" id="selectPostsResourses" [(ngModel)]="followingPostResourses"> 
+                <option>By cloning information</option>
+                <option>By default post group</option>
+            </select>
+        </div>
+        <div class="col-6" *ngIf="followingPostResourses == 'By cloning information'">
+            <label class="form-label">Clon group posts</label>
+            <select class="form-control" id="postSelectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
+        </div>
+        <div class="col" *ngIf="followingPostResourses == 'By default post group'">
             <label>Accounts group will follow</label>
             <select class="form-control" id="selectAccountGroupForSubscription">
                 <option *ngFor="let group of accountGroups">{{group}}</option>
             </select>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label>Proxy group</label>
+            <select-proxy-group></select-proxy-group>
         </div>
         <div class="col">
             <label>Follows per 1 account</label>

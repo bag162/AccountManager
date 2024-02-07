@@ -3,6 +3,7 @@ using BASAccountManager.BackgroundTask.DTO;
 using BASAccountManager.Controllers.Advert.Account.DTO;
 using BASAccountManager.Controllers.Advert.Post.DTO;
 using BASAccountManager.Controllers.BASTask.DTO;
+using BASAccountManager.Controllers.Clon.DTO;
 using BASAccountManager.Controllers.Email.DTO;
 using BASAccountManager.Controllers.Instagram.DTO;
 using BASAccountManager.Controllers.Post.Comment.DTO;
@@ -98,6 +99,8 @@ namespace BASAccountManager
                 .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.ListAdvertPost.Count()));
             CreateMap<DBSchedulerTask, SchedulerTaskDTO>()
                 .ForMember(dest => dest.CountPinnedTasks, opt => opt.MapFrom(src => JsonConvert.DeserializeObject<int[]>(src.TaskIds).Count()));
+            CreateMap<DBClonGroup, GetClonGroupDTO>()
+                 .ForMember(dest => dest.CountPinnedClones, opt => opt.MapFrom(src => src.ListClon.Count()));
 
             /*** BAS task Mapping ***/
 
@@ -129,6 +132,9 @@ namespace BASAccountManager
             CreateMap<DBWorkerTask, GetAdvertFollowingTaskDTO>();
             CreateMap<DBWorkerTask, GetAdvertLikingTaskDTO>();
             CreateMap<DBWorkerTask, GetAdvertCommentingTaskDTO>();
+            CreateMap<DBWorkerTask, GetCollectCloningDataTaskDTO>()
+                .ForMember(dest => dest.CollectData, opt => opt.Ignore());
+            
 
             // End task Mapping
             CreateMap<DBInstagramAccount, EndRegistrationTaskDTO>().ReverseMap();

@@ -22,7 +22,7 @@ namespace BASAccountManager.DBServices
             this.mapper = mapper;
         }
 
-        public async Task AddFillingDataAsync(AddFillingDataDTO data)
+        public async Task<int> AddFillingDataAsync(AddFillingDataDTO data)
         {
             var fillingData = mapper.Map<DBFillingData>(data);
             var path = "wwwroot/images/avatars/" + data.Name;
@@ -30,7 +30,7 @@ namespace BASAccountManager.DBServices
             fillingData.AvatarPath = filePath.Remove(0, 8);
             await this.dbcontext.FillingData.AddAsync(fillingData);
             await this.dbcontext.SaveChangesAsync();
-            return;
+            return this.dbcontext.FillingData.Where(x => x.Name == data.Name).First().Id;
         }
 
         public async Task DeleteAsync(List<DBFillingData> data)

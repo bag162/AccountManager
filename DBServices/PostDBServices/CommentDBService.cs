@@ -92,7 +92,6 @@ namespace BASAccountManager.DBServices.PostDBServices
             }
             else
             {
-                data.recordsFiltered = data.recordsTotal;
                 if (lenght == -1)
                 {
                     data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.Comment.Include(x => x.PostCommentGroup).AsQueryable().Where(x => x.PostCommentGroup.Id.Equals(groupId)).Skip(start).Take(data.recordsTotal).ToArray());
@@ -101,6 +100,7 @@ namespace BASAccountManager.DBServices.PostDBServices
                 {
                     data.data = mapper.Map<List<CommentDTO>>(this.dbcontext.Comment.Include(x => x.PostCommentGroup).AsQueryable().Where(x => x.PostCommentGroup.Id.Equals(groupId)).Skip(start).Take(lenght).ToArray());
                 }
+                data.recordsFiltered = data.data.Count();
             }
             return data;
         }

@@ -10,6 +10,7 @@ namespace BASAccountManager.DBServices.PostDBServices.Interfaces
         public List<DBPostGroup> GetGroups();
         public JqueryDataTable<PostGroupDTO> GetGroups(int start, int lenght, string searchdata);
         public Task AddGroupsAsync(List<PostGroupDTO> groups);
+        public Task<int> AddGroupAsync(DBPostGroup group);
         public Task DeleteGroupsAsync(List<DBPostGroup> groups);
     }
 }

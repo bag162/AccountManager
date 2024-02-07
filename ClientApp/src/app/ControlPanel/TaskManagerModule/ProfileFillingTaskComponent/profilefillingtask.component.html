@@ -1,15 +1,30 @@
 <div class="container from-control">
     <div class="row mb-3">
-        <div class="col">
-            <label for="inputTaskName" class="form-label">Task name</label>
-            <input [(ngModel)]="taskName" type="text" class="form-control" id="ClientTaskName"
-                placeholder="Authorization Acccount. EMPL: Lesha. CRT 15:50">
+        <div class="col-6">
+            <label class="form-label">Profile filling resources</label>
+            <select class="form-control" id="selectResourses" [(ngModel)]="profileFillingResourse"> 
+                <option>By cloning information</option>
+                <option>By default profile filling data</option>
+            </select>
         </div>
-        <div class="col">
+        <div class="col" *ngIf="profileFillingResourse == 'By default profile filling data'">
             <label>Profile filling</label>
             <select class="form-control" id="selectFillingData">
                 <option *ngFor="let data of fillingData">{{data}}</option>
             </select>
+        </div>
+        <div class="col" *ngIf="profileFillingResourse == 'By cloning information'">
+            <label class="form-label">Clon group</label>
+            <select class="form-control" id="selectClonName">
+                <option *ngFor="let item of clonGroupNames">{{item}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="inputTaskName" class="form-label">Task name</label>
+            <input [(ngModel)]="taskName" type="text" class="form-control" id="ClientTaskName"
+                placeholder="Authorization Acccount. EMPL: Lesha. CRT 15:50">
         </div>
     </div>
     <div class="row mb-3">
