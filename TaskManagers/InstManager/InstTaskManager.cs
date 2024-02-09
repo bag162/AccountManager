@@ -203,6 +203,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         {
             var worker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.workerId);
             var instpost = this.instPostDBService.GetInstPospsByAccount(worker.AccountId).Where(x => x.PostId == endData.postId).First();
+            if (instpost.InstPostStatus == DB.Models.Post.InstPostStatus.Published)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             instpost.CreatedDate = DateTime.Now;
             instpost.PostURI = endData.postURI;
             instpost.InstPostStatus = DB.Models.Post.InstPostStatus.Published;
@@ -226,6 +230,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> IntermediateEndCommentingTask(IntermediateEndCommentingTaskDTO endData)
         {
             var postComment = this.postCommentDBService.GetPostCommentById(endData.PostCommentId);
+            if (postComment.CommentStatus == DB.Models.Post.CommentStatus.Published)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             postComment.CommentTime = DateTime.Now;
             postComment.CommentStatus = DB.Models.Post.CommentStatus.Published;
             await this.postCommentDBService.UpdatePostCommentAsync(postComment);
@@ -248,6 +256,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> IntermediateEndLikingTask(IntermediateEndLikingTaskDTO endData)
         {
             var postLike = this.postLikeDBService.GetPostLikeById(endData.PostLikeId);
+            if (postLike.LikeStatus == LikeStatus.Published)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             postLike.CreatedDate = DateTime.Now;
             postLike.LikeStatus = LikeStatus.Published;
             await this.postLikeDBService.UpdateLikeAsync(postLike);
@@ -270,6 +282,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> IntermediateEndFollowingTask(IntermediateEndFollowingTaskDTO endData)
         {
             var follow = this.followDBService.GetFollowById(endData.FollowId);
+            if (follow.FollowStatus == FollowStatus.Published)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             follow.CreatedDate = DateTime.Now;
             follow.FollowStatus = FollowStatus.Published;
             await this.followDBService.UpdateFollowAsync(follow);
@@ -308,6 +324,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> IntermediateEndAdvertFollowingTask(EndIntermediateAdvertFollowingTaskDTO endData)
         {
             var advertAccount = this.advertAccountDBService.GetAdvertAccountById(endData.AdvertAccountId);
+            if (advertAccount.AdvertAccountStatus == AdvertAccountStatus.Processed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             advertAccount.AdvertAccountStatus = AdvertAccountStatus.Processed;
             await this.advertAccountDBService.UpdateAvertAccountsAsync(new List<DBAdvertAccount>() { advertAccount });
             return JsonConvert.SerializeObject(true);
@@ -329,6 +349,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> IntermediateEndAdvertLikingTask(EndIntermediateAdvertLikingTaskDTO endData)
         {
             var advertPost = this.advertPostDBService.GetAdvertPostById(endData.AdvertPostId);
+            if (advertPost.AdvertPostLikeStatus == AdvertPostActionStatus.Processed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             advertPost.AdvertPostLikeStatus = AdvertPostActionStatus.Processed;
             await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });
             return JsonConvert.SerializeObject(true);
@@ -350,6 +374,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> IntermediateEndAdvertCommentingTask(EndIntermediateAdvertCommentingTaskDTO endData)
         {
             var advertPost = this.advertPostDBService.GetAdvertPostById(endData.AdvertPostId);
+            if (advertPost.AdvertPostCommentStatus == AdvertPostActionStatus.Processed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             advertPost.AdvertPostCommentStatus = AdvertPostActionStatus.Processed;
             await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });
             return JsonConvert.SerializeObject(true);
@@ -371,6 +399,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> IntermediateEndParseCloningInformationProfileData(EndIntermediateParseCloningInformationProfileData endData)
         {
             var clon = this.clonDBService.GetClonById(endData.ClonId);
+            if (clon.FillingDataId != null)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             var fillingData = new AddFillingDataDTO()
             {
                 AboutMe = endData.ProfileDescription,
@@ -399,7 +431,14 @@ namespace BASAccountManager.TaskManagers.InstManager
                 clon.PostGroupId = postGroupId;
                 await this.clonDBService.UpdateCloneAsync(clon);
             }
-
+            else
+            {
+                if (clon.PostGroup.ListPost.Where(x => x.PostCommentGroup.Name == "z_clon_" + clon.Id + "_" + endData.PostURI).Count() != 0)
+                {
+                    return JsonConvert.SerializeObject(true);
+                }
+            }
+            
             await this.postCommentGroupDBService.AddPostCommentGroupAsync(new DBPostCommentGroup() { Name = "z_clon_" + clon.Id + "_" + endData.PostURI});
             var comments = new List<CRUDCommentDTO>();
             foreach (var item in endData.Comments)
@@ -528,6 +567,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         {
             var worker = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
             var instpost = this.instPostDBService.GetInstPospsByAccount(worker.AccountId).Where(x => x.PostId == postID).First();
+            if (instpost.InstPostStatus == DB.Models.Post.InstPostStatus.PostingError)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             instpost.InstPostStatus = DB.Models.Post.InstPostStatus.PostingError;
             instpost.PostingErrorMessage = errorMessage;
             await this.instPostDBService.UpdateInstPostAsync(instpost);
@@ -562,6 +605,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorIntermediateCommentingAsync(int WorkerId, int PostCommentId, string ErrorMessage)
         {
             var postComment = this.postCommentDBService.GetPostCommentById(PostCommentId);
+            if (postComment.CommentStatus == DB.Models.Post.CommentStatus.ErrorPublication)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             postComment.CommentStatus = DB.Models.Post.CommentStatus.ErrorPublication;
             postComment.ErrorMessage = ErrorMessage;
             await this.postCommentDBService.UpdatePostCommentAsync(postComment);
@@ -596,6 +643,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorIntermediateLikingAsync(int WorkerId, int PostLikeId, string ErrorMessage)
         {
             var postLike = this.postLikeDBService.GetPostLikeById(PostLikeId);
+            if (postLike.LikeStatus == LikeStatus.ErrorPublication)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             postLike.LikeStatus = LikeStatus.ErrorPublication;
             postLike.ErrorMessage = ErrorMessage;
             await this.postLikeDBService.UpdateLikeAsync(postLike);
@@ -630,6 +681,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorIntermediateFollowingAsync(int WorkerId, int followId, string ErrorMessage)
         {
             var follow = this.followDBService.GetFollowById(followId);
+            if (follow.FollowStatus == FollowStatus.ErrorFollow)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             follow.FollowStatus = FollowStatus.ErrorFollow;
             follow.ErrorMessage = ErrorMessage;
             await this.followDBService.UpdateFollowAsync(follow);
@@ -664,6 +719,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorIntermediateAdvertFollowingAsync(int WorkerId, int advertAccountId, string ErrorMessage)
         {
             var advertAccount = this.advertAccountDBService.GetAdvertAccountById(advertAccountId);
+            if (advertAccount.AdvertAccountStatus == AdvertAccountStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             advertAccount.AdvertAccountStatus = AdvertAccountStatus.Error;
             advertAccount.ErrorMessage = ErrorMessage;
             await this.advertAccountDBService.UpdateAvertAccountsAsync(new List<DBAdvertAccount>() { advertAccount });
@@ -698,6 +757,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorIntermediateAdvertLikingAsync(int WorkerId, int advertPostId, string ErrorMessage)
         {
             var advertPost = this.advertPostDBService.GetAdvertPostById(advertPostId);
+            if (advertPost.AdvertPostLikeStatus == AdvertPostActionStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             advertPost.AdvertPostLikeStatus = AdvertPostActionStatus.Error;
             advertPost.LikingErrorMessage = ErrorMessage;
             await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });
@@ -732,6 +795,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorIntermediateAdvertCommentingAsync(int WorkerId, int advertPostId, string ErrorMessage)
         {
             var advertPost = this.advertPostDBService.GetAdvertPostById(advertPostId);
+            if (advertPost.AdvertPostCommentStatus == AdvertPostActionStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             advertPost.AdvertPostCommentStatus = AdvertPostActionStatus.Error;
             advertPost.CommentingErrorMessage = ErrorMessage;
             await this.advertPostDBService.UpdateAdvertPostAsync(new List<DBAdvertPost>() { advertPost });

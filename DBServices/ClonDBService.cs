@@ -33,12 +33,18 @@ namespace BASAccountManager.DBServices
 
         public DBClon GetClonById(int id)
         {
-            return this.dbcontext.Clon.Include(x => x.ClonGroup).Include(x => x.PostGroup).Where(x => x.Id == id).First();
+            return this.dbcontext.Clon
+                .Include(x => x.ClonGroup)
+                .Include(x => x.PostGroup).ThenInclude(x => x.ListPost).ThenInclude(x => x.PostCommentGroup)
+                .Include(x => x.FillingData)
+                .Where(x => x.Id == id).First();
         }
 
         public List<DBClon> GetClones()
         {
-            return this.dbcontext.Clon.Include(x => x.PostGroup).ThenInclude(x => x.ListPost).ThenInclude(x => x.PostCommentGroup).Include(x => x.FillingData).ToList();
+            return this.dbcontext.Clon
+                .Include(x => x.PostGroup).ThenInclude(x => x.ListPost).ThenInclude(x => x.PostCommentGroup)
+                .Include(x => x.FillingData).ToList();
         }
 
         public async Task UpdateCloneAsync(DBClon data)

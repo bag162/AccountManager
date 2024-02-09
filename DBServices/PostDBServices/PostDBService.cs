@@ -93,7 +93,7 @@ namespace BASAccountManager.DBServices.PostDBServices
         public JqueryDataTable<PostListDTO> GetPostByPostGroup(int start, int lenght, string searchdata, int groupId)
         {
             var data = new JqueryDataTable<PostListDTO>();
-            data.recordsTotal = this.dbcontext.Post.Count();
+            data.recordsTotal = this.dbcontext.Post.Where(x => x.GroupId == groupId).Count();
             DBPost[] filteredData = Array.Empty<DBPost>();
 
             if (!string.IsNullOrEmpty(searchdata))
@@ -116,7 +116,6 @@ namespace BASAccountManager.DBServices.PostDBServices
             }
             else
             {
-                data.recordsFiltered = data.recordsTotal;
                 if (lenght == -1)
                 {
                     data.data = mapper.Map<List<PostListDTO>>(this.dbcontext.Post.Include(x => x.Group).Include(x => x.Group.AccountGroup).AsQueryable().Where(x => x.Group.Id.Equals(groupId)).Skip(start).Take(data.recordsTotal).ToArray());
@@ -125,6 +124,7 @@ namespace BASAccountManager.DBServices.PostDBServices
                 {
                     data.data = mapper.Map<List<PostListDTO>>(this.dbcontext.Post.Include(x => x.Group).Include(x => x.Group.AccountGroup).AsQueryable().Where(x => x.Group.Id.Equals(groupId)).Skip(start).Take(lenght).ToArray());
                 }
+                data.recordsFiltered = data.data.Count();
             }
             return data;
         }

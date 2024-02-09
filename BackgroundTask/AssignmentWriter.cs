@@ -1022,7 +1022,7 @@ namespace BASAccountManager.BackgroundTask
                 {
                     foreach (var account in clon.ListInstAccount.Where(x => x.AccountStatus == AccountStatus.Authorized))
                     {
-                        if (account.FillingDataId != clon.FillingDataId && addedTasks.Where(x => x.AccountId == account.Id).Count() == 0)
+                        if (account.FillingDataId != null && account.FillingDataId != clon.FillingDataId && addedTasks.Where(x => x.AccountId == account.Id).Count() == 0)
                         {
                             ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(clon.FillingData);
                             var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
