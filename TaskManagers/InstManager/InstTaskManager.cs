@@ -143,6 +143,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndRegistrationTaskAsync(EndRegistrationTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.TaskWorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             DBInstagramAccount newAccount = this.mapper.Map<DBInstagramAccount>(endData);
             newAccount.InstanceId = taskWorker.InstanceId;
             newAccount.AccountStatus = AccountStatus.Authorized;
@@ -164,6 +168,10 @@ namespace BASAccountManager.TaskManagers.InstManager
                 endData.Email = null;
 
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.TaskWorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed && taskWorker.Account.AccountStatus == AccountStatus.Authorized)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Account.ProfileLink = endData.ProfileLink;
             taskWorker.Account.Name = endData.Name;
             taskWorker.Account.Surname = endData.Surname;
@@ -181,6 +189,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndPostingTaskAsync(EndPostingTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.workerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
@@ -201,6 +213,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndCommentingTaskAsync(EndCommentingTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
@@ -219,6 +235,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndLikingTaskAsync(EndLikingTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
@@ -237,6 +257,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndFollowingTaskTasync(EndFollowingTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
@@ -256,7 +280,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
             var profileFillingData = JsonConvert.DeserializeObject<ProfileFillingUsefulDataDTO>(taskWorker.UsefulData);
-
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             taskWorker.Account.FillingDataId = profileFillingData.Id;
 
@@ -289,6 +316,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndAdvertFollowingTask(EndAdvertFollowingTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
@@ -306,6 +337,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndAdvertLikingTask(EndAdvertLikingTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
@@ -323,6 +358,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndAdvertCommentingTask(EndAdvertCommentingTaskDTO endData)
         {
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            if (taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
@@ -388,12 +427,16 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> EndParseCloningInformationData(EndIntermediateParseCloningInformationData endData)
         {
             var clon = this.clonDBService.GetClonById(endData.ClonId);
-            clon.ClonStatus = ClonStatus.Processed;
             var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            if (clon.ClonStatus == ClonStatus.Processed && taskWorker.Status == DB.Models.TaskStatus.Completed)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
+            clon.ClonStatus = ClonStatus.Processed;
             taskWorker.Status = DB.Models.TaskStatus.Completed;
 
-            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.clonDBService.UpdateCloneAsync(clon);
+            await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             return JsonConvert.SerializeObject(true);
         }
@@ -402,6 +445,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorRegistrationTaskAsync(RegistrationTaskErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
             // Изменяем статус головной задачи на "В процессе добавления", т.к. необходимо восполнить неудачно завершившуюся задачу новой.
@@ -414,6 +461,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorAuthorizationTaskAsync(AuthorizationTaskErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
             switch (error)
@@ -450,6 +501,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorPostingTaskAsync(PostingTaskErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
             
@@ -482,6 +537,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorCommentingTaskAsync(CommentingTaskErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -512,6 +571,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorLikingTaskAsync(LikingTaskErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -542,6 +605,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorFollowingTaskAsync(FollowingTaskErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -572,6 +639,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorProfileFillingTaskAsync(ProfileFillingTaskErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -602,6 +673,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorAdvertFollowingAsync(AdvertFollowingErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -632,6 +707,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorAdvertLikingAsync(AdvertLikingErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -662,6 +741,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorAdvertCommentingAsync(AdvertCommentingErrorType error, int workerId)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -683,6 +766,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorParseCloningInformation(int workerId, int ClonId, ParseCloningInformationErrorType error)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(workerId);
+            if (workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
 
@@ -709,6 +796,10 @@ namespace BASAccountManager.TaskManagers.InstManager
         public async Task<string> ErrorGlobalAsync(GlobalErrorDTO error)
         {
             var workerTask = await this.workerTaskDBService.GetWorkerByIdAsync(error.workerId);
+            if(workerTask.Status == DB.Models.TaskStatus.Error)
+            {
+                return JsonConvert.SerializeObject(true);
+            }
             DBBASExeption exeption = new DBBASExeption
             {
                 AccountId = workerTask.AccountId,

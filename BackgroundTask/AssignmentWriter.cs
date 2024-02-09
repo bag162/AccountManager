@@ -243,8 +243,16 @@ namespace BASAccountManager.BackgroundTask
             var clonGroups = await this.clonGroupDBService.GetGroups();
             foreach (var item in clonGroups)
             {
+                if (item.ListClon == null || item.ListClon.Count() == 0)
+                {
+                    continue;
+                }
                 foreach (var clon in item.ListClon)
                 {
+                    if (clon.PostGroup == null)
+                    {
+                        continue;
+                    }
                     var posts = clon.PostGroup.ListPost.Where(x => x.PostStatus == PostStatus.Active).ToList();
                     var accounts = clon.ListInstAccount;
                     foreach (var account in accounts)
@@ -1343,7 +1351,7 @@ namespace BASAccountManager.BackgroundTask
 
             // Получаем аккаунты
             var accounts = await this.instDBService.GetInstAccountsByGroupAsync(task.AccountGroup);
-            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).ToList();
+            accounts = accounts.Where(x => x.AccountStatus == AccountStatus.Authorized).OrderBy(x => Guid.NewGuid().ToString()).ToList();
 
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
             foreach (var taskAccount in addedTasks
@@ -1374,7 +1382,7 @@ namespace BASAccountManager.BackgroundTask
                 {
                     break;
                 }
-                
+
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
                 if (proxy == null)
                 {
@@ -1383,6 +1391,7 @@ namespace BASAccountManager.BackgroundTask
 
                 var advertAccount = advertAccounts.First();
                 advertAccounts.Remove(advertAccount);
+
                 var clon = new DBClon()
                 {
                     ClonURI = advertAccount.AccountURL,
@@ -1391,6 +1400,7 @@ namespace BASAccountManager.BackgroundTask
                     CreateTime = DateTime.Now
                 };
                 var cloneId = await this.cloneDBService.AddCloneAsync(clon);
+
                 var usefuldata = new CollectCloneDataUsefuldataDTO()
                 {
                     ClonId = cloneId,
@@ -1398,6 +1408,7 @@ namespace BASAccountManager.BackgroundTask
                     CountPostToCollect = usefulData.CountPostToCollect,
                     ClonURI = advertAccount.AccountURL
                 };
+
                 var newTask = new DBWorkerTask()
                 {
                     AccountId = account.Id,
