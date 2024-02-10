@@ -10,6 +10,7 @@ using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using Humanizer.DateTimeHumanizeStrategy;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Newtonsoft.Json;
+using NuGet.Protocol.Core.Types;
 
 namespace BASAccountManager.BackgroundTask
 {
@@ -234,6 +235,7 @@ namespace BASAccountManager.BackgroundTask
                 .Where(x => x.FollowStatus == DB.Models.FollowStatus.NotPublished)
                 .ToList();
 
+            List<DBFollow> listToDelete = new();
             foreach (var account in activeAccounts)
             {
                 
@@ -244,14 +246,14 @@ namespace BASAccountManager.BackgroundTask
                     {
                         if (DateTime.Now - delFollow.CreatedDate >= TimeSpan.FromMinutes(30))
                         {
-                            followsToCheck.Remove(delFollow);
+                            listToDelete.Add(delFollow);
                         }
                         
                     }
                 }
             }
 
-            await this.followDBService.RemoveByIdsAsync(followsToCheck.Select(x => x.Id).ToList());
+            await this.followDBService.RemoveByIdsAsync(listToDelete.Select(x => x.Id).ToList());
 
             var errorFollows = follows.Where(x => x.FollowStatus == DB.Models.FollowStatus.ErrorFollow).ToList();
             await this.followDBService.RemoveFollows(errorFollows);

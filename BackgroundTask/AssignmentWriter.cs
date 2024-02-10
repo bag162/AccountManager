@@ -938,7 +938,8 @@ namespace BASAccountManager.BackgroundTask
                             {
                                 FollowStatus = FollowStatus.NotPublished,
                                 SenderAccountId = account.Id,
-                                RecipientAccountId = acc.Id
+                                RecipientAccountId = acc.Id,
+                                CreatedDate = DateTime.Now
                             });
                             break;
                         }
@@ -952,8 +953,6 @@ namespace BASAccountManager.BackgroundTask
             // Создаем воркеров
             foreach (var accountId in accountIds)
             {
-                
-
                 // Получаем follows для аккаунта
                 var followList = listFollows.Where(x => x.SenderAccountId == accountId).Take(usefulData.FollowsPerAccount).ToList();
                 foreach (var item in followList)
@@ -1022,7 +1021,7 @@ namespace BASAccountManager.BackgroundTask
                 {
                     foreach (var account in clon.ListInstAccount.Where(x => x.AccountStatus == AccountStatus.Authorized))
                     {
-                        if (account.FillingDataId != null && account.FillingDataId != clon.FillingDataId && addedTasks.Where(x => x.AccountId == account.Id).Count() == 0)
+                        if (account.FillingDataId != clon.FillingDataId && addedTasks.Where(x => x.AccountId == account.Id).Count() == 0)
                         {
                             ProfileFillingUsefulDataDTO serializedUsefulData = mapper.Map<ProfileFillingUsefulDataDTO>(clon.FillingData);
                             var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
@@ -1433,7 +1432,7 @@ namespace BASAccountManager.BackgroundTask
 
         private async Task ParseAccountsByClons(string clonGroup, string accountGroup)
         {
-            var allClons = this.clonGroupDBService.GetGroupByName(clonGroup).ListClon.OrderBy(x => x.ListInstAccount.Count());
+            var allClons = this.clonGroupDBService.GetGroupByName(clonGroup).ListClon.OrderBy(x => x.ListInstAccount.Count()).ToList();
             var allAccounts = await this.instDBService.GetInstAccountsByGroupAsync(accountGroup);
             var enumerator = allClons.GetEnumerator();
             enumerator.MoveNext();
@@ -1441,10 +1440,12 @@ namespace BASAccountManager.BackgroundTask
             {
                 if (account.ClonId == null)
                 {
-                    account.ClonId = enumerator.Current.Id;
+                    var enClon = enumerator.Current;
+                    account.ClonId = enClon.Id;
                     if (!enumerator.MoveNext())
                     {
-                        enumerator.Reset();
+                        enumerator = allClons.GetEnumerator();
+                        enumerator.MoveNext();
                     }
                 }
                 else
@@ -1454,7 +1455,8 @@ namespace BASAccountManager.BackgroundTask
                         account.ClonId = enumerator.Current.Id;
                         if (!enumerator.MoveNext())
                         {
-                            enumerator.Reset();
+                            enumerator = allClons.GetEnumerator();
+                            enumerator.MoveNext();
                         }
                     }
                 }

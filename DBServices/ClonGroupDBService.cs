@@ -89,6 +89,7 @@ namespace BASAccountManager.DBServices
         {
             return this.dbcontext.ClonGroup
                 .Include(x => x.ListClon).ThenInclude(x => x.ListInstAccount).ThenInclude(x => x.ListPost).ThenInclude(x => x.ListLikes)
+                .Include(x => x.ListClon).ThenInclude(x => x.ListInstAccount).ThenInclude(x => x.FillingData)
                 .Include(x => x.ListClon).ThenInclude(x => x.ListInstAccount).ThenInclude(x => x.ListPost).ThenInclude(x => x.ListComment).ThenInclude(x => x.Comment)
                 .Include(x => x.ListClon).ThenInclude(x => x.FillingData)
                 .Where(x => x.Name == name).First();
