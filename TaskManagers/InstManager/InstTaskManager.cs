@@ -13,6 +13,7 @@ using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using BASAccountManager.TaskManagers.InstManager.DTO;
+using Hangfire;
 using Hangfire.Server;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
@@ -157,6 +158,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -182,6 +184,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
 
         }
@@ -196,6 +199,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -224,6 +228,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -250,6 +255,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -276,6 +282,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -318,6 +325,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -343,6 +351,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -368,6 +377,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -393,6 +403,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             taskWorker.Status = DB.Models.TaskStatus.Completed;
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -477,6 +488,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             await this.clonDBService.UpdateCloneAsync(clon);
             await this.proxyDBService.SetProxyFreeStatusAsync(taskWorker.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(taskWorker);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -494,6 +506,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             workerTask.Task.Status = StatusTask.AddingProcess;
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -517,6 +530,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             }
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -560,6 +574,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -599,6 +614,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -637,6 +653,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -675,6 +692,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -713,6 +731,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -751,6 +770,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -789,6 +809,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -827,6 +848,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -857,6 +879,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
 
@@ -881,6 +904,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             await this.BASExeption.AddAsync(exeption);
             await this.proxyDBService.SetProxyFreeStatusAsync(workerTask.Proxy.Id);
             await this.workerTaskDBService.UpdateWorkerTaskAsync(workerTask);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             return JsonConvert.SerializeObject(true);
         }
         

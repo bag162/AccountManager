@@ -145,7 +145,7 @@ namespace BASAccountManager.BackgroundTask
         public async Task CommentParserAsync()
         {
             // Получаем все активные посты
-            var instPosts = await this.instPostDBService.GetAllInstPostAsyncAsNoTracking();
+            var instPosts = await this.instPostDBService.GetAllInstPostAsync();
             // Оставляем только выложенные посты
             instPosts = instPosts.Where(x => x.InstPostStatus == InstPostStatus.Published).Where(x => x.Post.PostStatus == PostStatus.Active).ToList();
             
@@ -188,7 +188,9 @@ namespace BASAccountManager.BackgroundTask
                     commentsToAdd.Add(newComment);
                 }
                 if (commentsToAdd.Count() != 0)
-                await this.postCommentDBService.AddCommentAsync(commentsToAdd);
+                {
+                    await this.postCommentDBService.AddCommentAsync(commentsToAdd);
+                }
             }
         }
 
@@ -655,7 +657,6 @@ namespace BASAccountManager.BackgroundTask
                     updatedComment.CommentTime = DateTime.Now;
                     updatedComment.SenderAccountId = accountToTask.Id;
                 }
-                await this.postCommentDBService.UpdatePostCommentAsync(commentsToTask);
 
                 var commentsList = this.mapper.Map<List<CommentUsefulDataDTO>>(commentsToTask);
                 var proxy = await this.GetFreeProxyByGroupAsync(task.ProxyGroup);
@@ -663,6 +664,7 @@ namespace BASAccountManager.BackgroundTask
                 {
                     break;
                 }
+                await this.postCommentDBService.UpdatePostCommentAsync(commentsToTask);
                 var newTask = new DBWorkerTask()
                 {
                     AccountId = accountToTask.Id,

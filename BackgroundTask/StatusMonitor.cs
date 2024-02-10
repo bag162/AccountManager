@@ -403,5 +403,33 @@ namespace BASAccountManager.BackgroundTask
             await this.fillingDataDBService.DeleteAsync(deletedFillingData);
             await this.postGroupDBService.DeleteGroupsAsync(deletedPostGroup);
         }
+
+        public async Task CheckWorkerTaskError()
+        {
+            var workerTasks = await this.workerTaskDbService.GetWorkerTasksAsync();
+            workerTasks = workerTasks.Where(x => x.Status == DB.Models.TaskStatus.AtWork).ToList();
+            List<DBWorkerTask> taskToDelete = new();
+
+            foreach (var workerTask in workerTasks)
+            {
+                switch (workerTask.TaskType)
+                {
+                    case TaskType.ParseCloningInformation:
+                        if (DateTime.Now - workerTask.CreatedDate >= TimeSpan.FromMinutes(60))
+                        {
+                            taskToDelete.Add(workerTask);
+                        }
+                        break;
+                    default:
+                        if (DateTime.Now - workerTask.CreatedDate >= TimeSpan.FromMinutes(20))
+                        {
+                            taskToDelete.Add(workerTask);
+                        }
+                        break;
+                }
+            }
+
+            await workerTaskDbService.RemoveWorkerTaskAsync(taskToDelete);
+        }
     }
 }

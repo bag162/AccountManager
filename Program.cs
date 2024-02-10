@@ -141,12 +141,12 @@ app.UseSpa(spa =>
     }
 });
 
-RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), "*/1 * * * * *");
-RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), "*/1 * * * * *");
-RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), "*/1 * * * * *");
-RecurringJob.AddOrUpdate<HangFireTaskManager>("LikesParser", (method) => method.LikesParser(), "*/1 * * * * *");
-RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), "*/1 * * * * *");
-RecurringJob.AddOrUpdate<HangFireTaskManager>("ParseSchedulerTask", (method) => method.ParseSchedulerTask(), "*/1 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("TaskParser", (method) => method.TaskParser(), "*/15 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("PostParser", (method) => method.PostParser(), "*/15 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("CommentParser", (method) => method.CommentParser(), "*/15 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("LikesParser", (method) => method.LikesParser(), "*/15 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("MonitorStatus", (method) => method.MonitorStatus(), "*/15 * * * * *");
+RecurringJob.AddOrUpdate<HangFireTaskManager>("ParseSchedulerTask", (method) => method.ParseSchedulerTask(), "*/15 * * * * *");
 
 // Init Roles
 using (var scope = app.Services.CreateScope())
