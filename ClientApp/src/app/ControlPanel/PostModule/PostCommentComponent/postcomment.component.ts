@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PostCommentService } from 'src/app/Services/PostCommentService';
 import { PostCommentGroupService } from 'src/app/Services/PostCommentGroupService';
@@ -11,6 +11,14 @@ import { environment } from 'src/environments/environment';
 })
 
 export class PostCommentComponent implements OnInit {
+    @Input()
+    set getByGroupId(commentGroupId:number) {
+        if (commentGroupId != undefined) {
+            this.URIPath = '/api/PostComment/get/' + commentGroupId;
+            console.log(commentGroupId)
+        }
+    };
+    
     dtOptions: any;
     URIPath: string;
     groupNames: string[];

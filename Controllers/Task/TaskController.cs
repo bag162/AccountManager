@@ -3,6 +3,7 @@ using BASAccountManager.Controllers.DTO;
 using BASAccountManager.Controllers.Task.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DBServices.Interfaces;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -61,7 +62,9 @@ namespace BASAccountManager.Controllers.InstTask
         [HttpPut]
         public async Task<string> Start([FromBody] TaskDTO[] startedTasks)
         {
-            return JsonConvert.SerializeObject(await this.TaskDBService.StartTaskAsync(startedTasks));
+            var result = JsonConvert.SerializeObject(await this.TaskDBService.StartTaskAsync(startedTasks));
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
+            return result;
         }
 
         [HttpGet]

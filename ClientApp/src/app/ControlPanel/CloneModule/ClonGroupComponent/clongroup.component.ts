@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment'
 import { ClonGroupService } from 'src/app/Services/ClonGroupService'
+import { Router } from '@angular/router';
 @Component({
     selector: 'clon-group',
     templateUrl: 'clongroup.component.html'
@@ -9,11 +10,12 @@ import { ClonGroupService } from 'src/app/Services/ClonGroupService'
 export class ClonGroupComponent implements OnInit {
     dtOptions: any;
     neGroupName: string;
-
+    static router: Router;
     clonGroupService: ClonGroupService;
 
-    constructor(clonGroupService: ClonGroupService) { 
+    constructor(clonGroupService: ClonGroupService, router: Router) { 
         this.clonGroupService = clonGroupService;
+        ClonGroupComponent.router = router;
     }
 
     ngOnInit() {
@@ -64,6 +66,12 @@ export class ClonGroupComponent implements OnInit {
                         }
                     }
                 },
+                {
+                    text: 'View clon by group',
+                    action: function (e, dt, node, config) {
+                        ClonGroupComponent.router.navigate(["/clone/manager/" + dt.rows({ selected: true }).data()[0]["Id"]])
+                    }
+                }
             ]
         };
     }

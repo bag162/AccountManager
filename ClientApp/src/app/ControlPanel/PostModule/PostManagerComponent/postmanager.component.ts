@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { PostService } from '../../../Services/PostService'
 import { environment } from '../../../../environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +9,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 
 export class PostManagerComponent implements OnInit {
+    @Input()
+    set getURI(uri:string) {
+        this.URIPath = environment.apiUrl + uri;
+    };
+    
     public static router: Router;
     dtOptions: any;
     PostService: PostService;

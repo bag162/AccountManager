@@ -39,6 +39,32 @@
             </select>
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col">
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                    [(ngModel)]="changeEditNameOrSurname" (change)="ChangeVisibleEditNameOrSurname()">
+                <label class="form-check-label" for="flexSwitchCheckChecked">Change Name or Surname</label>
+            </div>
+            <div id="changeNameOrSurnameform">
+                <label>Name or Surname gen string</label>
+                <textarea [(ngModel)]="changeNameOrUsernameData" type="text"
+                    class="form-control" id="inputGenDataNameOrSurname"></textarea>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                    [(ngModel)]="changeEditUsername" (change)="ChangeVisibleUsername()">
+                <label class="form-check-label" for="flexSwitchCheckChecked">Change Username</label>
+            </div>
+            <div id="changeUsernameForm">
+                <label>Username gen string</label>
+                <textarea [(ngModel)]="changeUsernameData" type="text"
+                    class="form-control" id="inputGenDataUsername"></textarea>
+            </div>
+        </div>
+    </div>
     <button type="submit" class="btn btn-primary mb-3" (click)="AddTask()">Submit</button>
     <div id="successNot" class="alert alert-success" role="alert">Success</div>
     <div id="errorNot" class="alert alert-danger" role="alert">Error</div>

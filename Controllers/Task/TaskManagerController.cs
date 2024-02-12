@@ -257,7 +257,9 @@ namespace BASAccountManager.Controllers.Task
                 AdvertAccountGroupsForCloning = newTask.AdvertAccountGroupsForCloning,
                 CloneGroupForSave = newTask.CloneGroupForSave,
                 CountCommentToCollect = newTask.CountCommentToCollect,
-                CountPostToCollect = newTask.CountPostToCollect
+                CountPostToCollect = newTask.CountPostToCollect,
+                NameOrSurnameGenString = newTask.NameOrSurnameGenString,
+                UsernameGenString = newTask.UsernameGenString
             });
             await this.TaskDBService.AddTaskAsync(task);
             return JsonConvert.SerializeObject(true);

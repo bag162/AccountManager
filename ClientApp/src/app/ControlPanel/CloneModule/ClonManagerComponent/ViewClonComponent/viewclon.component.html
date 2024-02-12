@@ -1,0 +1,39 @@
+<div class="container">
+    <div class="row mb-3">
+        <div class="container p-2 border">
+            <label><h5 class="mb-1">Shared data</h5></label>
+            <div class="row mb-3">
+                <div class="col-4">
+                    <label>Id</label>
+                    <input type="number" class="form-control" [(ngModel)]="clonData.Id" [disabled]="true">
+                </div>
+                <div class="col-8">
+                    <label>Clon URI</label>
+                    <input type="text" class="form-control" [(ngModel)]="clonData.ClonURI" [disabled]="true">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <label>Clon status</label>
+                    <input type="text" class="form-control" [(ngModel)]="clonData.ClonStatus" [disabled]="true">
+                </div>
+                <div class="col">
+                    <label>Create time</label>
+                    <input type="text" class="form-control" [(ngModel)]="clonData.CreateTime" [disabled]="true">
+                </div>
+                <div class="col">
+                    <label>Group name</label>
+                    <input type="text" class="form-control" [(ngModel)]="clonData.GroupName" [disabled]="true">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row p-2 mb-3 border" *ngIf="clonData.FillingDataId != 0">
+        <label><h5 class="mb-1">Profile data</h5></label>
+        <overview-profile [fillingDataId]="clonData.FillingDataId"></overview-profile>
+    </div>
+    <div class="row mb-3 border">
+        <label><h5 class="mb-1 p-2">Posts</h5></label>
+        <post-manager [getURI]="'/api/post/GetByClonId/' + clonData.Id"></post-manager>
+    </div>
+</div>

@@ -24,7 +24,9 @@ import { GuardService } from 'src/app/Services/GuardService';
         BrowserModule,
         FormsModule
     ],
-    exports: [],
+    exports: [
+        OverfiewProfileFillingComponent
+    ],
     declarations: [
         ProfileFillingComponent,
         OverfiewProfileFillingComponent

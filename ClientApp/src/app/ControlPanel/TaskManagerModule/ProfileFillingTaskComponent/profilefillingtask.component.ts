@@ -18,6 +18,9 @@ export class ProfileFillingTaskComponent implements OnInit {
 
     profileFillingResourse: string;
 
+    
+
+
     profileFillingService: ProfileFillingService;
     taskManagerService: TaskManagerService;
     dataService: DataService;

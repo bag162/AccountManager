@@ -84,6 +84,54 @@ namespace BASAccountManager.DBServices.PostDBServices
             return data;
         }
 
+        public JqueryDataTable<PostListDTO> GetPostByClonId(int start, int lenght, string searchdata, int clonId)
+        {
+            var data = new JqueryDataTable<PostListDTO>();
+            DBPost[] filteredData = Array.Empty<DBPost>();
+            var clon = this.dbcontext.Clon
+                .Include(x => x.PostGroup).ThenInclude(x => x.ListPost)
+                .Where(x => x.Id == clonId)
+                .First();
+            var clonPosts = new List<DBPost>();
+            if (clon.PostGroup != null && clon.PostGroup.ListPost != null)
+            {
+                clonPosts = clon.PostGroup.ListPost;
+            }
+            
+            data.recordsTotal = clonPosts.Count();
+            if (!string.IsNullOrEmpty(searchdata))
+            {
+                if (lenght == -1)
+                {
+                    filteredData = clonPosts.Where(m => m.Group.Name.Contains(searchdata)
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(data.recordsTotal).ToArray();
+                }
+                else
+                {
+
+                    filteredData = clonPosts.Where(m => m.Group.Name.Contains(searchdata)
+                                                || m.Id.ToString().Equals(searchdata)).Skip(start).Take(lenght).ToArray();
+                }
+
+
+                data.recordsFiltered = filteredData.Count();
+                data.data = mapper.Map<List<PostListDTO>>(filteredData);
+            }
+            else
+            {
+                data.recordsFiltered = data.recordsTotal;
+                if (lenght == -1)
+                {
+                    data.data = mapper.Map<List<PostListDTO>>(clonPosts.Skip(start).Take(data.recordsTotal).ToArray());
+                }
+                else
+                {
+                    data.data = mapper.Map<List<PostListDTO>>(clonPosts.Skip(start).Take(lenght).ToArray());
+                }
+            }
+            return data;
+        }
+
         public CRUDPostDTO GetPostById(int postId)
         {
             var post = this.dbcontext.Post.Include(x => x.Group).Include(x => x.PostCommentGroup).Where(x => x.Id == postId).First();

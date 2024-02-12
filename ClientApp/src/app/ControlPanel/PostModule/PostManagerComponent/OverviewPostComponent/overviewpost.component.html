@@ -1,5 +1,5 @@
 <div class="container">
-    <div class="row">
+    <div class="row mb-3">
         <div class="col-4">
             <label>Post Image</label>
             <img class="img-fluid img-thumbnail" alt="Responsive image" src="{{postData.ImagePath}}" id="uploadedImage">
@@ -11,9 +11,9 @@
         </div>
         <div class="col-8">
             <div class="container">
-                <div class="form-control mb-5">
+                <div class="form-control mb-3">
                     <h5 class="mb-1">Technical data</h5>
-                    <div class="row">
+                    <div class="row mb-3">
                         <div class="col">
                             <label>Post URI</label>
                             <input class="form-control" disabled [(ngModel)]="postData.PostURI">
@@ -23,10 +23,9 @@
                             <input class="form-control" disabled [(ngModel)]="postData.ImagePath">
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row mb-3">
                         <div class="col">
                             <label>Status</label>
-                            <!-- TODO сделать нормальное отображение как и в post group, проверить нужно ли это вообще -->
                             <select class="form-control" [(ngModel)]="postData.PostStatus"> 
                                 <option>Active</option>
                                 <option>Inactive</option>
@@ -42,7 +41,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row mb-3">
                         <div class="col">
                             <label>Post name</label>
                             <input type="text" class="form-control" [(ngModel)]="postData.Name"
@@ -61,7 +60,7 @@
                 </div>
                 <div class="form-control">
                     <h5 class="mb-1">Quantitative indicators</h5>
-                    <div class="row">
+                    <div class="row mb-3">
                         <div class="col">
                             <label>Required likes</label>
                             <input class="form-control" type="number" [(ngModel)]="postData.RequiredCountLikes">
@@ -75,8 +74,12 @@
             </div>
         </div>
     </div>
+    <div class="row p-2 border" *ngIf="postData.CommentGroupId != undefined">
+        <label><h5 class="mb-1">Comments</h5></label>
+        <post-comment-manager [getByGroupId]="postData.CommentGroupId"></post-comment-manager>
+    </div>
 
-    <div class="mt-3">
+    <div class="mt-3 mb-5">
         <button type="button" class="btn btn-primary" id="addPostBtn" (click)="AddPost()">Add post</button>
         <button type="button" class="btn btn-primary" id="updatePostBtn" (click)="UpdatePost()">Update post</button>
     </div>

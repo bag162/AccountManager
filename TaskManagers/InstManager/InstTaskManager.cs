@@ -15,6 +15,7 @@ using BASAccountManager.DBServices.PostDBServices.Interfaces;
 using BASAccountManager.TaskManagers.InstManager.DTO;
 using Hangfire;
 using Hangfire.Server;
+using Microsoft.Build.Framework;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -409,6 +410,9 @@ namespace BASAccountManager.TaskManagers.InstManager
 
         public async Task<string> IntermediateEndParseCloningInformationProfileData(EndIntermediateParseCloningInformationProfileData endData)
         {
+            var taskWorker = await this.workerTaskDBService.GetWorkerByIdAsync(endData.WorkerId);
+            var usefulData = JsonConvert.DeserializeObject<ParseCloningInformationTaskWorkerUsefuldataDTO>(taskWorker.Task.UsefulData);
+
             var clon = this.clonDBService.GetClonById(endData.ClonId);
             if (clon.FillingDataId != null)
             {
@@ -419,9 +423,9 @@ namespace BASAccountManager.TaskManagers.InstManager
                 AboutMe = endData.ProfileDescription,
                 ClosedAccount = false,
                 EnableRecomendations = true,
-                Gender = "Male",
-                NameOrSurnameGenString = "<RMaleName>:<RSurname>",
-                UsernameGenString = "{<ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons>|<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>_<ELowVow><ELowCons><ELowVow><ELowCons><AnyDigit><AnyDigit><AnyDigit><AnyDigit>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow>|<EFemNameLow>_<ELowCons><ELowVow><ELowCons><ELowVow><ELowCons><ELowVow><AnyDigit><AnyDigit><AnyDigit><AnyDigit>}",
+                Gender = "Female",
+                NameOrSurnameGenString = usefulData.NameOrSurnameGenString,
+                UsernameGenString = usefulData.UsernameGenString,
                 Name = "z_clon_" + clon.Id,
                 AvatarBASE64 = endData.ImageBase64Data,
                 AvatarFormat = endData.ImageFormat
@@ -951,7 +955,7 @@ namespace BASAccountManager.TaskManagers.InstManager
         private async Task<string> PostingTaskImplAsync(DBWorkerTask returnedTask, GetTaskDTO getTaskData)
         {
             var postList = this.instPostDBService.GetInstPospsByAccount(returnedTask.AccountId);
-            if (postList.Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished || x.InstPostStatus == InstPostStatus.PostingError).Count() == 0)
+            if (postList.Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished).Count() == 0)
             {
                 returnedTask.Status = DB.Models.TaskStatus.Completed;
                 await this.proxyDBService.SetProxyFreeStatusAsync(returnedTask.Proxy.Id);
@@ -971,7 +975,7 @@ namespace BASAccountManager.TaskManagers.InstManager
 
             task.Posts = postList
                 .OrderBy(x => Guid.NewGuid().ToString())
-                .Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished || x.InstPostStatus == DB.Models.Post.InstPostStatus.PostingError)
+                .Where(x => x.InstPostStatus == DB.Models.Post.InstPostStatus.NotPublished)
                 .Take(countPost)
                 .Select(x => x.Post)
                 .ToList();

@@ -48,6 +48,8 @@ namespace BASAccountManager
 
             CreateMap<DBPost, CRUDPostDTO>()
                 .ForMember(dest => dest.PostGroupName, opt => opt.MapFrom(src => src.Group.Name))
+                .ForMember(dest => dest.CommentGroupId, opt => opt.MapFrom(src => src.PostCommentGroupId))
+                .ForMember(dest => dest.PostGroupId, opt => opt.MapFrom(src => src.GroupId))
                 .ForMember(dest => dest.CommentGroupName, opt => opt.MapFrom(src => src.PostCommentGroup.Name));
 
             CreateMap<CRUDPostDTO, DBPost>();
@@ -101,7 +103,12 @@ namespace BASAccountManager
                 .ForMember(dest => dest.CountPinnedTasks, opt => opt.MapFrom(src => JsonConvert.DeserializeObject<int[]>(src.TaskIds).Count()));
             CreateMap<DBClonGroup, GetClonGroupDTO>()
                  .ForMember(dest => dest.CountPinnedClones, opt => opt.MapFrom(src => src.ListClon.Count()));
-
+            CreateMap<DBClon, GetClonDTO>()
+                .ForMember(dest => dest.CountPinnedAccount, opt => opt.MapFrom(src => src.ListInstAccount.Count()))
+                .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.ClonGroup.Name))
+                .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.PostGroup.ListPost.Count()));
+            CreateMap<DBClon, ClonData>()
+                .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.ClonGroup.Name));
             /*** BAS task Mapping ***/
 
             // Get task Mapping
@@ -138,8 +145,6 @@ namespace BASAccountManager
 
             // End task Mapping
             CreateMap<DBInstagramAccount, EndRegistrationTaskDTO>().ReverseMap();
-
-
         }
     }
 }

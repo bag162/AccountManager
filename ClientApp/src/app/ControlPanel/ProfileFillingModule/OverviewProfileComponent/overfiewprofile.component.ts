@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ProfileFillingService } from '../../../Services/ProfileFillingService'
 @Component({
@@ -7,11 +7,17 @@ import { ProfileFillingService } from '../../../Services/ProfileFillingService'
 })
 
 export class OverfiewProfileFillingComponent implements OnInit {
+    @Input()
+    set fillingDataId(id:number) {
+        if (id != 0) {
+            this.profileFillingDataId = id;
+        }
+    };
+
     data: any;
     profileFillingDataId: number;
     profileFillingService: ProfileFillingService;
     profileData: ProfileFillingDataDTO = new ProfileFillingDataDTO();
-
     static base64Data: string;
 
     changeEditNameOrSurname: boolean = false;
@@ -40,7 +46,7 @@ export class OverfiewProfileFillingComponent implements OnInit {
             $('#loadImageEl').hide();
             $('#addFillingDataBtn').hide();
             $("#inputProfileName").prop("disabled", true);
-            
+
             (await this.profileFillingService.GetProfileFillingData(this.profileFillingDataId)).subscribe({
                 next: (data: ProfileFillingDataDTO) => {
                     this.profileData = data;

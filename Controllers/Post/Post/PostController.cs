@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BASAccountManager.Controllers.Post.Post
 {
@@ -22,6 +23,18 @@ namespace BASAccountManager.Controllers.Post.Post
             this.mapper = mapper;
             this.logger = logger;
             this.postDBService = postDBService;
+        }
+
+        [Route("{clonId:int}")]
+        [HttpGet]
+        [Authorize(Roles = "/post/manager/update,admin")]
+        public string GetByClonId(int start, int length, int draw, int clonId)
+        {
+            StringValues searchData;
+            this.Request.Query.TryGetValue("search[value]", out searchData);
+            JqueryDataTable<PostListDTO> returnedData = this.postDBService.GetPostByClonId(start, length, searchData.First(), clonId);
+            returnedData.draw = draw;
+            return JsonConvert.SerializeObject(returnedData);
         }
 
         [Route("{postId:int}")]

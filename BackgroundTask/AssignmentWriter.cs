@@ -484,7 +484,7 @@ namespace BASAccountManager.BackgroundTask
             accountList = accountList.Where(x => x.AccountStatus == AccountStatus.Authorized)
                 // Используем аккаунты, у которых есть посты для публикации
                 .Where(x => x.ListPost
-                .Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0 || x.ListPost.Where(x => x.InstPostStatus == InstPostStatus.PostingError).Count() != 0)
+                .Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0)
 
                 .OrderBy(x => Guid.NewGuid().ToString())
                 .ToList();
@@ -609,8 +609,9 @@ namespace BASAccountManager.BackgroundTask
             var allFilteredComments = allComments
                 .Where(x => x.CommentStatus == CommentStatus.NotPublished)
                 .Where(x => x.SenderAccountId == null)
-                .OrderBy(x => Guid.NewGuid().ToString())
+                .OrderBy(x => x.Post.ListComment.Where(x => x.CommentStatus == CommentStatus.Published).Count())
                 .ToList();
+
 
             int commentsWorkerTaskCount = 0;
             foreach (var accountToTask in accounts)
@@ -750,7 +751,7 @@ namespace BASAccountManager.BackgroundTask
             {
                 allLikes.AddRange(instPost.ListLikes.Where(x => x.LikeStatus == LikeStatus.NotPublished).Where(x => x.SenderAccountId == null).ToList());
             }
-            allLikes = allLikes.OrderBy(x => Guid.NewGuid().ToString()).ToList();
+            allLikes = allLikes.OrderBy(x => x.Post.ListLikes.Where(x => x.LikeStatus == LikeStatus.Published).Count()).ToList();
             // Удаляем аккаунты для которых уже созданы задачи
             foreach (var addedTask in addedTasks)
             {

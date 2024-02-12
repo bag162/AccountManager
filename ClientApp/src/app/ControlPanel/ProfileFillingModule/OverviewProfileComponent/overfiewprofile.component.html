@@ -2,10 +2,10 @@
     <div class="row">
         <div class="col-4">
             <div class="container">
-                <div class="row">
+                <div class="row mb-3">
                     <label>Avatar Image</label>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <img class="img-fluid img-thumbnail" alt="Responsive image" src="{{profileData.AvatarPath}}"
                         id="uploadedImage">
                     <div class="mt-1" id="loadImageEl">
@@ -16,14 +16,14 @@
         </div>
         <div class="col-8">
             <div class="container">
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col">
                         <label>Filling name</label>
                         <input type="text" class="form-control" placeholder=""
                             [disabled]="this.profileFillingDataId != undefined" [(ngModel)]="profileData.Name">
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col">
                         <label>About me</label>
                         <textarea class="form-control" [(ngModel)]="profileData.AboutMe"
@@ -42,9 +42,9 @@
                     </div>
 
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col">
-                        <label>Enable account recommendations in profiles</label>
+                        <label>Enable account recommendations</label>
                         <select *ngIf="this.profileFillingDataId == undefined" class="form-control"
                             id="selectAccountRecomendation">
                             <option>Enable</option>
@@ -70,7 +70,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="row mt-3">
+                <div class="row mb-3">
                     <div class="col">
                         <div class="form-check form-switch mb-2">
                             <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"

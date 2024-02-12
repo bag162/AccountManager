@@ -102,5 +102,8 @@ namespace BASAccountManager.Controllers.Task.DTO
         public string AdvertAccountGroupsForCloning { get; set; }
         public int CountCommentToCollect { get; set; }
         public int CountPostToCollect { get; set; }
+
+        public string? NameOrSurnameGenString { get; set; }
+        public string? UsernameGenString { get; set; }
     }
 }

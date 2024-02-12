@@ -25,6 +25,9 @@ namespace BASAccountManager.Controllers.Post.Post.DTO
         public string? ImageFormat { get; set; }
         public string PostURI { get; set; }
         public string? ImagePath { get; set; }
+
+        public int CommentGroupId { get; set; }
+        public int PostGroupId { get; set; }
     }
 
     public class UpdatePostDTO

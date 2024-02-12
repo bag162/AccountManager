@@ -20,6 +20,12 @@ export class ParsingCloningInformationComponent implements OnInit {
     cloneGroupForSave: string[];
     advertAccountGroupsForCloning: string[];
 
+    changeEditNameOrSurname: boolean = false;
+    changeEditUsername: boolean = false;
+
+    changeUsernameData: string = "";
+    changeNameOrUsernameData: string = "";
+
     advertAccountService: AdvertAccountService;
     cloneGroupService: ClonGroupService;
     taskManagerService: TaskManagerService;
@@ -38,6 +44,8 @@ export class ParsingCloningInformationComponent implements OnInit {
     async ngOnInit() {
         $("#successNot").hide();
         $("#errorNot").hide();
+        $('#changeNameOrSurnameform').hide();
+        $('#changeUsernameForm').hide();
 
         (await this.cloneGroupService.GetClonNames()).subscribe({
             next: (data: string[]) => {
@@ -69,6 +77,13 @@ export class ParsingCloningInformationComponent implements OnInit {
         addedtask.AdvertAccountGroupsForCloning = <string>$('#selectAdvertAccountGroup option:selected').val();
         addedtask.CloneGroupForSave = <string>$('#selectCloneGroup option:selected').val();
 
+        if (this.changeEditNameOrSurname) {
+            addedtask.NameOrSurnameGenString = this.changeNameOrUsernameData;
+        }
+        if (this.changeEditUsername) {
+            addedtask.UsernameGenString = this.changeUsernameData;
+        }
+
         (await this.taskManagerService.AddParseCloningInformationTask(addedtask)).subscribe(
             {
                 next: (data: boolean) => {
@@ -90,6 +105,26 @@ export class ParsingCloningInformationComponent implements OnInit {
             }
         );
     }
+
+    public ChangeVisibleEditNameOrSurname() {
+        if (this.changeEditNameOrSurname) {
+            $('#changeNameOrSurnameform').show(500);
+        }
+        else {
+            $('#changeNameOrSurnameform').hide(500);
+        }
+
+    }
+
+    public ChangeVisibleUsername() {
+        if (this.changeEditUsername) {
+            $('#changeUsernameForm').show(500);
+        }
+        else {
+            $('#changeUsernameForm').hide(500);
+        }
+
+    }
 }
 
 export class AddParseCloningTaskDTO {
@@ -98,6 +133,9 @@ export class AddParseCloningTaskDTO {
     ProxyGroup: string;
     CountCommentToCollect: number;
     CountPostToCollect: number;
+
+    NameOrSurnameGenString?: string;
+    UsernameGenString?: string;
 
     CloneGroupForSave: string;
     AdvertAccountGroupsForCloning: string;

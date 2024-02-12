@@ -156,6 +156,9 @@ export class CRUDPostDTO {
     PostURI: string = "Added by user";
     ImagePath?: string;
     CommentGroupName: string;
+
+    CommentGroupId: number;
+    PostGroupId: number;
 }
 
 export class UpdatePostDTO {

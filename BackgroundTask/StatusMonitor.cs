@@ -374,34 +374,7 @@ namespace BASAccountManager.BackgroundTask
                 .Where(x => DateTime.Now - x.CreateTime >= TimeSpan.FromHours(1))
                 .ToList();
 
-            var deletedCommentGroup = new List<DBPostCommentGroup>();
-            var deletedPostGroup = new List<DBPostGroup>();
-            var deletedFillingData = new List<DBFillingData>();
-
-            foreach (var item in deletedClones)
-            {
-                if (item.FillingDataId != null)
-                {
-                    deletedFillingData.Add(item.FillingData);
-                }
-                if (item.PostGroupId != null)
-                {
-                    deletedPostGroup.Add(item.PostGroup);
-                    if (item.PostGroup.ListPost.Count() != 0)
-                    {
-                        foreach (var item1 in item.PostGroup.ListPost)
-                        {
-                            deletedCommentGroup.Add(item1.PostCommentGroup);
-                        }
-                    }
-                }
-                
-            }
-
             await this.clonDBService.DeleteClonesAsync(deletedClones);
-            await this.postCommentGroupDBService.DeleteCommentGroupAsync(deletedCommentGroup);
-            await this.fillingDataDBService.DeleteAsync(deletedFillingData);
-            await this.postGroupDBService.DeleteGroupsAsync(deletedPostGroup);
         }
 
         public async Task CheckWorkerTaskError()
@@ -421,7 +394,7 @@ namespace BASAccountManager.BackgroundTask
                         }
                         break;
                     default:
-                        if (DateTime.Now - workerTask.CreatedDate >= TimeSpan.FromMinutes(20))
+                        if (DateTime.Now - workerTask.CreatedDate >= TimeSpan.FromMinutes(10))
                         {
                             taskToDelete.Add(workerTask);
                         }
