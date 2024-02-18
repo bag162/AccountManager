@@ -1,0 +1,29 @@
+<div class="container" id="addServerForm">
+    <div class="row mb-2">
+        <div class="col-4">
+            <label>Server name</label>
+            <input type="text" class="form-control" [(ngModel)]="addedServer.Name">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-4">
+            <label>API Key</label>
+            <input type="text" class="form-control" [(ngModel)]="addedServer.APIKey">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-4">
+            <label>Server status</label>
+            <select class="form-control" [(ngModel)]="addedServer.WorkerServerStatus">
+                <option>Active</option>
+                <option>Inactive</option>
+            </select>
+        </div>
+    </div>
+    <button type="button" class="btn btn-lg btn-success mb-2" (click)="AddServer()">Add</button>
+</div>
+
+<div id="successNot" class="alert alert-success" role="alert">Success</div>
+<div id="errorNot" class="alert alert-danger" role="alert">Error</div>
+<!-- Gen table -->
+<table datatable [dtOptions]="dtOptions" class="row-border hover" id="profileFillingData"></table>

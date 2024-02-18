@@ -139,7 +139,10 @@ namespace BASAccountManager.DBServices
 
         public ClonData GetClonData(int clonId)
         {
-            var clon = this.dbcontext.Clon.Include(x => x.ClonGroup).Where(x => x.Id == clonId).First();
+            var clon = this.dbcontext.Clon
+                .Include(x => x.ClonGroup)
+                .Include(x => x.PostGroup).ThenInclude(x => x.ListPost)
+                .Where(x => x.Id == clonId).First();
             return mapper.Map<ClonData> (clon);
         }
 

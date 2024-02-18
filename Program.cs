@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Hangfire.Dashboard.BasicAuthorization;
 using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
 using BASAccountManager.DBServices.AdvertDBServices;
+using BASAccountManager.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureLogging(opt =>
@@ -48,6 +49,7 @@ builder.Services.AddTransient<IAdvertAccountDBService, AdvertAccountDBService>()
 builder.Services.AddTransient<IAdvertAccountGroupDBService, AdvertAccountGroupDBService>();
 builder.Services.AddTransient<IAdvertPostGroupDBService, AdvertPostGroupDBService>();
 builder.Services.AddTransient<IAdvertPostDBService, AdvertPostDBService>();
+builder.Services.AddTransient<IWorkerServerDBService, WorkerServerDBService>();
 
 builder.Services.AddTransient<HangFireTaskManager>();
 builder.Services.AddTransient<AssignmentWriter>();
@@ -105,7 +107,7 @@ builder.Services.AddSpaStaticFiles(configuration =>
 });
 
 var app = builder.Build();
-
+app.UseMiddleware<BASAPIAccessManager>();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

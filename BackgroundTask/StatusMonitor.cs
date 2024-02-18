@@ -7,6 +7,7 @@ using BASAccountManager.DB.Models.Post;
 using BASAccountManager.DBServices.AdvertDBServices.Interfaces;
 using BASAccountManager.DBServices.Interfaces;
 using BASAccountManager.DBServices.PostDBServices.Interfaces;
+using Hangfire;
 using Humanizer.DateTimeHumanizeStrategy;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Newtonsoft.Json;
@@ -29,6 +30,7 @@ namespace BASAccountManager.BackgroundTask
         private IPostCommentGroupDBService postCommentGroupDBService { get; set; }
         private IPostGroupDBService postGroupDBService { get; set; }
         private IFillingDataDBService fillingDataDBService { get; set; }
+        private IInstPostDBService instPostDBService { get; set; }
 
         public StatusMonitor(ITaskDBService taskDbService, 
             IWorkerTaskDBService workerTaskDbService, 
@@ -42,7 +44,8 @@ namespace BASAccountManager.BackgroundTask
             IClonDBService clonDBService,
             IPostCommentGroupDBService postCommentGroupDBService,
             IPostGroupDBService postGroupDBService,
-            IFillingDataDBService fillingDataDBService)
+            IFillingDataDBService fillingDataDBService,
+            IInstPostDBService instPostDBService)
         {
             this.taskDbService = taskDbService;
             this.workerTaskDbService = workerTaskDbService;
@@ -57,6 +60,7 @@ namespace BASAccountManager.BackgroundTask
             this.postCommentGroupDBService = postCommentGroupDBService;
             this.postGroupDBService = postGroupDBService;
             this.fillingDataDBService = fillingDataDBService;
+            this.instPostDBService = instPostDBService;
         }
 
         public async Task CheckTaskWorkerStatusAsync()
@@ -78,6 +82,7 @@ namespace BASAccountManager.BackgroundTask
 
                 task.Status = DB.Models.StatusTask.Completed;
                 await this.taskDbService.UpdateTaskAsync(task);
+                BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
             }
         }
 
@@ -97,6 +102,7 @@ namespace BASAccountManager.BackgroundTask
                 
                 await this.proxyDBService.SetProxyFreeStatusAsync(proxy.Id);
             }
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
         }
 
         public async Task CheckInactiveTask()
@@ -114,6 +120,7 @@ namespace BASAccountManager.BackgroundTask
                     await this.workerTaskDbService.RemoveWorkerTaskAsync(noTakenTask);
                 }
             }
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
         }
 
         public async Task CheckUntakenComments()
@@ -388,8 +395,11 @@ namespace BASAccountManager.BackgroundTask
                 switch (workerTask.TaskType)
                 {
                     case TaskType.ParseCloningInformation:
-                        if (DateTime.Now - workerTask.CreatedDate >= TimeSpan.FromMinutes(60))
+                        if (DateTime.Now - workerTask.CreatedDate >= TimeSpan.FromMinutes(30))
                         {
+                            var usefuldata = JsonConvert.DeserializeObject<CollectCloneDataUsefuldataDTO>(workerTask.UsefulData);
+                            var advertAccount = this.advertAccountDBService.GetAdvertAccountByURI(usefuldata.ClonURI);
+                            await this.advertAccountDBService.DeleteAdvertAccountAsync(new List<int>(advertAccount.Id));
                             taskToDelete.Add(workerTask);
                         }
                         break;
@@ -403,6 +413,25 @@ namespace BASAccountManager.BackgroundTask
             }
 
             await workerTaskDbService.RemoveWorkerTaskAsync(taskToDelete);
+            BackgroundJob.Enqueue<HangFireTaskManager>((method) => method.TaskParser());
+        }
+
+        public async Task CheckPostStatus()
+        {
+            var posts = await this.instPostDBService.GetAllInstPostAsync();
+
+            var processedPostsToUpdate = posts
+                .Where(x => x.InstPostStatus == InstPostStatus.InProcessPublication)
+                .Where(x => DateTime.Now - x.CreatedDate >= TimeSpan.FromMinutes(30))
+                .ToList();
+
+            foreach (var updatedPost in processedPostsToUpdate)
+            {
+                updatedPost.CreatedDate = null;
+                updatedPost.InstPostStatus = InstPostStatus.NotPublished;
+            }
+
+            await this.instPostDBService.UpdateInstPostAsync(processedPostsToUpdate);
         }
     }
 }

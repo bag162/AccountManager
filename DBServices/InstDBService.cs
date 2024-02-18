@@ -116,19 +116,29 @@ namespace BASAccountManager.DBServices
 
         public async Task RemoveInstAccountsAsync(List<DBInstagramAccount> removedAccs)
         {
-            var deleteAccounts = new List<DBInstagramAccount>();
-            foreach (var removedAccount in removedAccs)
+            var deleteAccounts = this.dbcontext.InstAccount
+                    .Where(x => removedAccs.Select(x => x.Id).Contains(x.Id))
+                    .ToList();
+
+            foreach (var item in deleteAccounts)
             {
-                deleteAccounts.Add(this.dbcontext.InstAccount
-                    .Include(x => x.ListComments)
-                    .Include(x => x.ListPost)
-                    .Include(x => x.ListLikes)
-                    .Include(x => x.ListBASExeption)
-                    .Where(x => x.Id == removedAccount.Id)
-                    .First());
-                var removedFollows = this.dbcontext.Follow.AsQueryable().Where(x => x.SenderAccountId == removedAccount.Id).ToList();
-                this.dbcontext.Follow.RemoveRange(removedFollows);
+                await this.dbcontext.Entry(item)
+                .Collection(x => x.ListComments)
+                .LoadAsync();
+                await this.dbcontext.Entry(item)
+                .Collection(x => x.ListPost)
+                .LoadAsync();
+                await this.dbcontext.Entry(item)
+                .Collection(x => x.ListLikes)
+                .LoadAsync();
+                await this.dbcontext.Entry(item)
+               .Collection(x => x.ListBASExeption)
+               .LoadAsync();
+
             }
+            var removedFollows = this.dbcontext.Follow.AsQueryable().Where(x => deleteAccounts.Select(x => x.Id).Contains(x.SenderAccountId)).ToList();
+            this.dbcontext.Follow.RemoveRange(removedFollows);
+
             this.dbcontext.InstAccount.RemoveRange(deleteAccounts);
             await this.dbcontext.SaveChangesAsync();
             return;

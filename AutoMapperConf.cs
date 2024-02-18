@@ -15,6 +15,7 @@ using BASAccountManager.Controllers.Proxy.DTO;
 using BASAccountManager.Controllers.SchedulerTask.DTO;
 using BASAccountManager.Controllers.SMS_Services.DTO;
 using BASAccountManager.Controllers.Task.DTO;
+using BASAccountManager.Controllers.WorkerServer.DTO;
 using BASAccountManager.DB.Models;
 using BASAccountManager.DB.Models.AdvertResourses;
 using BASAccountManager.DB.Models.Post;
@@ -109,6 +110,9 @@ namespace BASAccountManager
                 .ForMember(dest => dest.CountPinnedPosts, opt => opt.MapFrom(src => src.PostGroup.ListPost.Count()));
             CreateMap<DBClon, ClonData>()
                 .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.ClonGroup.Name));
+
+            CreateMap<DBWorkerServer, GetWorkerServerDTO>();
+            CreateMap<AddWorkerServerDTO, DBWorkerServer>();
             /*** BAS task Mapping ***/
 
             // Get task Mapping

@@ -177,6 +177,11 @@ namespace BASAccountManager.DBServices.AdvertDBServices
             return this.dbcontext.AdvertAccount.Find(id);
         }
 
+        public DBAdvertAccount GetAdvertAccountByURI(string uri)
+        {
+            return this.dbcontext.AdvertAccount.Where(x => x.AccountURL == uri).First();
+        }
+
         public List<DBAdvertAccount> GetAdvertAccounts()
         {
             return this.dbcontext.AdvertAccount.ToList();

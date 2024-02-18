@@ -486,7 +486,7 @@ namespace BASAccountManager.BackgroundTask
                 .Where(x => x.ListPost
                 .Where(x => x.InstPostStatus == InstPostStatus.NotPublished).Count() != 0)
 
-                .OrderBy(x => Guid.NewGuid().ToString())
+                .OrderBy(x => x.ListPost.Count())
                 .ToList();
             
             // Удаляем из списка аккаунтов на добавление, аккаунты, которые уже ранее были добавлены в WorkerList
@@ -1376,7 +1376,7 @@ namespace BASAccountManager.BackgroundTask
                     advertAccounts.Remove(advertAccounts.Where(x => x.AccountURL == item.ClonURI).First());
                 }
             }
-
+            advertAccounts = advertAccounts.OrderBy(x => Guid.NewGuid().ToString()).ToList();
             var clonGroupId = this.clonGroupDBService.GetGroupByName(usefulData.CloneGroupForSave).Id;
             foreach (var account in accounts)
             {

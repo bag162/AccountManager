@@ -102,7 +102,20 @@ namespace BASAccountManager.TaskManagers.InstManager
             {
                 if (allTasks.Where(x => x.AccountId == task.AccountId).Where(x => x.Status == DB.Models.TaskStatus.AtWork).Count() == 0)
                 {
-                    returnedTask = task;
+                    if (task.Account.InstanceId != null)
+                    {
+                        if (task.Account.InstanceId == getTaskData.InstanceId)
+                        {
+                            returnedTask = task;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        returnedTask = task;
+                        break;
+                    }
+                    
                 }
             }
 
@@ -865,18 +878,36 @@ namespace BASAccountManager.TaskManagers.InstManager
             }
             workerTask.Status = DB.Models.TaskStatus.Error;
             workerTask.ErrorMessage = error.ToString();
+            var clon = this.clonDBService.GetClonById(ClonId);
 
             switch (error)
             {
                 case ParseCloningInformationErrorType.FullBan:
                     workerTask.Account.AccountStatus = AccountStatus.Banned;
+                    if (clon.FillingDataId != null && clon.PostGroup.ListPost.Count() >= 20)
+                    {
+                        clon.ClonStatus = ClonStatus.Processed;
+                        await this.clonDBService.UpdateCloneAsync(clon);
+                    }
                     break;
                 case ParseCloningInformationErrorType.DeauthorizedError:
                     workerTask.Account.AccountStatus = AccountStatus.NotAuthorized;
+                    if (clon.FillingDataId != null && clon.PostGroup.ListPost.Count() >= 20)
+                    {
+                        clon.ClonStatus = ClonStatus.Processed;
+                        await this.clonDBService.UpdateCloneAsync(clon);
+                    }
                     break;
                 case ParseCloningInformationErrorType.PageNotAvailable:
-                    var clon = this.clonDBService.GetClonById(ClonId);
-                    clon.ClonStatus = ClonStatus.NotAvailable;
+                    if (clon.FillingDataId != null && clon.PostGroup.ListPost.Count() >= 20)
+                    {
+                        clon.ClonStatus = ClonStatus.Processed;
+                        await this.clonDBService.UpdateCloneAsync(clon);
+                    }
+                    else
+                    {
+                        clon.ClonStatus = ClonStatus.NotAvailable;
+                    }
                     await this.clonDBService.UpdateCloneAsync(clon);
                     break;
             }
@@ -893,6 +924,16 @@ namespace BASAccountManager.TaskManagers.InstManager
             if(workerTask.Status == DB.Models.TaskStatus.Error)
             {
                 return JsonConvert.SerializeObject(true);
+            }
+            if (workerTask.TaskType == TaskType.ParseCloningInformation)
+            {
+                var usefuldata = JsonConvert.DeserializeObject<CollectCloneDataUsefuldataDTO>(workerTask.UsefulData);
+                var clon = this.clonDBService.GetClonById(usefuldata.ClonId);
+                if (clon.FillingDataId != null && clon.PostGroup.ListPost.Count() >= 20)
+                {
+                    clon.ClonStatus = ClonStatus.Processed;
+                    await this.clonDBService.UpdateCloneAsync(clon);
+                }
             }
             DBBASExeption exeption = new DBBASExeption
             {
@@ -985,6 +1026,7 @@ namespace BASAccountManager.TaskManagers.InstManager
             foreach (var post in updatedPosts)
             {
                 post.InstPostStatus = DB.Models.Post.InstPostStatus.InProcessPublication;
+                post.CreatedDate = DateTime.Now;
             }
 
             foreach (var post in task.Posts)

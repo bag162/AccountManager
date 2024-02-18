@@ -44,6 +44,7 @@ namespace BASAccountManager.DB
         public DbSet<DBClon> Clon { get; set; }
         public DbSet<DBClonGroup> ClonGroup { get; set; }
 
+        public DbSet<DBWorkerServer> WorkerServer { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 

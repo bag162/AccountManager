@@ -115,6 +115,7 @@ namespace BASAccountManager
             await this.StatusMonitor.CheckAdvertUntakenFollows();
             await this.StatusMonitor.CheckUntakenClon();
             await this.StatusMonitor.CheckWorkerTaskError();
+            await this.StatusMonitor.CheckPostStatus();
 
             this.cache.Set("MonitorStatusTaskStatus", false);
         }

@@ -61,12 +61,6 @@ export class ClonManagerComponent implements OnInit {
                 'print',
                 'selectAll',
                 {
-                    text: 'Reload data',
-                    action: function (e, dt, node, config) {
-                        dt.ajax.reload();
-                    }
-                },
-                {
                     text: 'View clon data',
                     action: function (e, dt, node, config) {
                         ClonManagerComponent.router.navigate(["/clone/manager/view/" + dt.rows({ selected: true }).data()[0]["Id"]])
@@ -99,6 +93,12 @@ export class ClonManagerComponent implements OnInit {
                                 $("#errorNot").val("Error");
                             }
                         })
+                    }
+                },
+                {
+                    text: 'Reload data',
+                    action: function (e, dt, node, config) {
+                        dt.ajax.reload();
                     }
                 }
             ]

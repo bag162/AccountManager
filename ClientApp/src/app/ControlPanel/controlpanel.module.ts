@@ -17,6 +17,7 @@ import { GuardService } from '../Services/GuardService'
 import { ProfileFillingModule } from './ProfileFillingModule/profilefilling.module'
 import { AdvertisingResourcesModule } from './AdvertisingResources/advertisingresources.module'
 import { CloneModule } from './CloneModule/clone.module'
+import { ServerAccessModule } from './ServerAccessModule/serveraccess.module'
 
 @NgModule({
     imports: [
@@ -32,7 +33,8 @@ import { CloneModule } from './CloneModule/clone.module'
                     { path: 'email', component: EmailComponent, canActivate: [GuardService.CanAccess] },
                     { path: 'profilefilling', component: ProfileFillingModule, canActivate: [GuardService.CanAccess] },
                     { path: 'advertresourses', component: AdvertisingResourcesModule, canActivate: [GuardService.CanAccess] },
-                    { path: 'clone', component: CloneModule }
+                    { path: 'clone', component: CloneModule },
+                    { path: 'servermanager', component: ServerAccessModule }
                 ]
             },
         ]),
@@ -43,7 +45,8 @@ import { CloneModule } from './CloneModule/clone.module'
         PostModule,
         ProfileFillingModule,
         AdvertisingResourcesModule,
-        CloneModule
+        CloneModule,
+        ServerAccessModule
     ],
     exports: [RouterModule],
     declarations: [

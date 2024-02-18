@@ -12,7 +12,7 @@ namespace BASAccountManager.DBServices.AdvertDBServices.Interfaces
         public Task<List<DBAdvertAccount>> GetAdvertAccountsByGroupAsync(string groupName);
         public List<DBAdvertAccount> GetAdvertAccounts();
         public DBAdvertAccount GetAdvertAccountById(int id);
-
+        public DBAdvertAccount GetAdvertAccountByURI(string uri);
         public Task UpdateAvertAccountsAsync(List<DBAdvertAccount> accounts);
 
         public Task AddAdvertAccountAsync(List<AddAdvertAccountDTO> accounts);
