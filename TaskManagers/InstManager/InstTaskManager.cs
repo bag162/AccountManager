@@ -329,7 +329,7 @@ namespace BASAccountManager.TaskManagers.InstManager
                 taskWorker.Account.Name = endData.NewName;
                 taskWorker.Account.Surname = endData.NewSurname;
             }
-            if (endData.NewSurname != "not")
+            if (endData.NewUsername != "not" && endData.NewUsername != null)
             {
                 taskWorker.Account.AccountStatus = AccountStatus.NotAuthorized;
                 taskWorker.Account.Login = endData.NewUsername;
