@@ -365,3 +365,4 @@ FodyWeavers.xsd
 # Frontend cash
 .angular
 /wwwroot
+/appsettings.json
